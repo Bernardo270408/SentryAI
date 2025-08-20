@@ -1,5 +1,6 @@
 flask
 flask_sqlalchemy
+flask_cors
+flask_migrate
 sqlalchemy
-cors
 
