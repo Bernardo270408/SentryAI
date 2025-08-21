@@ -4,6 +4,7 @@ from datetime import datetime
 from config import db
 
 class Chat(db.Model):
+
     __tablename__ = 'chats'
 
     id = Column(Integer, primary_key=True)

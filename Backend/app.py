@@ -8,8 +8,8 @@ migrate = Migrate()
 
 def create_app():
     """
-    Esta função cria a aplicação FLASK, registra as rotas
-    e inicializa o banco de dados
+    This function creates the FLASK application, registers the routes,
+    and initializes the database.
     
     """
     
