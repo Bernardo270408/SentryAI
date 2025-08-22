@@ -1,5 +1,5 @@
 from models.message_user import UserMessage
-from config import db
+from extensions import db
 
 class UserMessageDAO:
 	@staticmethod

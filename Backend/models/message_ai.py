@@ -1,18 +1,18 @@
-from sqlalchemy import Column, Integer, String, DateTime, Text
+from sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey
 from sqlalchemy.orm import relationship
-from config import db
+from extensions import db
 
 class AIMessage(db.Model):
     __tablename__ = 'ai_messages'
 
     id = Column(Integer, primary_key=True)
-    chat_id = Column(Integer, nullable=False)
+    chat_id = Column(Integer, ForeignKey("chats.id"), nullable=False)
     content = Column(Text, nullable=False)
     model = Column(String(50), nullable=True)
     created_at = Column(DateTime, server_default=db.func.now())
     updated_at = Column(DateTime, onupdate=db.func.now())
-    
-    chat = relationship("Chat", back_populates="messages")
+
+    chat = relationship("Chat", back_populates="ai_messages")
 
     def to_dict(self):
         return {

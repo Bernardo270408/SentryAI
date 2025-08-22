@@ -1,27 +1,28 @@
-from sqlalchemy import Column, Integer, String, Text
+from sqlalchemy import Column, Integer, String, Text, Boolean
 from sqlalchemy.orm import relationship
-from config import db
+from extensions import db
+
 
 class User(db.Model):
     __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True)
-    
     name = Column(String(100), nullable=False)
     email = Column(String(120), unique=True, nullable=False)
     password = Column(String(255), nullable=False)
-    
     extra_data = Column(Text)
-    
-    chats = relationship("Chat", back_populates="user", cascade="all, delete-orphan")
+    is_admin = Column(Boolean, default=False)
 
+    chats = relationship("Chat", back_populates="user", cascade="all, delete-orphan")
+    user_messages = relationship("UserMessage", back_populates="user", cascade="all, delete-orphan")
 
     def to_dict(self):
         return {
             "id": self.id,
             "name": self.name,
             "email": self.email,
-            "extra_data": self.extra_data
+            "extra_data": self.extra_data,
+            "is_admin": self.is_admin
         }
         
     def __repr__(self):

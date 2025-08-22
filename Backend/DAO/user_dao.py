@@ -1,5 +1,5 @@
 from models.user import User
-from config import db
+from extensions import db
 
 class UserDAO:
 	@staticmethod
@@ -20,6 +20,15 @@ class UserDAO:
 	@staticmethod
 	def get_all_users():
 		return User.query.all()
+	
+	@staticmethod
+	def get_all_admins():
+		return User.query.filter_by(is_admin=True).all()
+	
+	@staticmethod
+	def is_user_admin(user_id):
+		user = User.query.get(user_id)
+		return user.is_admin if user else False
 
 	@staticmethod
 	def update_user(user_id, data):

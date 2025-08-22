@@ -1,5 +1,5 @@
 from models.chat import Chat
-from config import db
+from extensions import db
 
 class ChatDAO:
 	@staticmethod

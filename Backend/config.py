@@ -1,8 +1,5 @@
 import os
 from secrets import token_hex
-from flask_sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
 
 class Config:
     DB_PATH = os.path.join(os.path.dirname(__file__), 'database', 'app.sqlite')

@@ -1,5 +1,5 @@
 from models.message_ai import AIMessage
-from config import db
+from extensions import db
 
 class AIMessageDAO:
     @staticmethod

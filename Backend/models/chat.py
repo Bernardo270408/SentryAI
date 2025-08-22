@@ -1,18 +1,19 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
-from datetime import datetime
-from config import db
+from extensions import db
 
 class Chat(db.Model):
-
     __tablename__ = 'chats'
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     name = Column(String(100), nullable=False)
     created_at = Column(DateTime, server_default=db.func.now())
-    
+
     user = relationship("User", back_populates="chats")
+    user_messages = relationship("UserMessage", back_populates="chat", cascade="all, delete-orphan")
+    ai_messages = relationship("AIMessage", back_populates="chat", cascade="all, delete-orphan")
+
 
     def to_dict(self):
         return {
