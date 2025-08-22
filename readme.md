@@ -52,7 +52,3 @@ Backend/
 
 - O projeto está preparado para expansão, podendo incluir rotas de API REST, autenticação JWT, integração com modelos de IA, entre outros.
 - Certifique-se de configurar corretamente o banco de dados antes de executar a aplicação.
-
-## Licença
-
-Este projeto é open-source e pode ser utilizado conforme as necessidades do usuário.
