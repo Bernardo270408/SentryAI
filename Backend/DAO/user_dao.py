@@ -5,6 +5,11 @@ class UserDAO:
 	@staticmethod
 	def create_user(name, email, password, extra_data=None):
 		user = User(name=name, email=email, password=password, extra_data=extra_data)
+
+		#check if user email is already in use
+		if UserDAO.get_user_by_email(email):
+			return None
+
 		db.session.add(user)
 		db.session.commit()
 		return user

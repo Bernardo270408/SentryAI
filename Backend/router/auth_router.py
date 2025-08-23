@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from DAO import user_dao
+from DAO.user_dao import UserDAO
 from werkzeug.security import check_password_hash
 from middleware.jwt_util import generate_token
 
@@ -7,11 +7,12 @@ auth_bp = Blueprint('auth_bp', __name__)
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
-    data = request.get_json()
+    data = request.json
+
     if not data or not data.get('email') or not data.get('password'):
         return jsonify({'error': 'Email e senha são obrigatórios'}), 400
 
-    user = user_dao.get_user_by_email(data['email'])
+    user = UserDAO.get_user_by_email(data['email'])
     if user and check_password_hash(user.password, data['password']):
         token = generate_token(user)
         user_dict = user.to_dict()

@@ -148,3 +148,6 @@ vite.config.ts.timestamp-*
 **/*.pyc
 **/*.pyo
 **/*.pyd
+
+# Ignore my test scripts
+**/scripts/

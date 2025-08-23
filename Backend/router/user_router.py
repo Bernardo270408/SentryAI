@@ -8,6 +8,8 @@ user_bp = Blueprint('user', __name__, url_prefix='/users')
 @user_bp.route('/', methods=['POST'])
 def create_user():
 	data = request.json
+
+	print(data)
 	
 	name = data.get('name')
 	email = data.get('email')
@@ -15,12 +17,17 @@ def create_user():
 	
     #Hashing Password
 	password = generate_password_hash(data.get('password'))
+
+	print(name, email, password, extra_data)
 	
 	if not name or not email or not password:
 		return jsonify({'error': 'Nome, email e senha são obrigatórios.'}), 400
 	
 	user = UserDAO.create_user(name, email, password, extra_data)
-	
+
+	if not user:
+		return jsonify({'error': 'Email já está em uso.'}), 400
+
 	user_dict = user.to_dict()
 	user_dict.pop('password', None)
 	return jsonify(user_dict), 201

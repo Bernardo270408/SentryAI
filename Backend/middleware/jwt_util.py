@@ -1,18 +1,18 @@
 import jwt
 from functools import wraps
 from flask import request, jsonify, current_app
-from DAO import user_dao
+from DAO.user_dao import UserDAO
 
 def generate_token(user):
     """
-    Gera um token JWT com payload básico (user_id, admin).
+    Gera um token JWT com payload básico (id, is_admin).
     """
     if not current_app.config.get('SECRET_KEY'):
         raise RuntimeError("SECRET_KEY não configurada")
 
     payload = {
-        'user_id': user.id,
-        'admin': user.admin,
+        'id': user.id,
+        'is_admin': user.is_admin,
         # Poderia incluir 'exp' para expiração do token
     }
     token = jwt.encode(payload, current_app.config['SECRET_KEY'], algorithm='HS256')
@@ -48,7 +48,7 @@ def token_required(f):
         if not payload:
             return jsonify({'error': 'Token is invalid or expired'}), 401
 
-        user = user_dao.get_user_by_id(payload['user_id'])
+        user = UserDAO.get_user_by_id(payload['id'])
         if not user:
             return jsonify({'error': 'User not found'}), 401
 
