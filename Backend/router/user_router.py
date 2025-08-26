@@ -9,16 +9,12 @@ user_bp = Blueprint('user', __name__, url_prefix='/users')
 def create_user():
 	data = request.json
 
-	print(data)
-	
 	name = data.get('name')
 	email = data.get('email')
 	extra_data = data.get('extra_data')
 	
     #Hashing Password
 	password = generate_password_hash(data.get('password'))
-
-	print(name, email, password, extra_data)
 	
 	if not name or not email or not password:
 		return jsonify({'error': 'Nome, email e senha são obrigatórios.'}), 400
