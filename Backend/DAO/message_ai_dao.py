@@ -3,8 +3,8 @@ from extensions import db
 
 class AIMessageDAO:
     @staticmethod
-    def create_message(chat_id, content, model=None):
-        message = AIMessage(chat_id=chat_id, content=content, model=model)
+    def create_message(chat_id, content, created_at, model=None):
+        message = AIMessage(chat_id=chat_id, content=content, model=model, created_at=created_at)
         db.session.add(message)
         db.session.commit()
         return message
@@ -36,6 +36,7 @@ class AIMessageDAO:
             return None
         data.pop("id", None)
         data.pop("chat_id", None)
+        data.pop("created_at", None)
         message.update_from_dict(data)
         return message
 

@@ -87,3 +87,21 @@ def delete_chat(chat_id):
         return jsonify({'error': 'Delete failed'}), 400
     return jsonify({'message': 'Chat deleted'})
 
+@chat_bp.route('/<int:chat_id>/messages', methods=['GET'])
+@token_required
+def get_all_messages_in_chat(chat_id):
+    current_user = request.user
+    chat = ChatDAO.get_chat_by_id(chat_id)
+    
+    if not chat:
+        return jsonify({'error': 'Chat not found'}), 404
+    
+    if current_user.id != chat.user_id and not current_user.is_admin:
+        return jsonify({'error': 'Permission denied'}), 403
+
+    messages = ChatDAO.get_all_messages_in_chat(chat_id)
+    if messages is None:
+        return jsonify({'error': 'No messages found or chat does not exist'}), 404
+
+    return jsonify([m.to_dict() for m in messages])
+

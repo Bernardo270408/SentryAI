@@ -42,3 +42,15 @@ class ChatDAO:
 		db.session.delete(chat)
 		db.session.commit()
 		return True
+
+	@staticmethod
+	def get_all_messages_in_chat(chat_id):
+		chat = ChatDAO.get_chat_by_id(chat_id)
+
+		messages = chat.user_messages + chat.ai_messages
+		messages.sort(key=lambda m: m.timestamp)
+  
+		if not chat:
+			return None
+
+		return messages
