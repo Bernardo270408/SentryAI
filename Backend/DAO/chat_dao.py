@@ -49,8 +49,16 @@ class ChatDAO:
 
 		messages = chat.user_messages + chat.ai_messages
 		messages.sort(key=lambda m: m.timestamp)
+
+		history = []
   
-		if not chat:
+		for i,message in enumerate(messages):
+			if i % 2 == 0:
+				history.append({'role':'user',    'message': message})
+			else:
+				history.append({'role':'assistaint','message': message})
+  
+		if not history:
 			return None
 
-		return messages
+		return history

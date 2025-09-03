@@ -1,35 +1,35 @@
 from DAO.user_dao import UserDAO
 from DAO.chat_dao import ChatDAO
+import ollama
 
-class AIService:
-    
-    about_me = \
-        """"
-        Eu sou uma IA projetada para fornecer informações a respeito de leis.
-        As leis que eu conheço são apenas as leis brasileiras, podendo apenas responder perguntas relacionadas a elas.
-        Tenho noção de ética e moral, e não forneço informações que possam ser usadas para prejudicar outras pessoas.
-        Devo referenciar as leis que eu uso para responder perguntas.
-        Fora de meu escopo, não posso ajudar.
+class OllamaAIService:
+
+    def __init__(self):
+        with open("data/docs/aboutMe.txt") as me:
+            self.about_me = me.read()
+
+    def generate_response(self, user_id, chat_id, model):
+        available_models = [m["name"] for m in ollama.list()["models"]]
+        if model not in available_models:
+            raise ValueError(f"Model '{model}' not available. Options: {available_models}")
+
+        about_user = UserDAO.get_user_by_id(user_id).to_dict()
+        messages = ChatDAO.get_all_messages_in_chat(chat_id)
+
+        if not messages:
+            raise ValueError("No messages found")
+
+        # Adiciona contexto como system message
+        system_message = {
+            "role": "system",
+            "content": f"Sobre o usuário: {about_user}\nSobre a AI: {self.about_me}"
+        }
+        messages.insert(0, system_message)
+
+        response = ollama.chat(model=model, messages=messages)
         
-        """
-    
-    def generate_response(self, user_id, chat_id, model, prompt):
-        
-        user = UserDAO.get_user_by_id(user_id).to_dict()
-        history = ChatDAO.get_all_messages_in_chat(chat_id).to_dict()
-        
-        ready_prompt = self.prompt_structuring(user, history, prompt.content)
-        
-        return "Esta é uma mensagem de teste, o serviço será implementado em breve."
-    
-    def prompt_structuring(self, user, history, prompt):
-        
-        ready_prompt = \
-            f"""
-            Quem sou: {self.about_me}\n
-            Com quem falo: {user}\n
-            Contexto: {history}\n
-            Pergunta feita: {prompt}
-            """
-        
-        return ready_prompt
+        response_text = ""
+        for part in response:
+            response_text += part["message"]["content"]
+
+        return response_text
