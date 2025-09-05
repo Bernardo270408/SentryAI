@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_cors import CORS
 from config import Config
 from extensions import db
@@ -15,16 +15,22 @@ def create_app():
     migrate.init_app(app, db)  
     
     CORS(app, supports_credentials=True)
+
+    # Test Route
+    @app.route('/', methods=['GET'])
+    def index():
+        return jsonify({"message": "API is running"}), 200
     
     # Import routers
-    from router.test_router import test_bp
     from router.auth_router import auth_bp
     from router.user_router import user_bp
+    from router.message_user_router import message_user_bp
     
     # Register blueprints
-    app.register_blueprint(test_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(user_bp)
+    app.register_blueprint(message_user_bp)
+
 
     return app
 

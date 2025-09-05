@@ -2,6 +2,7 @@ from models.message_ai import AIMessage
 from extensions import db
 
 class AIMessageDAO:
+    # default CRUD
     @staticmethod
     def create_message(chat_id, content, model=None):
         message = AIMessage(chat_id=chat_id, content=content, model=model)
