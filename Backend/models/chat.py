@@ -21,7 +21,7 @@ class Chat(db.Model):
             "user_id": self.user_id,
             "name": self.name,
             "created_at": self.created_at.isoformat() if self.created_at else None
-        }
+            }
         
     def __repr__(self):
         return f"<Chat {self.name} - User ID: {self.user_id}>"

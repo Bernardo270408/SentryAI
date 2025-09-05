@@ -19,6 +19,7 @@ class AIMessage(db.Model):
             "id": self.id,
             "chat_id": self.chat_id,
             "content": self.content,
+            'model': self.model,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None
         }
