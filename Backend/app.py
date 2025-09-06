@@ -25,11 +25,15 @@ def create_app():
     from router.auth_router import auth_bp
     from router.user_router import user_bp
     from router.message_user_router import message_user_bp
+    from router.message_ai_router import message_ai_bp
+    from router.chat_router import chat_bp
     
     # Register blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(user_bp)
     app.register_blueprint(message_user_bp)
+    app.register_blueprint(message_ai_bp)
+    app.register_blueprint(chat_bp)
 
 
     return app

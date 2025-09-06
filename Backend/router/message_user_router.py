@@ -4,9 +4,9 @@ from DAO.message_user_dao import UserMessageDAO
 from DAO.chat_dao import ChatDAO
 from middleware.jwt_util import token_required
 
-message_bp = Blueprint('message', __name__, url_prefix='/messages')
+message_user_bp = Blueprint('message', __name__, url_prefix='/messages')
 
-@message_bp.route('/', methods=['POST'])
+@message_user_bp.route('/', methods=['POST'])
 @token_required
 def create_message():
     data = request.json
@@ -30,7 +30,7 @@ def create_message():
     return jsonify(message.to_dict()), 201
 
 
-@message_bp.route('/<int:message_id>', methods=['GET'])
+@message_user_bp.route('/<int:message_id>', methods=['GET'])
 @token_required
 def get_message(message_id):
     current_user = request.user
@@ -45,7 +45,7 @@ def get_message(message_id):
     return jsonify(message.to_dict())
 
 
-@message_bp.route('/user/<int:user_id>', methods=['GET'])
+@message_user_bp.route('/user/<int:user_id>', methods=['GET'])
 @token_required
 def get_messages_by_user(user_id):
     current_user = request.user
@@ -57,7 +57,7 @@ def get_messages_by_user(user_id):
     return jsonify([m.to_dict() for m in messages])
 
 
-@message_bp.route('/chat/<int:chat_id>', methods=['GET'])
+@message_user_bp.route('/chat/<int:chat_id>', methods=['GET'])
 @token_required
 def get_messages_by_chat(chat_id):
     current_user = request.user
@@ -73,7 +73,7 @@ def get_messages_by_chat(chat_id):
     return jsonify([m.to_dict() for m in messages])
 
 
-@message_bp.route('/', methods=['GET'])
+@message_user_bp.route('/', methods=['GET'])
 @token_required
 def get_all_messages():
     current_user = request.user
@@ -84,7 +84,7 @@ def get_all_messages():
     return jsonify([m.to_dict() for m in messages])
 
 
-@message_bp.route('/<int:message_id>', methods=['PUT'])
+@message_user_bp.route('/<int:message_id>', methods=['PUT'])
 @token_required
 def update_message(message_id):
     current_user = request.user
@@ -104,7 +104,7 @@ def update_message(message_id):
     return jsonify(updated_message.to_dict())
 
 
-@message_bp.route('/<int:message_id>', methods=['DELETE'])
+@message_user_bp.route('/<int:message_id>', methods=['DELETE'])
 @token_required
 def delete_message(message_id):
     current_user = request.user

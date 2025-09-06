@@ -6,9 +6,9 @@ from datetime import datetime
 from middleware.jwt_util import token_required
 from services.ai_service import OllamaAIService
 
-ai_message_bp = Blueprint('ai_message', __name__, url_prefix='/ai-messages')
+message_ai_bp = Blueprint('ai_message', __name__, url_prefix='/ai-messages')
 
-@ai_message_bp.route('/', methods=['POST'])
+@message_ai_bp.route('/', methods=['POST'])
 @token_required
 def create_ai_message():
     data = request.json
@@ -36,7 +36,7 @@ def create_ai_message():
     
     return jsonify(message_ai_dict), 201 
     
-@ai_message_bp.route('/<int:message_id>', methods=['GET'])
+@message_ai_bp.route('/<int:message_id>', methods=['GET'])
 @token_required
 def get_ai_message(message_id):
     current_user = request.user
@@ -52,7 +52,7 @@ def get_ai_message(message_id):
     return jsonify(message.to_dict())
 
 
-@ai_message_bp.route('/chat/<int:chat_id>', methods=['GET'])
+@message_ai_bp.route('/chat/<int:chat_id>', methods=['GET'])
 @token_required
 def get_ai_messages_by_chat(chat_id):
     current_user = request.user
@@ -68,7 +68,7 @@ def get_ai_messages_by_chat(chat_id):
     return jsonify([m.to_dict() for m in messages])
 
 
-@ai_message_bp.route('/model/<string:model_name>', methods=['GET'])
+@message_ai_bp.route('/model/<string:model_name>', methods=['GET'])
 @token_required
 def get_ai_messages_by_model(model_name):
     current_user = request.user
@@ -79,7 +79,7 @@ def get_ai_messages_by_model(model_name):
     return jsonify([m.to_dict() for m in messages])
 
 
-@ai_message_bp.route('/chat/<int:chat_id>/model/<string:model_name>', methods=['GET'])
+@message_ai_bp.route('/chat/<int:chat_id>/model/<string:model_name>', methods=['GET'])
 @token_required
 def get_ai_messages_by_chat_and_model(chat_id, model_name):
     current_user = request.user
@@ -95,7 +95,7 @@ def get_ai_messages_by_chat_and_model(chat_id, model_name):
     return jsonify([m.to_dict() for m in messages])
 
 
-@ai_message_bp.route('/', methods=['GET'])
+@message_ai_bp.route('/', methods=['GET'])
 @token_required
 def get_all_ai_messages():
     current_user = request.user
@@ -106,7 +106,7 @@ def get_all_ai_messages():
     return jsonify([m.to_dict() for m in messages])
 
 
-@ai_message_bp.route('/<int:message_id>', methods=['PUT'])
+@message_ai_bp.route('/<int:message_id>', methods=['PUT'])
 @token_required
 def update_ai_message(message_id):
     current_user = request.user
@@ -127,7 +127,7 @@ def update_ai_message(message_id):
     return jsonify(updated_message.to_dict())
 
 
-@ai_message_bp.route('/<int:message_id>', methods=['DELETE'])
+@message_ai_bp.route('/<int:message_id>', methods=['DELETE'])
 @token_required
 def delete_ai_message(message_id):
     current_user = request.user
