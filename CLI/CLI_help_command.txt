@@ -72,8 +72,6 @@ user
                 Requires: user_id
     -getall     Gets all users.
                 Takes nothing.
-    -getbyemail Gets an user by email.
-                Requires: email
     -update     Updates an existing user.
                 Requires: user_id, token
     -delete     Deletes an existing user.
@@ -125,6 +123,9 @@ message_ai
     -quit               Unsets the default ai_message_id.
                         Takes nothing.
 
+quit
+    Exits the program.
+
 default
     -get        Gets a default value by key.
                 Requires: key
@@ -139,6 +140,7 @@ default
     -unsetall   Clears all defaults.
                 Takes nothing.
 
+
 Regular keys for defaults:
     auto-create-AI-message   If true, every user message created
                              will automatically generate an AI message
@@ -150,6 +152,7 @@ Regular keys for defaults:
     token                    Default token for operations. [string]
     model                    Default model used for AI message creation. [string]
 
+
 Note:
     You can set any key, but only the above are used by the program.
     Keys are case-sensitive.
@@ -157,6 +160,4 @@ Note:
 help
     -[command]  Shows help for a specific command.
     -all        Shows help for all commands.
-
-
 

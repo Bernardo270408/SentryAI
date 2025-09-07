@@ -14,7 +14,7 @@ def create_user():
 	extra_data = data.get('extra_data')
 	
     #Hashing Password
-	password = generate_password_hash(data.get('password'))
+	password = generate_password_hash(str(data.get('password')))
 	
 	if not name or not email or not password:
 		return jsonify({'error': 'Nome, email e senha são obrigatórios.'}), 400
