@@ -1,29 +1,29 @@
-from defaults import defaults
+import defaults
 
 
 def get(key,**kwargs):
-    return defaults[key]
+    return defaults.defaults[key]
 
 def getall(**kwargs):
-    return defaults
+    return defaults.defaults
 
 def set_key(key, value,**kwargs):
     try:
-        defaults[key] = value
-        return defaults[key]
+        defaults.defaults[key] = value
+        return defaults.defaults[key]
     except Exception as e:
         return e
 def set_all(value,**kwargs):
     try:
-        for key in defaults.keys:
-            defaults[key] = value
-        return defaults
+        for key in defaults.defaults.keys:
+            defaults.defaults[key] = value
+        return defaults.defaults
     except Exception as e:
         return e
     
 def unset(key,**kwargs):
     try:
-        defaults.pop(key)
+        defaults.defaults.pop(key)
         return f"{key} unsetted"
     except Exception as e:
         return e

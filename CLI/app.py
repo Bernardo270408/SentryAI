@@ -1,21 +1,20 @@
 import shlex
-from commands import user_commands
-from commands import auth_commands
-from commands import defaults_commands
-from defaults import defaults
+import defaults
+from commands import user_commands, auth_commands, defaults_commands,sentry_commands
+import os
 
 def breakdown_command(command: str):
     tokens = shlex.split(command)
 
     if len(tokens) < 2:
-        raise ValueError("Invalid command: must have at least command")
+        raise ValueError("Invalid command: commands must have at least a command")
 
     if tokens[0] != "sentry":
-        raise ValueError("Command must start with 'sentry'")
+        raise ValueError("You are already using SentryAI on this terminal. Commands must start with 'sentry'.")
 
     command_name = tokens[1]
     subcommand = None
-    args = defaults.copy()
+    args = defaults.defaults.copy()
     options = []
 
     i = 2
@@ -69,12 +68,22 @@ def main():
 
     RUNNING = True
 
-    while RUNNING:
-        user_input = input("(sentry) ")
-        action = breakdown_command(user_input)
-        bash = ""
+    sentry_commands.check()
 
+    while RUNNING:
+        CURRENT_PATH = str(os.path.abspath(''))   
+        user_input = input(f"\033[92m(SentryAI)\033[0m {CURRENT_PATH}> ")
+        defaults.load_defaults()
+        
+        try:
+            action = breakdown_command(user_input)
+        except Exception as e:
+            print("\033[33m>", f"WARNING: An error ocurred while processing command: {e}\033[0m")
+            continue
+
+        bash = ""
         print("> Just a second...")
+
         match action["command"]:
 
             case "user":
@@ -90,21 +99,18 @@ def main():
                     case "-delete":
                         bash = user_commands.delete(**action["args"])
                     case _:
-                        bash = f"Unknown subcommand for user: {action['subcommand']}"
+                        bash = "\033[33m" + f"WARNING: Unknown subcommand for user: {action['subcommand']}"
 
             case "auth":
-    
                 match action["subcommand"]:
                     case "-login":
-            
                         bash = auth_commands.login(**action["args"])
-                        
                     case "-logout":
                         bash = auth_commands.logout(**action["args"])
                     case "-gettoken":
                         bash = auth_commands.gettoken(**action["args"])
                     case _:
-                        bash = f"Unknown subcommand for auth: {action['subcommand']}"
+                        bash = "\033[33m" + f"WARNING: Unknown subcommand for auth: {action['subcommand']}"
 
             case "default" | "defaults":
                 match action["subcommand"]:
@@ -120,6 +126,8 @@ def main():
                         bash = defaults_commands.unset(**action["args"])
                     case "-unsetall":
                         bash = defaults_commands.unsetall(**action["args"])
+                    case _:
+                        bash = "\033[33m" + f"WARNING: Unknown subcommand for defaults: {action['subcommand']}"
 
             case "check":
                 from commands.sentry_commands import check
@@ -129,9 +137,20 @@ def main():
                 from commands.sentry_commands import quit
                 quit()
                 RUNNING = False
-            
+
+            case "run":
+                bash = "Application is already running"
+
             case _:
-                print(f"Unknown command: {action}")
+                bash = "\033[33m" + f"WARNING: Unknown command: {action['command']}"
+
+        # salva defaults ao final de cada comando
+        try:
+            defaults.save_defaults()
+        except Exception as e:
+            bash += "\nErro ao salvar defaults: " + str(e)
+
         print(">", bash)
 
-main()
+if __name__ == "__main__":
+    main()

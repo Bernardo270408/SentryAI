@@ -1,5 +1,5 @@
 import requests
-from defaults import defaults
+import defaults
 
 def login(email, password, port=5000,**kwargs):
     url = f"http://localhost:{port}/login"
@@ -21,7 +21,7 @@ def login(email, password, port=5000,**kwargs):
             with open("data/default_token.txt", "w") as f:
                 f.write(token)
 
-            defaults["token"] = token
+            defaults.defaults["token"] = token
             
             return token
         
@@ -52,7 +52,7 @@ def logout(**kwargs):
     try:
         with open("data/default_token.txt", "w") as f:
             f.write("")
-        defaults["token"] = None
+        defaults.defaults["token"] = None
         print("Logged out successfully.")
     except Exception as e:
         print(f"Error during logout: {e}")

@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Compile me and execute me on the terminal
+// If you are on windows, dont use powershell
+
 int main(int argc, char *argv[]) {
     if (argc < 2) {
         printf("Uso: sentry run\n");
@@ -13,7 +16,7 @@ int main(int argc, char *argv[]) {
 
         #ifdef _WIN32
             // Windows → chama python padrão
-            result = system("python app.py");
+            result = system("python3 app.py");
         #else
             // Linux → chama python3
             result = system("python3 app.py");
