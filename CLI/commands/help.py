@@ -1,3 +1,4 @@
+"""
 SentryAI Command Line Interface
 
 Usage:
@@ -161,3 +162,4 @@ help
     -[command]  Shows help for a specific command.
     -all        Shows help for all commands.
 
+"""

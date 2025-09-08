@@ -18,7 +18,7 @@ def login(email, password, port=5000,**kwargs):
 
 
         if token:
-            with open("default_token.txt", "w") as f:
+            with open("data/default_token.txt", "w") as f:
                 f.write(token)
 
             defaults["token"] = token
@@ -34,7 +34,7 @@ def login(email, password, port=5000,**kwargs):
     
 def gettoken(**kwargs):
     try:
-        with open("default_token.txt", "r") as f:
+        with open("data/default_token.txt", "r") as f:
             token = f.read().strip()
             if token:
                 return token
@@ -50,7 +50,7 @@ def gettoken(**kwargs):
 
 def logout(**kwargs):
     try:
-        with open("default_token.txt", "w") as f:
+        with open("data/default_token.txt", "w") as f:
             f.write("")
         defaults["token"] = None
         print("Logged out successfully.")
