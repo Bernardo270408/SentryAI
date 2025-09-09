@@ -11,7 +11,13 @@ def create_chat():
     current_user = request.user
     data = request.json
 
+    user_id = data.get("user_id")
     name = data.get("name")
+
+    if user_id != current_user.id and not current_user.is_admin:
+        return jsonify({"error": "Permission denied"}), 403
+    
+
     if not name:
         return jsonify({"error": "O campo 'name' é obrigatório."}), 400
 
@@ -43,7 +49,7 @@ def get_chats_by_user(user_id):
         return jsonify({"error": "Permission denied"}), 403
 
     chats = ChatDAO.get_chats_by_user(user_id)
-    return jsonify([c.to_dict() for c in chats])
+    return jsonify([c.to_dict() for c in chats]), 200
 
 
 @chat_bp.route("/", methods=["GET"])

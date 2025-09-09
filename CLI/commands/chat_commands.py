@@ -1,5 +1,5 @@
 import requests
-import defaults_commands
+from commands import defaults_commands
 #Those are the chat-related commands for the CLI tool.
 
 def create(name,user_id,token,port=5000,**kwargs):
@@ -18,7 +18,7 @@ def create(name,user_id,token,port=5000,**kwargs):
     payload.update(kwargs)
 
     try:
-        response = requests.post(url, json=payload)
+        response = requests.post(url, json=payload, headers=headers)
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
@@ -64,7 +64,7 @@ def getbyuser(user_id,token,port=5000,**kwargs):
     headers = {
         "Authorization": f"Bearer {token}"
     }
-
+    print(url)
     try:
         response=requests.get(url, headers=headers)
         response.raise_for_status()
@@ -102,7 +102,7 @@ def delete(chat_id, token, port=5000,**kwargs):
         return None
     
 def open(chat_id):
-    defaults_commands.set_key(key="chat_id", value=chat_id)
+    return defaults_commands.set_key(key="chat_id", value=chat_id)
 
 def quit():
-    defaults_commands.unset(key="chat_id")
+    return defaults_commands.unset(key="chat_id")

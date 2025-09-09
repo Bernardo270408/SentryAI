@@ -1,4 +1,6 @@
 import requests
+from commands import defaults_commands
+
 #Those are the user-related commands for the CLI tool.
 def create(username, email, password, extra_data=None, port=5000, **kwargs):
     url = f"http://localhost:{port}/users/"
@@ -67,3 +69,9 @@ def delete(user_id, token, port=5000,**kwargs):
     except requests.RequestException as e:
         print(f"Error deleting user: {e}")
         return None
+    
+def open(user_id):
+    return defaults_commands.set_key(key="user_id", value=user_id)
+
+def quit():
+    return defaults_commands.unset(key="user_id")

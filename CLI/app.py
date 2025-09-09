@@ -1,6 +1,6 @@
 import shlex
 import defaults
-from commands import user_commands, auth_commands, defaults_commands,sentry_commands
+from commands import user_commands, auth_commands, defaults_commands,sentry_commands, chat_commands, message_commands, message_ai_commands
 import os
 
 def breakdown_command(command: str):
@@ -128,6 +128,51 @@ def main():
                         bash = defaults_commands.unsetall(**action["args"])
                     case _:
                         bash = "\033[33m" + f"WARNING: Unknown subcommand for defaults: {action['subcommand']}"
+
+            case "chat" | "chats":
+                match action["subcommand"]:
+                    case "-create":
+                        bash = chat_commands.create(**action["args"])
+                    case "-get":
+                        bash = chat_commands.get(**action["args"])
+                    case "-getall":
+                        bash = chat_commands.getall(**action["args"])
+                    case "-getbyuser":
+                        bash = chat_commands.getbyuser(**action["args"])
+                    case "-update":
+                        bash = chat_commands.update(**action["args"])
+                    case "-delete":
+                        bash = chat_commands.delete(**action["args"])
+                    case "-open":
+                        bash = chat_commands.open(**action["args"])
+                    case "-quit" | "close":
+                        bash = chat_commands.quit(**action["args"]) 
+                    case _:
+                        bash = "\033[33m" + f"WARNING: Unknown subcommand for chats: {action['subcommand']}"
+
+            case "message" | "messages":
+                match action["subcommand"]:
+                    case "-create":
+                        bash = message_commands.create(**action["args"])
+                    case "-get":
+                        bash = message_commands.get(**action["args"])
+                    case "-getall":
+                        bash = message_commands.getall(**action["args"])
+                    case "-getbyuser":
+                        bash = message_commands.getbyuser(**action["args"])
+                    case "-getbychat":
+                        bash = message_commands.getbychat(**action["args"])   
+                    case "-update":
+                        bash = message_commands.update(**action["args"])
+                    case "-delete":
+                        bash = message_commands.delete(**action["args"])
+                    case "-open":
+                        bash = message_commands.open(**action["args"])
+                    case "-quit" | "close":
+                        bash = message_commands.quit(**action["args"])
+                    case _:
+                        bash = "\033[33m" + f"WARNING: Unknown subcommand for messages: {action['subcommand']}"
+
 
             case "check":
                 from commands.sentry_commands import check
