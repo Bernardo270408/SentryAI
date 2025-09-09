@@ -1,3 +1,4 @@
 {
-    "port": 5000
+    "port": 5000,
+    "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MywiaXNfYWRtaW4iOmZhbHNlfQ.vnvSwvFZCCzsGk24s7sjbwkphNv7GE32EQBbAQztXVw"
 }

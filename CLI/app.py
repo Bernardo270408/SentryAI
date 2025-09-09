@@ -72,7 +72,7 @@ def main():
 
     while RUNNING:
         CURRENT_PATH = str(os.path.abspath(''))   
-        user_input = input(f"\033[92m(SentryAI)\033[0m {CURRENT_PATH}> ")
+        user_input = input(f"\033[92m(SentryAI) \033[0mCLI \033[34m{CURRENT_PATH}\033[0m> ")
         defaults.load_defaults()
         
         try:
