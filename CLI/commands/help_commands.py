@@ -1,3 +1,5 @@
+help_texts = {
+"-intro":
 """
 SentryAI Command Line Interface
 
@@ -34,10 +36,10 @@ Tips:
     - Developers: You can safely send all defaults without breaking anything.
     - If you type '-y' or '-n' after the last argument, it will answer 'yes' or 'no' to all questions.
 
-------------------------------------------------------------
-Commands:
-------------------------------------------------------------
+""",
 
+"-auth":
+"""
 auth
     -login      Logs in, generates a token and sets it as default.
                 Requires: email, password
@@ -46,6 +48,10 @@ auth
     -gettoken   Prints the current token from defaults.
                 Takes nothing.
 
+""",
+
+"-chat":
+"""
 chat
     -create     Creates a chat object on DB and sets default chat_id.
                 Requires: name
@@ -64,7 +70,10 @@ chat
                 Requires: chat_id
     -quit       Unsets the default chat_id.
                 Takes nothing.
+""",
 
+"-user":
+"""
 user
     -create     Creates a user on DB.
                 Requires: name, email, password
@@ -81,7 +90,10 @@ user
                 Requires: user_id
     -quit       Unsets the default user_id.
                 Takes nothing.
+""",
 
+"-message":
+"""
 message
     -create     Creates a user message on DB.
                 Requires: user_id, chat_id, content, token
@@ -102,6 +114,9 @@ message
     -quit       Unsets the default user_message_id.
                 Takes nothing.
 
+""",
+"-message_ai":
+"""
 message_ai
     -create             Generates an AI response and saves it on DB.
                         Requires: user_id, chat_id, model, token
@@ -124,9 +139,18 @@ message_ai
     -quit               Unsets the default ai_message_id.
                         Takes nothing.
 
+""",
+
+"-quit":
+"""
 quit
     Exits the program.
-
+    ...
+    Uhhm...
+    What else do you want from a quit command?
+""",
+"-default":
+"""
 default
     -get        Gets a default value by key.
                 Requires: key
@@ -158,9 +182,23 @@ Note:
     You can set any key, but only the above are used by the program.
     Keys are case-sensitive.
 
+""",
+"-help":
+"""
 help
     -[command]  Shows help for a specific command.
     -all        Shows help for all commands.
 
 """
+}
 
+def get_help(argument: str = None) -> str:
+    match argument:
+        case "-all":
+            return "\n".join(help_texts.values())
+        case None:
+            return help_texts["-intro"]
+        case _ if argument in help_texts:
+            return help_texts[argument]
+        case _:
+            return "No help available for this command."

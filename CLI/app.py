@@ -1,6 +1,6 @@
 import shlex
 import defaults
-from commands import user_commands, auth_commands, defaults_commands,sentry_commands, chat_commands, message_commands, message_ai_commands
+from commands import user_commands, auth_commands, defaults_commands,sentry_commands, chat_commands, message_commands, message_ai_commands, help_commands
 import os
 
 def breakdown_command(command: str):
@@ -173,7 +173,29 @@ def main():
                     case _:
                         bash = "\033[33m" + f"WARNING: Unknown subcommand for messages: {action['subcommand']}"
 
-
+            case "message_ai" | "messageai" | "ai_message" | "aimessage" | "ai-message" | "message-ai":
+                match action["subcommand"]:
+                    case "-create":
+                        bash = message_ai_commands.create(**action["args"])
+                    case "-get":
+                        bash = message_ai_commands.get(**action["args"])
+                    case "-getall":
+                        bash = message_ai_commands.getall(**action["args"])
+                    case "-getbyuser": 
+                        bash = message_ai_commands.getbyuser(**action["args"])
+                    case "-getbychat":
+                        bash = message_ai_commands.getbychat(**action["args"])   
+                    case "-update":
+                        bash = message_ai_commands.update(**action["args"])
+                    case "-delete":
+                        bash = message_ai_commands.delete(**action["args"])
+                    case "-open":
+                        bash = message_ai_commands.open(**action["args"])
+                    case "-quit" | "close":
+                        bash = message_ai_commands.quit(**action["args"])
+                    case _:
+                        bash = "\033[33m" + f"WARNING: Unknown subcommand for message AI: {action['subcommand']}"
+            
             case "check":
                 from commands.sentry_commands import check
                 check()
@@ -182,6 +204,9 @@ def main():
                 from commands.sentry_commands import quit
                 quit()
                 RUNNING = False
+                
+            case "help" | "h" | "?":
+                bash = help_commands.get_help(action["subcommand"])
 
             case "run":
                 bash = "Application is already running"
