@@ -1,0 +1,138 @@
+import requests
+from commands import defaults_commands
+
+def create(model, chat_id,user_id,token,port=5000,**kwargs):
+    url = f"http://localhost:{port}/ai-messages/"
+
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+
+    payload = {
+        "user_id":user_id,
+        "chat_id": chat_id,
+        "model": model
+    }
+    payload.update(kwargs)
+
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+        response.raise_for_status()
+        return response.json()
+    
+    except requests.RequestException as e:
+        print("\033[31m> ",f"ERROR: {e}\033[0m")
+        return None
+    
+def get(ai_message_id,token,port=5000,**kwargs):
+    url = f"http://localhost:{port}/ai-messages/{ai_message_id}"
+
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+
+    try:
+        response=requests.get(url, headers=headers)
+        response.raise_for_status()
+        return response.json()
+    
+    except requests.RequestException as e:
+        print("\033[31m> ",f"ERROR: {e}\033[0m")
+        return None
+    
+def getall(token,port=5000,**kwargs):
+    url = f"http://localhost:{port}/ai-messages/"
+
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+
+    try:
+        response=requests.get(url, headers=headers)
+        response.raise_for_status()
+        return response.json()
+    
+    except requests.RequestException as e:
+        print("\033[31m> ",f"ERROR: {e}\033[0m")
+        return None
+
+def getbychat(chat_id,token,port=5000,**kwargs):
+    url = f"http://localhost:{port}/ai-messages/chat/{chat_id}"
+
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+
+
+    try:
+        response=requests.get(url, headers=headers)
+        response.raise_for_status()
+        return response.json()
+    
+    except requests.RequestException as e:
+        print("\033[31m> ",f"ERROR: {e}\033[0m")
+        return None
+    
+def getbymodel(model_name,token,port=5000,**kwargs):
+    url = f"http://localhost:{port}/ai-messages/model/{model_name}"
+
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+    
+    try:
+        response=requests.get(url, headers=headers)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        print("\033[31m> ",f"ERROR: {e}\033[0m")
+        return None
+
+def getbychatandmodel(chat_id, model_name, token, port=5000, **kwargs):
+    url = f"http://localhost:{port}/ai-messages/chat/{chat_id}/model/{model_name}"
+
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+    
+    try:
+        response=requests.get(url, headers=headers)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        print("\033[31m> ",f"ERROR: {e}\033[0m")
+        return None
+
+def update(ai_message_id, token, port=5000, **kwargs):
+    url = f"http://localhost:{port}/ai-messages/{ai_message_id}"
+    payload = kwargs
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+    try:
+        response = requests.put(url, json=payload, headers=headers)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        print(f"Error updating user: {e}")
+        return None
+    
+   
+def delete(ai_message_id, token, port=5000,**kwargs):
+    url = f"http://localhost:{port}/ai-messages/{ai_message_id}"
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+    try:
+        response = requests.delete(url, headers=headers)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        print(f"Error deleting user: {e}")
+        return None
+
+def open(ai_message_id):
+    return defaults_commands.set_key(key="ai_message_id", value=ai_message_id)
+
+def quit():
+    return defaults_commands.unset(key="ai_message_id")
