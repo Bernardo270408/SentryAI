@@ -2,7 +2,8 @@ import shlex
 import defaults
 from commands import user_commands, auth_commands, defaults_commands,sentry_commands, chat_commands, message_commands, message_ai_commands, help_commands
 import os
-
+import sys
+import socket
 def breakdown_command(command: str):
     tokens = shlex.split(command)
 
@@ -71,8 +72,16 @@ def main():
     sentry_commands.check()
 
     while RUNNING:
-        CURRENT_PATH = str(os.path.abspath(''))   
-        user_input = input(f"\033[92m(SentryAI) \033[0mCLI \033[34m{CURRENT_PATH}\033[0m> ")
+        CURRENT_PATH = str(os.path.abspath(''))
+
+        if sys.platform.startswith('win'):
+            user_input = input(f"\033[92m(SentryAI) \033[0mCLI \033[34m{CURRENT_PATH}\033[0m> ")
+        else:
+            username = os.getlogin()
+            hostname = socket.gethostname()
+            user_input = input(f"\033[1m\033[92m(sentryai) {username}:{hostname}\033[0m\033[1m: \033[34m{CURRENT_PATH}\033[0m$ ")
+
+
         defaults.load_defaults()
         
         try:
@@ -219,8 +228,9 @@ def main():
             defaults.save_defaults()
         except Exception as e:
             bash += "\nErro ao salvar defaults: " + str(e)
-
-        print(">", bash)
+        
+        if bash:
+            print(">", bash)
 
 if __name__ == "__main__":
     main()
