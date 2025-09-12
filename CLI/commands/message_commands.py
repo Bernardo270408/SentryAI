@@ -1,5 +1,6 @@
 import requests
-from commands import defaults_commands
+import defaults
+from commands import defaults_commands, message_ai_commands
 #Those are the chat-related commands for the CLI tool.
 
 def create(chat_id, content,user_id,token,port=5000,**kwargs):
@@ -19,7 +20,27 @@ def create(chat_id, content,user_id,token,port=5000,**kwargs):
     try:
         response = requests.post(url, json=payload, headers=headers)
         response.raise_for_status()
+
+        ask = input("Do you want AI to generate a response? (y/n): ")
+        
+        if defaults.defaults["model"]:
+            model = defaults.defaults["model"]
+        else:
+            model = input("Enter an AI model name : ")
+
+        if ask.lower() == "y":
+            message = message_ai_commands.create(
+                chat_id=chat_id, 
+                user_id=user_id, 
+                port=port,
+                token=token, 
+                model="gpt-3.5-turbo",
+                **kwargs)
+            return message
+
         return response.json()
+        
+    
     except requests.RequestException as e:
         print("\033[31m> ",f"ERROR: {e}\033[0m")
         return None
