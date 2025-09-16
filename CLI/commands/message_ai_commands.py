@@ -131,8 +131,8 @@ def delete(ai_message_id, token, port=5000,**kwargs):
         print(f"Error deleting user: {e}")
         return None
 
-def open(ai_message_id):
+def open(ai_message_id, **kwargs):
     return defaults_commands.set_key(key="ai_message_id", value=ai_message_id)
 
-def quit():
+def quit(**kwargs):
     return defaults_commands.unset(key="ai_message_id")

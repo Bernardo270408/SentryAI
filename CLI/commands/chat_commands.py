@@ -101,8 +101,8 @@ def delete(chat_id, token, port=5000,**kwargs):
         print(f"Error deleting user: {e}")
         return None
     
-def open(chat_id):
+def open(chat_id, **kwargs):
     return defaults_commands.set_key(key="chat_id", value=chat_id)
 
-def quit():
+def quit(**kwargs):
     return defaults_commands.unset(key="chat_id")

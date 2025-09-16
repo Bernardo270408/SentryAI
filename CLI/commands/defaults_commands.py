@@ -2,7 +2,10 @@ import defaults
 
 
 def get(key,**kwargs):
-    return defaults.defaults[key]
+    if key in defaults.defaults:
+        return defaults.defaults[key]
+    else:
+        return None
 
 def getall(**kwargs):
     return defaults.defaults

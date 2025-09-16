@@ -16,7 +16,7 @@ def create(username, email, password, extra_data=None, port=5000, **kwargs):
     try:
         response = requests.post(url, json=payload)
         response.raise_for_status()
-        return response.json()
+        return "User created sucessfully"
     except requests.RequestException as e:
         print(f"Error creating user: {e}")
         return None
@@ -32,6 +32,17 @@ def get(user_id, port=5000,**kwargs):
         print(f"Error fetching user: {e}")
         return None
     
+def getbyemail(email, port=5000, **kwargs):
+    url = f"http://localhost:{port}/users/email/{email}"
+
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        print(f"Error fetching user: {e}")
+        return None
+
 def getall(port=5000,**kwargs):
     url = f"http://localhost:{port}/users/"
     
@@ -70,8 +81,8 @@ def delete(user_id, token, port=5000,**kwargs):
         print(f"Error deleting user: {e}")
         return None
     
-def open(user_id):
+def open(user_id, **kwargs):
     return defaults_commands.set_key(key="user_id", value=user_id)
 
-def quit():
+def quit(**kwargs):
     return defaults_commands.unset(key="user_id")

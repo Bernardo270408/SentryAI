@@ -192,7 +192,7 @@ help
 """
 }
 
-def get_help(argument: str = None) -> str:
+def get_help(argument: str = None, **kwargs) -> str:
     match argument:
         case "-all":
             return "\n".join(help_texts.values())

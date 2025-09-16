@@ -1,4 +1,5 @@
 import requests
+from commands import user_commands
 import defaults
 
 def login(email, password, port=5000,**kwargs):
@@ -22,8 +23,16 @@ def login(email, password, port=5000,**kwargs):
                 f.write(token)
 
             defaults.defaults["token"] = token
+            ask = input("Do you want to use this user as default to the next operations? (y/n): ")
+
+            if ask.lower() == "y":
+                user_id = user_commands.getbyemail(email)["id"]
+                defaults.defaults["user_id"] = user_id
+                print(f"User ID:{user_id} setted as default.")
+                defaults.save_defaults()
+
             
-            return token
+            return f"Token {token} setted as default"
         
         else:
             print("Login failed: No token received.")

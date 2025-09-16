@@ -28,6 +28,16 @@ def create_user():
 	user_dict.pop('password', None)
 	return jsonify(user_dict), 201
 
+
+@user_bp.route('/email/<email>', methods=['GET'])
+def get_user_by_email(email):
+	user = UserDAO.get_user_by_email(email)
+	
+	if not user:
+		return jsonify({'error': 'Usuário não encontrado.'}), 404
+	
+	return jsonify(user.to_dict())
+
 @user_bp.route('/<int:user_id>', methods=['GET'])
 def get_user(user_id):
 	user = UserDAO.get_user_by_id(user_id)

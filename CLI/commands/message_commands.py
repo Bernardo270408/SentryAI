@@ -23,20 +23,24 @@ def create(chat_id, content,user_id,token,port=5000,**kwargs):
 
         ask = input("Do you want AI to generate a response? (y/n): ")
         
-        if defaults.defaults["model"]:
-            model = defaults.defaults["model"]
+        if "model" in defaults.defaults:
+            model = defaults_commands.get("model")
         else:
             model = input("Enter an AI model name : ")
 
         if ask.lower() == "y":
-            message = message_ai_commands.create(
-                chat_id=chat_id, 
-                user_id=user_id, 
-                port=port,
-                token=token, 
-                model="gpt-3.5-turbo",
-                **kwargs)
-            return message
+            try:
+                message = message_ai_commands.create(
+                    chat_id=chat_id, 
+                    user_id=user_id, 
+                    port=port,
+                    token=token, 
+                    model=model,
+                    **kwargs)
+                return message
+            except Exception as e:
+                print("\033[31m> ",f"ERROR: {e}\033[0m")
+                return("\033[33m>To retry, type 'sentry message -create [args]'\033[0m")
 
         return response.json()
         
@@ -138,8 +142,8 @@ def delete(message_id, token, port=5000,**kwargs):
         print(f"Error deleting user: {e}")
         return None
 
-def open(message_id):
+def open(message_id, **kwargs):
     return defaults_commands.set_key(key="message_id", value=message_id)
 
-def quit():
+def quit(**kwargs):
     return defaults_commands.unset(key="message_id")
