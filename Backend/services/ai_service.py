@@ -32,11 +32,6 @@ class OllamaAIService:
         about_user = user.to_dict()
 
         messages = ChatDAO.get_all_messages_in_chat(chat_id) or []
-        system_message = {
-            "role": "system",
-            "content": f"Sobre o usuário: {about_user}\nSobre a AI: {self.about_me}"
-        }
-        messages.insert(0, system_message)
 
         try:
             response = ollama.chat(model=model, messages=messages).message.content

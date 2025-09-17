@@ -48,7 +48,7 @@ class ChatDAO:
 		chat = ChatDAO.get_chat_by_id(chat_id)
 
 		messages = chat.user_messages + chat.ai_messages
-		messages.sort(key=lambda m: m.timestamp)
+		messages.sort(key=lambda m: getattr(m, 'created_at', None))
 
 		history = []
   

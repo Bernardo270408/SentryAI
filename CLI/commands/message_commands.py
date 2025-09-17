@@ -3,8 +3,8 @@ import defaults
 from commands import defaults_commands, message_ai_commands
 #Those are the chat-related commands for the CLI tool.
 
-def create(chat_id, content,user_id,token,port=5000,**kwargs):
-    url = f"http://localhost:{port}/messages/"
+def create(chat_id, content,user_id,token, domain='localhost', port=5000, **kwargs):
+    url = f"http://{domain}:{port}/messages/"
 
     headers = {
         "Authorization": f"Bearer {token}"
@@ -49,8 +49,24 @@ def create(chat_id, content,user_id,token,port=5000,**kwargs):
         print("\033[31m> ",f"ERROR: {e}\033[0m")
         return None
     
-def get(message_id,token,port=5000,**kwargs):
-    url = f"http://localhost:{port}/messages/{message_id}"
+def get(message_id,token, domain='localhost', port=5000,**kwargs):
+    url = f"http://{domain}:{port}/messages/{message_id}"
+
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+
+    try:
+        response=requests.get(url, headers=headers)
+        response.raise_for_status()
+        return response.json()
+    
+    except requests.RequestException as e:
+        print("\033[31m> ",f"ERROR: {e}\033[0m")
+        return None
+
+def getall(token,port=5000, domain='localhost',**kwargs):
+    url = f"http://{domain}:{port}/messages/"
 
     headers = {
         "Authorization": f"Bearer {token}"
@@ -65,24 +81,8 @@ def get(message_id,token,port=5000,**kwargs):
         print("\033[31m> ",f"ERROR: {e}\033[0m")
         return None
     
-def getall(token,port=5000,**kwargs):
-    url = f"http://localhost:{port}/messages/"
-
-    headers = {
-        "Authorization": f"Bearer {token}"
-    }
-
-    try:
-        response=requests.get(url, headers=headers)
-        response.raise_for_status()
-        return response.json()
-    
-    except requests.RequestException as e:
-        print("\033[31m> ",f"ERROR: {e}\033[0m")
-        return None
-    
-def getbyuser(user_id,token,port=5000,**kwargs):
-    url = f"http://localhost:{port}/messages/user/{user_id}"
+def getbyuser(user_id,token, domain='localhost', port=5000,**kwargs):
+    url = f"http://{domain}:{port}/messages/user/{user_id}"
 
     headers = {
         "Authorization": f"Bearer {token}"
@@ -98,9 +98,9 @@ def getbyuser(user_id,token,port=5000,**kwargs):
     except requests.RequestException as e:
         print("\033[31m> ",f"ERROR: {e}\033[0m")
         return None
-    
-def getbychat(chat_id,token,port=5000,**kwargs):
-    url = f"http://localhost:{port}/messages/chat/{chat_id}"
+
+def getbychat(chat_id,token, domain='localhost', port=5000,**kwargs):
+    url = f"http://{domain}:{port}/messages/chat/{chat_id}"
 
     headers = {
         "Authorization": f"Bearer {token}"
@@ -115,8 +115,8 @@ def getbychat(chat_id,token,port=5000,**kwargs):
         print("\033[31m> ",f"ERROR: {e}\033[0m")
         return None
 
-def update(message_id, token, port=5000, **kwargs):
-    url = f"http://localhost:{port}/messages/{message_id}"
+def update(message_id, token, domain='localhost', port=5000, **kwargs):
+    url = f"http://{domain}:{port}/messages/{message_id}"
     payload = kwargs
     headers = {
         "Authorization": f"Bearer {token}"
@@ -129,8 +129,8 @@ def update(message_id, token, port=5000, **kwargs):
         print(f"Error updating user: {e}")
         return None
 
-def delete(message_id, token, port=5000,**kwargs):
-    url = f"http://localhost:{port}/messages/{message_id}"
+def delete(message_id, token, domain='localhost', port=5000, **kwargs):
+    url = f"http://{domain}:{port}/messages/{message_id}"
     headers = {
         "Authorization": f"Bearer {token}"
     }

@@ -4,7 +4,7 @@ help_texts = {
 SentryAI Command Line Interface
 
 Usage:
-    sentry [command] -[subcommand] [arguments] [options]
+    sentry [command] -[subcommand] [arguments]
 
 Examples:
 
@@ -34,7 +34,6 @@ Tips:
     - Sending extra data will not cause errors (it will simply be ignored).
     - All default params are sent exactly as typed.
     - Developers: You can safely send all defaults without breaking anything.
-    - If you type '-y' or '-n' after the last argument, it will answer 'yes' or 'no' to all questions.
 
 """,
 

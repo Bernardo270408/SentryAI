@@ -2,8 +2,8 @@ import requests
 from commands import user_commands
 import defaults
 
-def login(email, password, port=5000,**kwargs):
-    url = f"http://localhost:{port}/login"
+def login(email, password, domain='localhost', port=5000,**kwargs):
+    url = f"http://{domain}:{port}/login"
     payload = {
         "email": email,
         "password": password
@@ -21,6 +21,9 @@ def login(email, password, port=5000,**kwargs):
         if token:
             with open("data/default_token.txt", "w") as f:
                 f.write(token)
+                
+            
+            print(kwargs)
 
             defaults.defaults["token"] = token
             ask = input("Do you want to use this user as default to the next operations? (y/n): ")

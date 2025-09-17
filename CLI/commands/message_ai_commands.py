@@ -1,8 +1,8 @@
 import requests
 from commands import defaults_commands
 
-def create(model, chat_id,user_id,token,port=5000,**kwargs):
-    url = f"http://localhost:{port}/ai-messages/"
+def create(model, chat_id,user_id,token, domain='localhost',port=5000,**kwargs):
+    url = f"http://{domain}:{port}/ai-messages/"
 
     headers = {
         "Authorization": f"Bearer {token}"
@@ -24,24 +24,8 @@ def create(model, chat_id,user_id,token,port=5000,**kwargs):
         print("\033[31m> ",f"ERROR: {e}\033[0m")
         return None
     
-def get(ai_message_id,token,port=5000,**kwargs):
-    url = f"http://localhost:{port}/ai-messages/{ai_message_id}"
-
-    headers = {
-        "Authorization": f"Bearer {token}"
-    }
-
-    try:
-        response=requests.get(url, headers=headers)
-        response.raise_for_status()
-        return response.json()
-    
-    except requests.RequestException as e:
-        print("\033[31m> ",f"ERROR: {e}\033[0m")
-        return None
-    
-def getall(token,port=5000,**kwargs):
-    url = f"http://localhost:{port}/ai-messages/"
+def get(ai_message_id,token, domain='localhost',port=5000,**kwargs):
+    url = f"http://{domain}:{port}/ai-messages/{ai_message_id}"
 
     headers = {
         "Authorization": f"Bearer {token}"
@@ -56,8 +40,24 @@ def getall(token,port=5000,**kwargs):
         print("\033[31m> ",f"ERROR: {e}\033[0m")
         return None
 
-def getbychat(chat_id,token,port=5000,**kwargs):
-    url = f"http://localhost:{port}/ai-messages/chat/{chat_id}"
+def getall(token,port=5000, domain='localhost',**kwargs):
+    url = f"http://{domain}:{port}/ai-messages/"
+
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+
+    try:
+        response=requests.get(url, headers=headers)
+        response.raise_for_status()
+        return response.json()
+    
+    except requests.RequestException as e:
+        print("\033[31m> ",f"ERROR: {e}\033[0m")
+        return None
+
+def getbychat(chat_id,token, domain='localhost', port=5000,**kwargs):
+    url = f"http://{domain}:{port}/ai-messages/chat/{chat_id}"
 
     headers = {
         "Authorization": f"Bearer {token}"
@@ -73,8 +73,8 @@ def getbychat(chat_id,token,port=5000,**kwargs):
         print("\033[31m> ",f"ERROR: {e}\033[0m")
         return None
     
-def getbymodel(model_name,token,port=5000,**kwargs):
-    url = f"http://localhost:{port}/ai-messages/model/{model_name}"
+def getbymodel(model_name,token, domain='localhost',port=5000,**kwargs):
+    url = f"http://{domain}:{port}/ai-messages/model/{model_name}"
 
     headers = {
         "Authorization": f"Bearer {token}"
@@ -88,8 +88,8 @@ def getbymodel(model_name,token,port=5000,**kwargs):
         print("\033[31m> ",f"ERROR: {e}\033[0m")
         return None
 
-def getbychatandmodel(chat_id, model_name, token, port=5000, **kwargs):
-    url = f"http://localhost:{port}/ai-messages/chat/{chat_id}/model/{model_name}"
+def getbychatandmodel(chat_id, model_name, token, domain='localhost', port=5000, **kwargs):
+    url = f"http://{domain}:{port}/ai-messages/chat/{chat_id}/model/{model_name}"
 
     headers = {
         "Authorization": f"Bearer {token}"
@@ -103,8 +103,8 @@ def getbychatandmodel(chat_id, model_name, token, port=5000, **kwargs):
         print("\033[31m> ",f"ERROR: {e}\033[0m")
         return None
 
-def update(ai_message_id, token, port=5000, **kwargs):
-    url = f"http://localhost:{port}/ai-messages/{ai_message_id}"
+def update(ai_message_id, token, domain='localhost', port=5000, **kwargs):
+    url = f"http://{domain}:{port}/ai-messages/{ai_message_id}"
     payload = kwargs
     headers = {
         "Authorization": f"Bearer {token}"
@@ -116,10 +116,10 @@ def update(ai_message_id, token, port=5000, **kwargs):
     except requests.RequestException as e:
         print(f"Error updating user: {e}")
         return None
-    
-   
-def delete(ai_message_id, token, port=5000,**kwargs):
-    url = f"http://localhost:{port}/ai-messages/{ai_message_id}"
+
+
+def delete(ai_message_id, token, domain='localhost', port=5000, **kwargs):
+    url = f"http://{domain}:{port}/ai-messages/{ai_message_id}"
     headers = {
         "Authorization": f"Bearer {token}"
     }

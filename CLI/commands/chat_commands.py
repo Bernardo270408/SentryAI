@@ -2,8 +2,8 @@ import requests
 from commands import defaults_commands
 #Those are the chat-related commands for the CLI tool.
 
-def create(name,user_id,token,port=5000,**kwargs):
-    url = f"http://localhost:{port}/chats/"
+def create(name,user_id,token,domain='localhost',port=5000,**kwargs):
+    url = f"http://{domain}:{port}/chats/"
 
     headers = {
         "Authorization": f"Bearer {token}"
@@ -26,8 +26,8 @@ def create(name,user_id,token,port=5000,**kwargs):
         return None
     
 
-def get(chat_id,token,port=5000,**kwargs):
-    url = f"http://localhost:{port}/chats/{chat_id}"
+def get(chat_id,token, domain='localhost',port=5000,**kwargs):
+    url = f"http://{domain}:{port}/chats/{chat_id}"
 
     headers = {
         "Authorization": f"Bearer {token}"
@@ -42,8 +42,8 @@ def get(chat_id,token,port=5000,**kwargs):
         print("\033[31m> ",f"ERROR: {e}\033[0m")
         return None
 
-def getall(token,port=5000,**kwargs):
-    url = f"http://localhost:{port}/chats/"
+def getall(token, domain='localhost',port=5000,**kwargs):
+    url = f"http://{domain}:{port}/chats/"
 
     headers = {
         "Authorization": f"Bearer {token}"
@@ -58,8 +58,8 @@ def getall(token,port=5000,**kwargs):
         print("\033[31m> ",f"ERROR: {e}\033[0m")
         return None
 
-def getbyuser(user_id,token,port=5000,**kwargs):
-    url = f"http://localhost:{port}/chats/user/{user_id}"
+def getbyuser(user_id,token, domain='localhost',port=5000,**kwargs):
+    url = f"http://{domain}:{port}/chats/user/{user_id}"
 
     headers = {
         "Authorization": f"Bearer {token}"
@@ -74,8 +74,8 @@ def getbyuser(user_id,token,port=5000,**kwargs):
         print("\033[31m> ",f"ERROR: {e}\033[0m")
         return None
     
-def update(chat_id, token, port=5000, **kwargs):
-    url = f"http://localhost:{port}/chats/{chat_id}"
+def update(chat_id, token, domain='localhost', port=5000, **kwargs):
+    url = f"http://{domain}:{port}/chats/{chat_id}"
     payload = kwargs
     headers = {
         "Authorization": f"Bearer {token}"
@@ -87,9 +87,9 @@ def update(chat_id, token, port=5000, **kwargs):
     except requests.RequestException as e:
         print(f"Error updating user: {e}")
         return None
-    
-def delete(chat_id, token, port=5000,**kwargs):
-    url = f"http://localhost:{port}/chats/{chat_id}"
+
+def delete(chat_id, token, domain='localhost', port=5000, **kwargs):
+    url = f"http://{domain}:{port}/chats/{chat_id}"
     headers = {
         "Authorization": f"Bearer {token}"
     }

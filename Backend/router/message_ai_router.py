@@ -25,16 +25,28 @@ def create_ai_message():
     if not chat:
         return jsonify({'error': 'Chat not found'}), 404
     
-    content = OllamaAIService.generate_response(user_id=user_id, chat_id=chat_id, model=model)
+    ai_service = OllamaAIService()
+    content = ai_service.generate_response(
+        user_id=user_id, 
+        chat_id=chat_id, 
+        model=model
+    )
+    
     created_at = datetime.utcnow()
     
     if not content:
         return jsonify({'error': 'AI response generation failed'}), 500
     
-    message_ai = AIMessageDAO.create_message(chat_id=chat_id, content=content, created_at=created_at, model=model)
+    message_ai = AIMessageDAO.create_message(
+        chat_id=chat_id, 
+        content=content, 
+        created_at=created_at, 
+        model=model
+    )
     message_ai_dict = message_ai.to_dict()
     
-    return jsonify(message_ai_dict), 201 
+    return jsonify(message_ai_dict), 201
+
     
 @message_ai_bp.route('/<int:message_id>', methods=['GET'])
 @token_required

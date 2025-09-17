@@ -6,6 +6,162 @@ import sys
 import socket
 import getpass
 
+
+
+def get_prompt():
+    """Retorna o prompt formatado de acordo com o SO."""
+    current_path = str(os.path.abspath(''))
+
+    if sys.platform.startswith('win'):
+        return f"\033[92m(SentryAI) \033[0mCLI \033[34m{current_path}\033[0m> "
+    else:
+        username = getpass.getuser()
+        hostname = socket.gethostname()
+        return f"(sentryai)\033[92m\033[1m {username}:{hostname}\033[0m\033[1m: \033[34m{current_path}\033[0m$ "
+
+
+def read_user_input():
+    """Lê o input do usuário com prompt customizado."""
+    return input(get_prompt())
+
+
+def process_action(action):
+    """Processa o dicionário `action` e retorna o resultado (bash)."""
+    bash = ""
+    try:
+        match action["command"]:
+            case "user":
+                bash = handle_user(action)
+            case "auth":
+                bash = handle_auth(action)
+            case "default" | "defaults":
+                bash = handle_defaults(action)
+            case "chat" | "chats":
+                bash = handle_chat(action)
+            case "message" | "messages":
+                bash = handle_message(action)
+            case "message_ai" | "messageai" | "ai_message" | "aimessage" | "ai-message" | "message-ai":
+                bash = handle_message_ai(action)
+            case "check":
+                from commands.sentry_commands import check
+                check()
+            case "exit" | "quit" | "q":
+                from commands.sentry_commands import quit
+                quit()
+                return None, False
+            case "help" | "h" | "?":
+                bash = help_commands.get_help(action["subcommand"])
+            case "run":
+                bash = "Application is already running"
+            case _:
+                bash = warn(f"Unknown command: {action['command']}")
+    except Exception as e:
+        print(warn(f"An error occurred while processing command: {e}"))
+    
+    return bash, True
+
+
+def warn(msg):
+    return f"\033[33m> WARNING: {msg}\033[0m"
+
+
+def handle_user(action):
+    match action["subcommand"]:
+        case "-create": return user_commands.create(**action["args"])
+        case "-get": return user_commands.get(**action["args"])
+        case "-getbyemail": return user_commands.getbyemail(**action["args"])
+        case "-getall": return user_commands.getall(**action["args"])
+        case "-update": return user_commands.update(**action["args"])
+        case "-delete": return user_commands.delete(**action["args"])
+        case _: return warn(f"Unknown subcommand for user: {action['subcommand']}")
+
+
+def handle_auth(action):
+    match action["subcommand"]:
+        case "-login": return auth_commands.login(**action["args"])
+        case "-logout": return auth_commands.logout(**action["args"])
+        case "-gettoken": return auth_commands.gettoken(**action["args"])
+        case _: return warn(f"Unknown subcommand for auth: {action['subcommand']}")
+
+
+def handle_defaults(action):
+    match action["subcommand"]:
+        case "-get": return defaults_commands.get(**action["args"])
+        case "-getall": return defaults_commands.getall(**action["args"])
+        case "-set": return defaults_commands.set_key(**action["args"])
+        case "-setall": return defaults_commands.set_all(**action["args"])
+        case "-unset": return defaults_commands.unset(**action["args"])
+        case "-unsetall": return defaults_commands.unsetall(**action["args"])
+        case _: return warn(f"Unknown subcommand for defaults: {action['subcommand']}")
+
+
+def handle_chat(action):
+    match action["subcommand"]:
+        case "-create": return chat_commands.create(**action["args"])
+        case "-get": return chat_commands.get(**action["args"])
+        case "-getall": return chat_commands.getall(**action["args"])
+        case "-getbyuser": return chat_commands.getbyuser(**action["args"])
+        case "-update": return chat_commands.update(**action["args"])
+        case "-delete": return chat_commands.delete(**action["args"])
+        case "-open": return chat_commands.open(**action["args"])
+        case "-quit" | "close": return chat_commands.quit(**action["args"]) 
+        case _: return warn(f"Unknown subcommand for chats: {action['subcommand']}")
+
+
+def handle_message(action):
+    match action["subcommand"]:
+        case "-create": return message_commands.create(**action["args"])
+        case "-get": return message_commands.get(**action["args"])
+        case "-getall": return message_commands.getall(**action["args"])
+        case "-getbyuser": return message_commands.getbyuser(**action["args"])
+        case "-getbychat": return message_commands.getbychat(**action["args"])   
+        case "-update": return message_commands.update(**action["args"])
+        case "-delete": return message_commands.delete(**action["args"])
+        case "-open": return message_commands.open(**action["args"])
+        case "-quit" | "close": return message_commands.quit(**action["args"])
+        case _: return warn(f"Unknown subcommand for messages: {action['subcommand']}")
+
+
+def handle_message_ai(action):
+    match action["subcommand"]:
+        case "-create": return message_ai_commands.create(**action["args"])
+        case "-get": return message_ai_commands.get(**action["args"])
+        case "-getall": return message_ai_commands.getall(**action["args"])
+        case "-getbymodel": return message_ai_commands.getbymodel(**action["args"])
+        case "-getbychat": return message_ai_commands.getbychat(**action["args"])
+        case "-getbychatandmodel": return message_ai_commands.getbychatandmodel(**action["args"])
+        case "-update": return message_ai_commands.update(**action["args"])
+        case "-delete": return message_ai_commands.delete(**action["args"])
+        case "-open": return message_ai_commands.open(**action["args"])
+        case "-quit" | "close": return message_ai_commands.quit(**action["args"])
+        case _: return warn(f"Unknown subcommand for message AI: {action['subcommand']}")
+
+
+def main():
+    RUNNING = True
+    sentry_commands.check()
+
+    while RUNNING:
+        user_input = read_user_input()
+        defaults.load_defaults()
+
+        try:
+            action = breakdown_command(user_input)
+        except Exception as e:
+            print(warn(f"An error occurred while processing command: {e}"))
+            continue
+
+        print("> Just a second...")
+        bash, RUNNING = process_action(action)
+
+        try:
+            defaults.save_defaults()
+        except Exception as e:
+            bash = (bash or "") + "\nErro ao salvar defaults: " + str(e)
+        
+        if bash:
+            print(">", bash)
+
 def breakdown_command(command: str):
     tokens = shlex.split(command)
 
@@ -66,177 +222,6 @@ def breakdown_command(command: str):
         "options": options
     }
 
-
-def main():
-
-    RUNNING = True
-
-    sentry_commands.check()
-
-    while RUNNING:
-        CURRENT_PATH = str(os.path.abspath(''))
-
-        if sys.platform.startswith('win'):
-            user_input = input(f"\033[92m(SentryAI) \033[0mCLI \033[34m{CURRENT_PATH}\033[0m> ")
-        else:
-            username = getpass.getuser()
-            hostname = socket.gethostname()
-            user_input = input(f"\033[1m\033[92m(sentryai) {username}:{hostname}\033[0m\033[1m: \033[34m{CURRENT_PATH}\033[0m$ ")
-
-
-        defaults.load_defaults()
-        
-        try:
-            action = breakdown_command(user_input)
-        except Exception as e:
-            print("\033[33m>", f"WARNING: An error ocurred while processing command: {e}\033[0m")
-            continue
-
-        bash = ""
-        print("> Just a second...")
-
-        try:
-            match action["command"]:
-                case "user":
-                    match action["subcommand"]:
-                        case "-create":
-                            bash = user_commands.create(**action["args"])
-                        case "-get":
-                            bash = user_commands.get(**action["args"])
-                        case "-getbyemail":
-                            bash = user_commands.getbyemail(**action["args"])
-                        case "-getall":
-                            bash = user_commands.getall(**action["args"])
-                        case "-update":
-                            bash = user_commands.update(**action["args"])
-                        case "-delete":
-                            bash = user_commands.delete(**action["args"])
-                        case _:
-                            bash = "\033[33m" + f"WARNING: Unknown subcommand for user: {action['subcommand']}"
-
-                case "auth":
-                    match action["subcommand"]:
-                        case "-login":
-                            bash = auth_commands.login(**action["args"])
-                        case "-logout":
-                            bash = auth_commands.logout(**action["args"])
-                        case "-gettoken":
-                            bash = auth_commands.gettoken(**action["args"])
-                        case _:
-                            bash = "\033[33m" + f"WARNING: Unknown subcommand for auth: {action['subcommand']}"
-
-                case "default" | "defaults":
-                    match action["subcommand"]:
-                        case "-get":
-                            bash = defaults_commands.get(**action["args"])
-                        case "-getall":
-                            bash = defaults_commands.getall(**action["args"])
-                        case "-set":
-                            bash = defaults_commands.set_key(**action["args"])
-                        case "-setall":
-                            bash = defaults_commands.set_all(**action["args"])
-                        case "-unset":
-                            bash = defaults_commands.unset(**action["args"])
-                        case "-unsetall":
-                            bash = defaults_commands.unsetall(**action["args"])
-                        case _:
-                            bash = "\033[33m" + f"WARNING: Unknown subcommand for defaults: {action['subcommand']}"
-
-                case "chat" | "chats":
-                    match action["subcommand"]:
-                        case "-create":
-                            bash = chat_commands.create(**action["args"])
-                        case "-get":
-                            bash = chat_commands.get(**action["args"])
-                        case "-getall":
-                            bash = chat_commands.getall(**action["args"])
-                        case "-getbyuser":
-                            bash = chat_commands.getbyuser(**action["args"])
-                        case "-update":
-                            bash = chat_commands.update(**action["args"])
-                        case "-delete":
-                            bash = chat_commands.delete(**action["args"])
-                        case "-open":
-                            bash = chat_commands.open(**action["args"])
-                        case "-quit" | "close":
-                            bash = chat_commands.quit(**action["args"]) 
-                        case _:
-                            bash = "\033[33m" + f"WARNING: Unknown subcommand for chats: {action['subcommand']}"
-
-                case "message" | "messages":
-                    match action["subcommand"]:
-                        case "-create":
-                            bash = message_commands.create(**action["args"])
-                        case "-get":
-                            bash = message_commands.get(**action["args"])
-                        case "-getall":
-                            bash = message_commands.getall(**action["args"])
-                        case "-getbyuser":
-                            bash = message_commands.getbyuser(**action["args"])
-                        case "-getbychat":
-                            bash = message_commands.getbychat(**action["args"])   
-                        case "-update":
-                            bash = message_commands.update(**action["args"])
-                        case "-delete":
-                            bash = message_commands.delete(**action["args"])
-                        case "-open":
-                            bash = message_commands.open(**action["args"])
-                        case "-quit" | "close":
-                            bash = message_commands.quit(**action["args"])
-                        case _:
-                            bash = "\033[33m" + f"WARNING: Unknown subcommand for messages: {action['subcommand']}"
-
-                case "message_ai" | "messageai" | "ai_message" | "aimessage" | "ai-message" | "message-ai":
-                    match action["subcommand"]:
-                        case "-create":
-                            bash = message_ai_commands.create(**action["args"])
-                        case "-get":
-                            bash = message_ai_commands.get(**action["args"])
-                        case "-getall":
-                            bash = message_ai_commands.getall(**action["args"])
-                        case "-getbyuser": 
-                            bash = message_ai_commands.getbyuser(**action["args"])
-                        case "-getbychat":
-                            bash = message_ai_commands.getbychat(**action["args"])   
-                        case "-update":
-                            bash = message_ai_commands.update(**action["args"])
-                        case "-delete":
-                            bash = message_ai_commands.delete(**action["args"])
-                        case "-open":
-                            bash = message_ai_commands.open(**action["args"])
-                        case "-quit" | "close":
-                            bash = message_ai_commands.quit(**action["args"])
-                        case _:
-                            bash = "\033[33m" + f"WARNING: Unknown subcommand for message AI: {action['subcommand']}"
-                
-                case "check":
-                    from commands.sentry_commands import check
-                    check()
-
-                case "exit" | "quit" | "q":
-                    from commands.sentry_commands import quit
-                    quit()
-                    RUNNING = False
-                    
-                case "help" | "h" | "?":
-                    bash = help_commands.get_help(action["subcommand"])
-
-                case "run":
-                    bash = "Application is already running"
-
-                case _:
-                    bash = "\033[33m" + f"WARNING: Unknown command: {action['command']}"
-        except Exception as e:
-            print("\033[33m>", f"WARNING: An error ocurred while processing command: {e}\033[0m")
-            continue
-
-        try:
-            defaults.save_defaults()
-        except Exception as e:
-            bash += "\nErro ao salvar defaults: " + str(e)
-        
-        if bash:
-            print(">", bash)
 
 if __name__ == "__main__":
     main()

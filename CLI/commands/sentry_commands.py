@@ -1,12 +1,12 @@
 import requests
 
 
-def check():
+def check(domain='localhost', port=5000):
     print("> Starting CLI")
     print("\033[92m>> CLI is working\033[0m")
     print("> Connecting to API, it may take a while")
     try:
-        response = requests.get("http://localhost:5000/")
+        response = requests.get(f"http://{domain}:{port}/")
     except Exception as e:
         e = str(e) + '\n Verify if the API is running on the choosen url.'
         print("\033[31m>", f"ERROR: Connection Failed {e}\033[0m")
