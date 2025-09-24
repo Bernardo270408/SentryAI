@@ -9,6 +9,10 @@ class AIMessage(db.Model):
     chat_id = Column(Integer, ForeignKey("chats.id"), nullable=False)
     content = Column(Text, nullable=False)
     model = Column(String(50), nullable=True)
+    
+    rating = Column(Integer, nullable=True, default=0) #-1, 0, 1
+    feedback = Column(Text, nullable=True) 
+    
     created_at = Column(DateTime, server_default=db.func.now())
     updated_at = Column(DateTime, onupdate=db.func.now())
 
