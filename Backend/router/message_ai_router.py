@@ -26,6 +26,7 @@ def create_ai_message():
         return jsonify({'error': 'Chat not found'}), 404
     
     ai_service = OllamaAIService()
+    
     content = ai_service.generate_response(
         user_id=user_id, 
         chat_id=chat_id, 
