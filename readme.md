@@ -1,125 +1,258 @@
 # SentryAI
 
-SentryAI é uma aplicação voltada ao gerenciamento de modelos de IA, específicamente ao caráter jurídico brasileiro
+SentryAI é uma aplicação em desenvolvimento voltada ao gerenciamento de modelos de IA, específicamente ao caráter jurídico brasileiro.
+Atualmente estamos sem um front-end decente, então caso queira contribuir, agradeceriamos imensamente.
 
 ## Índice
 
+- [Introdução](#introdução)
+- [Tecnologias Utilizadas](#tecnologias-utilizadas)
 - [Instalação](#instalação)
+  - [Pré Requisitos](#pré-requisitos)
+  - [Passo a passo](#passo-a-passo)
+  - [Configurando a CLI](#configurando-a-cli)
+- [Rodando o Projeto](#rodando-o-projeto)
+  - [Inicializando a API](#inicializando-api)
+  - [Inicializando a CLI](#inicializando-a-cli)
+- [Estrutura](#estrutura)
+- [Endpoints da API](#endpoints)
+- [Comandos da CLI](#comandos)
 
 
----
+## Introdução
+O SentryAI, como dito antes, é uma aplicação em desenvolvimento, que visa coletar dados para uma pesquisa cujo objetivo é identificar falhas comuns no entendimento da lei, e fornecer auxílio para pessoas com tais dúvidas
 
-## Estrutura do Projeto
-```
-Backend/
-  app.py                # Inicialização da aplicação Flask
-  config.py             # Configurações (DB, secret key)
-  requirements.txt      # Dependências
-  extensions.py         # Extensões Flask (SQLAlchemy)
-  DAO/                  # Data Access Objects (CRUD)
-    user_dao.py         # Usuários
-    chat_dao.py         # Chats
-    message_user_dao.py # Mensagens de usuário
-    message_ai_dao.py   # Mensagens de IA
-  models/               # Modelos ORM
-    user.py             # Usuário
-    chat.py             # Chat
-    message_user.py     # Mensagem de usuário
-    message_ai.py       # Mensagem de IA
-  router/               # Rotas Flask (API REST)
-    auth_router.py      # Autenticação (login)
-    user_router.py      # Usuários
-    chat_router.py      # Chats
-    message_user_router.py # Mensagens de usuário
-    message_ai_router.py   # Mensagens de IA
-  middleware/
-    jwt_util.py         # Autenticação JWT
-  migrations/           # Migrações Alembic
-  database/app.sqlite   # Banco SQLite
-CLI/
-  
-```
+## Tecnologias Utilizadas
+- **Ollama** - Serviço de IA
+- **Flask** - Framework web para Python.
+- **Flask-Migrate** - Para migrações de banco de dados.
+- **SQLAlchemy** - ORM para interação com o banco de dados.
+- **JWT** - Tokens e Autenticação
 
 ## Instalação
 
-### Uso Local
+### Pré-Requisitos
+Antes de rodar o projeto, certifique-se de ter o Python 3.x e o pip instalados.
+- [python3.x](#https://www.python.org/)
+- [pip](#https://pip.pypa.io/en/stable/)
 
-Para fazer uso local da aplicação, primeiro instale as dependencias do BackEnd:
+### Passo a Passo
 
+1. Clone este repositório:
+```bash
+git clone https://github.com/Bernardo270408/SentryAI
+cd nome-do-repositorio
+```
+
+2. Crie um ambiente virtual
 ```bash
 cd Backend
+python3 -m venv venv
+```
+- Linux/MacOS
+  ```bash
+  source venv/bin/activate
+  ```
+
+- Windows
+  ```bash
+  ./venv\Scripts\activate
+  ```
+
+3. Instale as dependencias do Backend
+```bash
 pip install -r requirements.txt
 ```
 
-
-Recomenda-se a criação de um ambiente virtual
-
-Após feita a instalação das dependencias, rode a API, que é baseada em Flask
-
+4. Crie outro ambiente virtual para a CLI
 ```bash
-flask run
+cd ../CLI
+python3 -m venv venv
 ```
+- Linux/MacOS
+  ```bash
+  source venv/bin/activate
+  ```
 
-Após isso, o procedimento é o mesmo do uso local.
+- Windows
+  ```bash
+  ./venv\Scripts\activate
+  ```
 
-### Uso Remoto
-
-Caso a API já esteja rodando na URL desejada, instale primeiro as dependencias da interface de terminal (CLI)
-
+5. Instale as dependencias da CLI
 ```bash
-cd CLI
 pip install -r requirements.txt
 ```
-
-Apos isso, inicialize no terminal a CLI
-
-```bash
-sentry run
-```
-ou, caso não haja intenção de adicionar o executável ao PATH
-
-```bash
-./sentry run
-```
-
 **Obs:** O inicializador é pre-compilado para Linux e Windows, mas caso seja necessário, o código fonte `sentry.c` está na mesma pasta, e pode ser compilado para o OS desejado.
 
 É recomendado adicionar o executável da CLI ao PATH de seu sistema.
 
+### Configurando a CLI
+configure os valores padrão `domain` e `port`, que servirão para dizer à CLI onde exatamente está hospedada a API.
+Estes são os valores padrão:
+```bash
+sentry run
+sentry defaults -set key="domain" value="127.0.0.1"
+sentry defaults -set key="port" value="5000"
+sentry quit
+```
 
-## Uso da CLI
 
-### Estrutura básica
 
-Para realizar o uso na interface de terminal, primeiro inicialize a CLI:
 
+## Rodando o Projeto
+
+### Inicializando a API
+Para iniciar a API, caso esteja em um ambiente de testes, rode
+```bash
+cd Backend
+flask run --debug
+```
+Em outros casos, recomenda-se o uso de **gunicorn**
+
+
+### Inicializando a CLI
+
+Para iniciar a CLI, simplesmente digite
 ```bash
 sentry run
 ```
 
-A estrutura básica da CLI é:
-
+Caso não tenha sido incluida ao path, o comando será
 ```bash
-sentry [comando] -[subcomando] [argumentos]
+./sentry run
 ```
 
-Exemplo de autenticação:
+###
+
+
+## Estrutura do Projeto
+```
+Backend/                    #
+  app.py                    # Inicialização da aplicação Flask
+  config.py                 # Configurações (DB, secret key)
+  requirements.txt          # Dependências
+  extensions.py             # Extensões Flask (SQLAlchemy)
+  DAO/                      # Data Access Objects (CRUD)
+    user_dao.py             # Usuários
+    chat_dao.py             # Chats
+    message_user_dao.py     # Mensagens de usuário
+    message_ai_dao.py       # Mensagens de IA
+  models/                   # Modelos ORM
+    user.py                 # Usuário
+    chat.py                 # Chat
+    message_user.py         # Mensagem de usuário
+    message_ai.py           # Mensagem de IA
+  router/                   # Rotas Flask (API REST)
+    auth_router.py          # Autenticação (login)
+    user_router.py          # Usuários
+    chat_router.py          # Chats
+    message_user_router.py  # Mensagens de usuário
+    message_ai_router.py    # Mensagens de IA
+  middleware/               #
+    jwt_util.py             # Autenticação JWT
+  migrations/               # Migrações Alembic
+  database/app.sqlite       # Banco SQLite
+CLI/                        #
+  commands/                 # Comandos de gerenciamento
+    __init__.py             #
+    auth_commands.py        # Autenticação
+    chat_commands.py        # Chats
+    defaults_commands.py    # Defaults
+    help_commands.py        # Ajuda
+    message_ai_commands.py  # Mensagens geradas por IA
+    message_commands.py     # Mensagens do Usuario
+    sentry_commands.py      # Comandos extras da CLI
+    user_commands.py        # Usuarios
+  data/                     # Armazenamento
+    defaults_token.txt      # Token JWT
+    defaults.json           # Dafaults
+  app.py                    # Aplicação CLI
+  defaults.py               # Gerencia os defaults
+  requirements.txt          # Dependências
+  sentry.c                  # Código fonte do inicializador
+  sentry.exe                # Inicializador pré-compilado Windows
+  sentry                    # Inicializador pré-compilado Linux
+  
+```
+
+
+
+## Principais Endpoints
+Esta API tem dezenas de endpoints, estando todos listados a seguir.
+
+
+Dicas:
+- Todas as rotas protegidas exigem o header: `Authorization: Bearer <token>`
+- O token é obtido via POST `/login` (ver exemplo abaixo)
+
+### Autenticação
+- `POST /login` — Autentica usuário, retorna token JWT
+  - Body: `{ "email": "...", "password": "..." }`
+  - Resposta: `{ "token": "...", "user": {...} }`
+
+### Usuários
+- `POST /users/` — Cria usuário
+- `GET /users/` — Lista todos os usuários
+- `GET /users/<id>` — Busca usuário por ID
+- `PUT /users/<id>` — Atualiza usuário (autenticado)
+- `DELETE /users/<id>` — Remove usuário (autenticado)
+
+### Chats
+- `POST /chats/` — Cria chat (autenticado)
+- `GET /chats/` — Lista todos os chats (admin)
+- `GET /chats/<id>` — Busca chat por ID (autenticado)
+- `GET /chats/user/<user_id>` — Chats de um usuário
+- `PUT /chats/<id>` — Atualiza chat
+- `DELETE /chats/<id>` — Remove chat
+
+### Mensagens de Usuário
+- `POST /messages/` — Cria mensagem de usuário
+- `GET /messages/` — Lista todas as mensagens (admin)
+- `GET /messages/<id>` — Busca mensagem por ID
+- `GET /messages/user/<user_id>` — Mensagens de um usuário
+- `GET /messages/chat/<chat_id>` — Mensagens de um chat
+- `PUT /messages/<id>` — Atualiza mensagem
+- `DELETE /messages/<id>` — Remove mensagem
+
+### Mensagens de IA
+- `POST /ai-messages/` — Gera e armazena resposta da IA
+- `GET /ai-messages/` — Lista todas as mensagens de IA (admin)
+- `GET /ai-messages/<id>` — Busca mensagem de IA por ID
+- `GET /ai-messages/chat/<chat_id>` — Mensagens de IA de um chat
+- `GET /ai-messages/model/<model_name>` — Mensagens por modelo
+- `GET /ai-messages/chat/<chat_id>/model/<model_name>` — Mensagens de IA por chat/modelo
+- `PUT /ai-messages/<id>` — Atualiza mensagem de IA
+- `DELETE /ai-messages/<id>` — Remove mensagem de IA
+
+
+## Comandos Da CLI
+
+### Estrutura Básica
+A CLI foi pensada apenas como uma substituta para o ainda não presente front-end, mas reformulada recentemente para realmente ser utilizável e alternativa à interface visual. Esta é a estrutura geral de um comando
+
+```bash
+sentry [comando] -[subcomando] [argumentos]=[argumentos]
+```
+
+Segue um exemplo de autenticação:
 
 ```bash
 sentry auth -login email='test@mail' password='1234'
 ```
 
+retorna o token, o seta como padrão e pergunta se o ID do usuário em questão deverá ser utilizado como padrão para próximas iterações
+
+
 Dicas:
 
-* Você pode usar parâmetros como `user_id=x` ou `token=abc`.
-* Parâmetros omitidos usarão valores default, se definidos.
+* Para executar qualquer comando, é necessário que a CLI esteja rodando
+* Argumentos omitidos usarão valores default.
 * Parâmetros extras serão ignorados (não causam erro).
-* Os valores default são enviados exatamente como foram definidos.
 * Desenvolvedores podem enviar todos os defaults sem risco.
 
----
-
-## Comandos Disponíveis
+### Comandos e suas funções
+Aqui estão listados todos os comandos da CLI, o que requerem e o que retornam. Caso seja necessária uma consulta rápida, recomenda-se a execução do comando `sentry help -all`.
 
 ### `auth`
 
@@ -224,6 +357,8 @@ Gerencia valores padrão utilizados nas operações da CLI.
 * `ai_message_id`: ID da resposta da IA padrão
 * `token`: Token JWT do usuário autenticado
 * `model`: Nome do modelo padrão a ser utilizado nas respostas de IA
+* `domain` : Domínio da URL onde está hospedada a API
+* `port` : Porta utilizada pela API
 * `auto-create-AI-message`: Se `true`, mensagens de usuário geram automaticamente respostas da IA
 
 ---
@@ -235,6 +370,7 @@ Finaliza a execução da CLI.
 ```bash
 sentry quit
 ```
+uhh.. o que você esperava que fizesse?
 
 ---
 
@@ -244,7 +380,7 @@ Exibe ajuda contextual da CLI.
 
 | Subcomando   | Ação                                         |
 | ------------ | -------------------------------------------- |
-| `-[comando]` | Mostra ajuda para o comando específico       |
 | `-all`       | Mostra a ajuda completa de todos os comandos |
+| `-[comando]` | Mostra ajuda para o comando específico       |
 
 
