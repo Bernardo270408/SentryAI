@@ -231,7 +231,7 @@ O Banco de Dados, atualmente é armazenado em um simples arquivo sql, mas, pode 
 ### Estrutura das Tabelas do Banco de Dados
 
 #### User
-| Coluna       | Tipo     | Primary Key | Foreign Key | Not Null | Default      | Descrição                        |
+| Coluna       | Tipo     | PK | FK | Not Null | Default      | Descrição                        |
 |--------------|----------|----|----|----------|--------------|----------------------------------|
 | id           | Integer  | X  |    | X        | auto_inc     | Identificador único do usuário   |
 | name         | String   |    |    | X        |              | Nome do usuário                  |
@@ -243,7 +243,7 @@ O Banco de Dados, atualmente é armazenado em um simples arquivo sql, mas, pode 
 ---
 
 #### Chat
-| Coluna     | Tipo     | Primary Key | Foreign Key | Not Null | Default                | Descrição                      |
+| Coluna     | Tipo     | PK | FK | Not Null | Default                | Descrição                      |
 |------------|----------|----|----|----------|------------------------|--------------------------------|
 | id         | Integer  | X  |    | X        | auto_inc               | Identificador do chat          |
 | name       | String   |    |    | X        |                        | Nome do chat                   |
@@ -253,7 +253,7 @@ O Banco de Dados, atualmente é armazenado em um simples arquivo sql, mas, pode 
 ---
 
 #### MessageUser
-| Coluna     | Tipo     | Primary Key | Foreign Key | Not Null | Default                | Descrição                      |
+| Coluna     | Tipo     | PK | FK | Not Null | Default                | Descrição                      |
 |------------|----------|----|----|----------|------------------------|--------------------------------|
 | id         | Integer  | X  |    | X        | auto_inc               | Identificador da mensagem      |
 | content    | Text     |    |    | X        |                        | Conteúdo da mensagem           |
@@ -264,26 +264,26 @@ O Banco de Dados, atualmente é armazenado em um simples arquivo sql, mas, pode 
 ---
 
 #### AIMessage
-| Coluna           | Tipo     | Primary Key | Foreign Key | Not Null | Default       | Descrição                              |
+| Coluna           | Tipo     | PK | FK | Not Null | Default       | Descrição                             |
 |------------------|----------|----|----|----------|--------------|----------------------------------------|
 | id               | Integer  | X  |    | X        | auto_inc     | Identificador da mensagem de IA        |
-| content          | Text     |    |    | X        |             | Conteúdo da resposta da IA             |
+| content          | Text     |    |    | X        |              | Conteúdo da resposta da IA             |
 | created_at       | DateTime |    |    |          | db.func.now()| Data de criação                        |
-| model_name       | String   |    |    | X        |             | Nome do modelo utilizado                |
-| chat_id          | Integer  |    | X  | X        |             | Chat relacionado                        |
-| user_message_id  | Integer  |    | X  |          |             | Mensagem de usuário origem (opcional)   |
+| model_name       | String   |    |    | X        |              | Nome do modelo utilizado               |
+| chat_id          | Integer  |    | X  | X        |              | Chat relacionado                       |
+| user_message_id  | Integer  |    | X  |          |              | Mensagem de usuário origem (opcional)  |
 
 ---
 
 #### Relacionamentos
 
 | Tabela Origem   | Coluna Origem     | Tabela Destino | Coluna Destino | Tipo de Relacionamento |
-|-----------------|-------------------|----------------|----------------|-----------------------|
-| chat            | user_id           | user           | id             | N:1                   |
-| message_user    | user_id           | user           | id             | N:1                   |
-| message_user    | chat_id           | chat           | id             | N:1                   |
-| ai_message      | chat_id           | chat           | id             | N:1                   |
-| ai_message      | user_message_id   | message_user   | id             | N:1 (opcional)        |
+|-----------------|-------------------|----------------|----------------|----------------------- |
+| chat            | user_id           | user           | id             | N:1                    |
+| message_user    | user_id           | user           | id             | N:1                    |
+| message_user    | chat_id           | chat           | id             | N:1                    |
+| ai_message      | chat_id           | chat           | id             | N:1                    |
+| ai_message      | user_message_id   | message_user   | id             | N:1 (opcional)         |
 
 ---
 
@@ -392,6 +392,11 @@ Gerencia mensagens de IA geradas a partir de interações com o usuário.
 | `-getbychatandmodel` | Lista mensagens da IA de um chat e modelo específicos. | `chat_id`, `model_name`, `token`       |
 | `-update`            | Atualiza uma mensagem da IA.                           | `ai_message_id`, `token`               |
 | `-delete`            | Remove uma mensagem da IA.                             | `ai_message_id`, `token`               |
+| `-rate`              | Avalia uma mensagem gerada pela IA                     | `ai_message_id`, `rating`, `token`     |
+| `-getrating`         | Retorna a avaliação de uma mensagem da IA              | `ai_message_id`, `token`               |
+| `-getrated`          | Lista mensagens avaliadas pela IA                      | `token`                                |
+| `-feedback`          | Adiciona feedback textual a uma mensagem da IA         | `ai_message_id`, `feedback`, `token`   |
+| `-getfeedback`       | Lista feedbacks de uma mensagem da IA                  | `ai_message_id`, `token`               |
 | `-open`              | Define um `ai_message_id` como default.                | `ai_message_id`                        |
 | `-quit`              | Remove o `ai_message_id` default atual.                | Nenhum                                 |
 

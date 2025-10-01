@@ -117,7 +117,6 @@ def update(ai_message_id, token, domain='localhost', port=5000, **kwargs):
         print(f"Error updating user: {e}")
         return None
 
-
 def delete(ai_message_id, token, domain='localhost', port=5000, **kwargs):
     url = f"http://{domain}:{port}/ai-messages/{ai_message_id}"
     headers = {
@@ -129,6 +128,73 @@ def delete(ai_message_id, token, domain='localhost', port=5000, **kwargs):
         return response.json()
     except requests.RequestException as e:
         print(f"Error deleting user: {e}")
+        return None
+
+def rate(ai_message_id, rating, token, domain='localhost', port=5000, **kwargs):
+    url = f"http://{domain}:{port}/ai-messages/{ai_message_id}/rate"
+    payload = {
+        "rating": rating
+    }
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+    
+    if rating not in [-1, 0, 1]:
+        raise ValueError("Rating must be -1, 0, or 1")
+    
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        print(f"Error rating AI message: {e}")
+        return None
+
+def getrating(ai_message_id, token, domain='localhost', port=5000, **kwargs):
+    response = get(ai_message_id, token, domain, port, **kwargs)
+    rating = response.get("rating") if response else None
+    return rating
+
+def getrated(token, domain='localhost', port=5000, **kwargs):
+    url = f"http://{domain}:{port}/ai-messages/rate"
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        print(f"Error getting rated AI messages: {e}")
+        return None
+    
+def feedback(ai_message_id, feedback, token, domain='localhost', port=5000, **kwargs):
+    url = f"http://{domain}:{port}/ai-messages/{ai_message_id}/rate"
+    payload = {
+        "feedback": feedback
+    }
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        print(f"Error sending feedback for AI message: {e}")
+        return None
+    
+def getfeedback(ai_message_id, token, domain='localhost', port=5000, **kwargs):
+    url = f"http://{domain}:{port}/ai-messages/{ai_message_id}/feedback"
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        print(f"Error getting feedback for AI message: {e}")
         return None
 
 def open(ai_message_id, **kwargs):
