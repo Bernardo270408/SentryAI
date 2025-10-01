@@ -225,6 +225,67 @@ Dicas:
 - `PUT /ai-messages/<id>` — Atualiza mensagem de IA
 - `DELETE /ai-messages/<id>` — Remove mensagem de IA
 
+## Modelo do Banco de Dados
+O Banco de Dados, atualmente é armazenado em um simples arquivo sql, mas, pode ser alterado para usar um servidor MySQL facilmente.
+
+### Estrutura das Tabelas do Banco de Dados
+
+#### User
+| Coluna       | Tipo     | Primary Key | Foreign Key | Not Null | Default      | Descrição                        |
+|--------------|----------|----|----|----------|--------------|----------------------------------|
+| id           | Integer  | X  |    | X        | auto_inc     | Identificador único do usuário   |
+| name         | String   |    |    | X        |              | Nome do usuário                  |
+| email        | String   |    |    | X        |              | Email do usuário                 |
+| password     | String   |    |    | X        |              | Senha (hasheada)                 |
+| extra_data   | Text     |    |    |          |              | Dados extras                     |
+| is_admin     | Boolean  |    |    |          | False        | Usuário administrador            |
+
+---
+
+#### Chat
+| Coluna     | Tipo     | Primary Key | Foreign Key | Not Null | Default                | Descrição                      |
+|------------|----------|----|----|----------|------------------------|--------------------------------|
+| id         | Integer  | X  |    | X        | auto_inc               | Identificador do chat          |
+| name       | String   |    |    | X        |                        | Nome do chat                   |
+| created_at | DateTime |    |    |          | db.func.now()          | Data de criação                |
+| user_id    | Integer  |    | X  | X        |                        | Usuário dono do chat           |
+
+---
+
+#### MessageUser
+| Coluna     | Tipo     | Primary Key | Foreign Key | Not Null | Default                | Descrição                      |
+|------------|----------|----|----|----------|------------------------|--------------------------------|
+| id         | Integer  | X  |    | X        | auto_inc               | Identificador da mensagem      |
+| content    | Text     |    |    | X        |                        | Conteúdo da mensagem           |
+| created_at | DateTime |    |    |          | db.func.now()          | Data de criação                |
+| user_id    | Integer  |    | X  | X        |                        | Usuário autor                  |
+| chat_id    | Integer  |    | X  | X        |                        | Chat relacionado               |
+
+---
+
+#### AIMessage
+| Coluna           | Tipo     | Primary Key | Foreign Key | Not Null | Default       | Descrição                              |
+|------------------|----------|----|----|----------|--------------|----------------------------------------|
+| id               | Integer  | X  |    | X        | auto_inc     | Identificador da mensagem de IA        |
+| content          | Text     |    |    | X        |             | Conteúdo da resposta da IA             |
+| created_at       | DateTime |    |    |          | db.func.now()| Data de criação                        |
+| model_name       | String   |    |    | X        |             | Nome do modelo utilizado                |
+| chat_id          | Integer  |    | X  | X        |             | Chat relacionado                        |
+| user_message_id  | Integer  |    | X  |          |             | Mensagem de usuário origem (opcional)   |
+
+---
+
+#### Relacionamentos
+
+| Tabela Origem   | Coluna Origem     | Tabela Destino | Coluna Destino | Tipo de Relacionamento |
+|-----------------|-------------------|----------------|----------------|-----------------------|
+| chat            | user_id           | user           | id             | N:1                   |
+| message_user    | user_id           | user           | id             | N:1                   |
+| message_user    | chat_id           | chat           | id             | N:1                   |
+| ai_message      | chat_id           | chat           | id             | N:1                   |
+| ai_message      | user_message_id   | message_user   | id             | N:1 (opcional)        |
+
+---
 
 ## Comandos Da CLI
 
