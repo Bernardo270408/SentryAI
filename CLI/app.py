@@ -1,12 +1,10 @@
 import shlex
 import defaults
-from commands import user_commands, auth_commands, defaults_commands,sentry_commands, chat_commands, message_commands, message_ai_commands, help_commands
+from commands import user_commands, auth_commands, defaults_commands,sentry_commands, chat_commands, message_commands, message_ai_commands, help_commands, rating_commands
 import os
 import sys
 import socket
 import getpass
-
-
 
 def get_prompt():
     """Retorna o prompt formatado de acordo com o SO."""
@@ -42,6 +40,8 @@ def process_action(action):
                 bash = handle_message(action)
             case "message_ai" | "messageai" | "ai_message" | "aimessage" | "ai-message" | "message-ai":
                 bash = handle_message_ai(action)
+            case "rating" | "ratings":
+                bash = handle_rating(action)
             case "check":
                 from commands.sentry_commands import check
                 check()
@@ -132,13 +132,22 @@ def handle_message_ai(action):
         case "-getbychatandmodel": return message_ai_commands.getbychatandmodel(**action["args"])
         case "-update": return message_ai_commands.update(**action["args"])
         case "-delete": return message_ai_commands.delete(**action["args"])
-        case "-rate": return message_ai_commands.rate(**action["args"])
-        case "-feedback": return message_ai_commands.feedback(**action["args"])
-        case "-getrated": return message_ai_commands.getrated(**action["args"])
-        case "-getfeedback": return message_ai_commands.getfeedback(**action["args"])
         case "-open": return message_ai_commands.open(**action["args"])
         case "-quit" | "close": return message_ai_commands.quit(**action["args"])
         case _: return warn(f"Unknown subcommand for message AI: {action['subcommand']}")
+
+def handle_rating(action):
+    match action["subcommand"]:
+        case "-create": return rating_commands.create(**action["args"])
+        case "-get": return rating_commands.get(**action["args"])
+        case "-getall": return rating_commands.getall(**action["args"])
+        case "-getbyuser": return rating_commands.getbyuser(**action["args"])
+        case "-getbychat": return rating_commands.getbychat(**action["args"])   
+        case "-update": return rating_commands.update(**action["args"])
+        case "-delete": return rating_commands.delete(**action["args"])
+        case "-open": return rating_commands.open(**action["args"])
+        case "-quit" | "close": return rating_commands.quit(**action["args"])
+        case _: return warn(f"Unknown subcommand for ratings: {action['subcommand']}")
 
 
 def main():

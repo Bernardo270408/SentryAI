@@ -49,33 +49,3 @@ class AIMessageDAO:
         db.session.delete(message)
         db.session.commit()
         return True
-    
-    @staticmethod
-    def rate_message(message_id, rating, feedback=None):
-        message = AIMessageDAO.get_message_by_id(message_id)
-        if not message:
-            return None
-        if rating not in [-1, 0, 1]:
-            raise ValueError("Rating must be -1, 0, or 1")
-        message.rating = rating
-        message.feedback = feedback
-        db.session.commit()
-        return message
-    
-    @staticmethod
-    def get_messages_with_ratings():
-        return AIMessage.query.filter(AIMessage.rating.isnot(None)).all()
-    
-    
-    @staticmethod
-    def feedback_message(message_id, feedback):
-        message = AIMessageDAO.get_message_by_id(message_id)
-        if not message:
-            return None
-        message.feedback = feedback
-        db.session.commit()
-        return message
-    
-    @staticmethod
-    def get_messages_with_feedback():
-        return AIMessage.query.filter(AIMessage.feedback.isnot(None)).all()

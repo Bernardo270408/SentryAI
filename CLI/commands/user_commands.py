@@ -1,5 +1,4 @@
 import requests
-import requests
 from commands import defaults_commands
 
 #Those are the user-related commands for the CLI tool.
