@@ -15,8 +15,8 @@ Atualmente estamos sem um front-end decente, então caso queira contribuir, agra
   - [Inicializando a API](#inicializando-api)
   - [Inicializando a CLI](#inicializando-a-cli)
 - [Estrutura](#estrutura)
-- [Endpoints da API](#endpoints)
-- [Comandos da CLI](#comandos)
+- [Endpoints da API](#Principais-Endpoints)
+- [Comandos da CLI](#Comandos-Da-CLI)
 
 
 ## Introdução
