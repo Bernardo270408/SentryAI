@@ -28,7 +28,6 @@ def create_user():
 	user_dict.pop('password', None)
 	return jsonify(user_dict), 201
 
-
 @user_bp.route('/email/<email>', methods=['GET'])
 def get_user_by_email(email):
 	user = UserDAO.get_user_by_email(email)

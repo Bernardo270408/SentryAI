@@ -13,7 +13,7 @@ class Chat(db.Model):
     user = relationship("User", back_populates="chats")
     user_messages = relationship("UserMessage", back_populates="chat", cascade="all, delete-orphan")
     ai_messages = relationship("AIMessage", back_populates="chat", cascade="all, delete-orphan")
-
+    ratings = relationship("Rating", back_populates="chat", cascade="all, delete-orphan")   
 
     def to_dict(self):
         return {

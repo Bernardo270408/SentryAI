@@ -12,11 +12,12 @@ Atualmente estamos sem um front-end decente, então caso queira contribuir, agra
   - [Passo a passo](#passo-a-passo)
   - [Configurando a CLI](#configurando-a-cli)
 - [Rodando o Projeto](#rodando-o-projeto)
-  - [Inicializando a API](#inicializando-api)
-  - [Inicializando a CLI](#inicializando-a-cli)
-- [Estrutura](#estrutura)
-- [Endpoints da API](#Principais-Endpoints)
-- [Comandos da CLI](#Comandos-Da-CLI)
+  - [Inicializando a API](#inicializando-a-api)
+  - [Inicializando a CLI](#inicializando-a-api)
+- [Estrutura do Projeto](#estrutura-do-projeto)
+- [Endpoints da API](#principais-endpoints)
+- [Modelo do Banco de Dados](#modelo-do-banco-de-dados)
+- [Comandos da CLI](#comandos-da-cli)
 
 
 ## Introdução
@@ -138,17 +139,20 @@ Backend/                    #
     chat_dao.py             # Chats
     message_user_dao.py     # Mensagens de usuário
     message_ai_dao.py       # Mensagens de IA
+    rating_dao.py           # Avaliações
   models/                   # Modelos ORM
     user.py                 # Usuário
     chat.py                 # Chat
     message_user.py         # Mensagem de usuário
     message_ai.py           # Mensagem de IA
+    rating.py               # Avaliações
   router/                   # Rotas Flask (API REST)
     auth_router.py          # Autenticação (login)
     user_router.py          # Usuários
     chat_router.py          # Chats
     message_user_router.py  # Mensagens de usuário
     message_ai_router.py    # Mensagens de IA
+    rating_router.py        # Avaliações
   middleware/               #
     jwt_util.py             # Autenticação JWT
   migrations/               # Migrações Alembic
@@ -162,6 +166,7 @@ CLI/                        #
     help_commands.py        # Ajuda
     message_ai_commands.py  # Mensagens geradas por IA
     message_commands.py     # Mensagens do Usuario
+    rating_commands.py      # Avaliações de Chats
     sentry_commands.py      # Comandos extras da CLI
     user_commands.py        # Usuarios
   data/                     # Armazenamento
@@ -225,6 +230,17 @@ Dicas:
 - `PUT /ai-messages/<id>` — Atualiza mensagem de IA
 - `DELETE /ai-messages/<id>` — Remove mensagem de IA
 
+### Avaliações
+- `POST /ratings/` — Cria uma avaliação para um chat
+- `GET /ratings/` — Lista todas as avaliações (admin)
+- `GET /ratings/<id>` — Busca avaliação por ID
+- `GET /ratings/user/<user_id>` — Avaliações de um usuário
+- `GET /ratings/chat/<chat_id>` — Avaliação de um chat
+- `GET /ratings/score/<int:score>` — Avaliações com um score específico
+- `GET /ratings/with_feedback` — Chats avaliados
+- `PUT /ratings/<id>` — Atualiza a avaliação
+- `DELETE /ratings/<id>` — Remove a avaliação
+
 ## Modelo do Banco de Dados
 O Banco de Dados, atualmente é armazenado em um simples arquivo sql, mas, pode ser alterado para usar um servidor MySQL facilmente.
 
@@ -272,6 +288,17 @@ O Banco de Dados, atualmente é armazenado em um simples arquivo sql, mas, pode 
 | model_name       | String   |    |    | X        |              | Nome do modelo utilizado               |
 | chat_id          | Integer  |    | X  | X        |              | Chat relacionado                       |
 | user_message_id  | Integer  |    | X  |          |              | Mensagem de usuário origem (opcional)  |
+
+---
+
+#### Rating
+| Coluna     | Tipo     | PK | FK | Not Null | Default | Descrição                      |
+|------------|----------|----|----|----------|---------|--------------------------------|
+| id         | Integer  | X  |    | X        | auto_inc| Identificador da avaliação     |
+| user_id    | Integer  |    | X  | X        |         | Usuário que avaliou            |
+| chat_id    | Integer  |    | X  | X        |         | Chat avaliado                  |
+| score      | Integer  |    |    | X        |         | Nota da avaliação (1-5)        |
+| feedback   | String   |    |    |          |         | Comentário adicional (opcional)|
 
 ---
 
@@ -402,6 +429,24 @@ Gerencia mensagens de IA geradas a partir de interações com o usuário.
 
 ---
 
+### `rating`
+
+Gerencia as avaliações de chats.
+
+| Subcomando   | Ação                                      | Campos Obrigatórios         |
+| ------------ | ----------------------------------------- | --------------------------- |
+| `-create`    | Cria uma nova avaliação.                  | `user_id`, `chat_id`, `score`, `token` |
+| `-get`       | Retorna uma avaliação específica.         | `rating_id`, `token`        |
+| `-getall`    | Retorna todas as avaliações do sistema.   | `token`                     |
+| `-getbyuser` | Retorna todas as avaliações de um usuário.| `user_id`, `token`          |
+| `-getbychat` | Retorna todas as avaliações de um chat.   | `chat_id`, `token`          |
+| `-update`    | Atualiza uma avaliação existente.         | `rating_id`, `token`        |
+| `-delete`    | Remove uma avaliação do sistema.          | `rating_id`, `token`        |
+| `-open`      | Define um `rating_id` como padrão.        | `rating_id`                 |
+| `-quit`      | Remove o `rating_id` padrão atual.        | Nenhum                      |
+
+---
+
 ### `default`
 
 Gerencia valores padrão utilizados nas operações da CLI.
@@ -448,5 +493,6 @@ Exibe ajuda contextual da CLI.
 | ------------ | -------------------------------------------- |
 | `-all`       | Mostra a ajuda completa de todos os comandos |
 | `-[comando]` | Mostra ajuda para o comando específico       |
+
 
 

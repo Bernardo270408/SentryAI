@@ -20,7 +20,8 @@ class Rating(db.Model):
             "id": self.id,
             "user_id": self.user_id,
             "chat_id": self.chat_id,
-            "score": self.score
+            "score": self.score,
+            "feedback": self.feedback  # Adicionado feedback
         }
         
     def __repr__(self):

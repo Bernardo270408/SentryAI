@@ -6,7 +6,6 @@ from extensions import db
 
 rating_bp = Blueprint('rating', __name__, url_prefix='/ratings')
 
-
 @rating_bp.route('/', methods=['POST'])
 @token_required
 def create_rating():
@@ -102,3 +101,20 @@ def delete_rating(rating_id):
         return jsonify({'error': 'Erro ao deletar rating.'}), 500
     return jsonify({'message': 'Rating deletado com sucesso.'})
     
+@rating_bp.route('/score/<int:score>', methods=['GET'])
+@token_required
+def get_ratings_by_score(score):
+    current_user = request.user
+    if not current_user.is_admin:
+        return jsonify({'error': 'Permission denied'}), 403
+    ratings = RatingDAO.get_ratings_by_score(score)
+    return jsonify([r.to_dict() for r in ratings])
+
+@rating_bp.route('/with_feedback', methods=['GET'])
+@token_required
+def get_ratings_with_feedback():
+    current_user = request.user
+    if not current_user.is_admin:
+        return jsonify({'error': 'Permission denied'}), 403
+    ratings = RatingDAO.get_ratings_with_feedback()
+    return jsonify([r.to_dict() for r in ratings])
