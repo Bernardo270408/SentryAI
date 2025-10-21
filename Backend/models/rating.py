@@ -8,18 +8,18 @@ class Rating(db.Model):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    chat_id = Column(Integer, ForeignKey('chats.id'), nullable=False)
     score = Column(Integer, nullable=False) # 1-5
     feedback = Column(String(255), nullable=True)
 
     user = relationship("User", back_populates="ratings")
-    chat = relationship("Chat", back_populates="ratings")
+    chat = relationship("Chat", back_populates="rating", uselist=False)
+
 
     def to_dict(self):
         return {
             "id": self.id,
             "user_id": self.user_id,
-            "chat_id": self.chat_id,
+            "chat_id": self.chat.id if self.chat else None,
             "score": self.score,
             "feedback": self.feedback  # Adicionado feedback
         }

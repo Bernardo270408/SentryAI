@@ -3,8 +3,8 @@ from extensions import db
 
 class ChatDAO:
 	@staticmethod
-	def create_chat(user_id, name):
-		chat = Chat(user_id=user_id, name=name)
+	def create_chat(user_id, name, rating_id=None):
+		chat = Chat(user_id=user_id, name=name,rating_id=rating_id)
 		db.session.add(chat)
 		db.session.commit()
 		return chat
@@ -62,3 +62,9 @@ class ChatDAO:
 			return None
 
 		return history
+	
+	def get_rating_by_chat(chat_id):
+		chat = ChatDAO.get_chat_by_id(chat_id)
+		return chat.rating
+	
+

@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from DAO.rating_dao import RatingDAO
+from DAO.chat_dao import ChatDAO
 from middleware.jwt_util import token_required
-from sqlalchemy.exc import SQLAlchemyError
 from extensions import db
 
 rating_bp = Blueprint('rating', __name__, url_prefix='/ratings')
@@ -9,30 +9,42 @@ rating_bp = Blueprint('rating', __name__, url_prefix='/ratings')
 @rating_bp.route('/', methods=['POST'])
 @token_required
 def create_rating():
-    data = request.json or {}
+    data = request.json
+    current_user = request.user
+
     user_id = data.get('user_id')
-    chat_id = data.get('chat_id')
     score = data.get('score')
+    chat_id = data.get('chat_id')
     feedback = data.get('feedback')
 
-    if not user_id or not chat_id or score is None:
+    if not user_id or score is None:
         return jsonify({'error': 'user_id, chat_id e score são obrigatórios.'}), 400
-
-    try:
-        rating = RatingDAO.create_rating(user_id, chat_id, score, feedback)
-        return jsonify(rating.to_dict()), 201
     
-    except SQLAlchemyError as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+    if current_user.id != user_id and not current_user.is_admin:
+        return jsonify({'error': 'Permission denied'}), 403
+    
+    
+    chat = ChatDAO.get_chat_by_id(chat_id)
 
+    if not chat:
+        return jsonify({'error': 'Chat not found'}), 404    
+    
+    rating = RatingDAO.create_rating(user_id, score, feedback)
+
+    ChatDAO.update_chat(chat_id, {'rating_id': rating.id})
+
+    return jsonify(rating.to_dict()), 201
+    
 
 @rating_bp.route('/', methods=['GET'])
 @token_required
 def get_all_ratings():
     current_user = request.user
+    print(current_user)
+
     if not current_user.is_admin:
         return jsonify({'error': 'Permission denied'}), 403
+    
     ratings = RatingDAO.get_all_ratings()
     return jsonify([r.to_dict() for r in ratings])
 
@@ -61,11 +73,13 @@ def get_ratings_by_user(user_id):
 
 @rating_bp.route('/chat/<int:chat_id>', methods=['GET'])
 @token_required
-def get_ratings_by_chat(chat_id):
+def get_rating_by_chat(chat_id):
     current_user = request.user
+
     if not current_user.is_admin:
         return jsonify({'error': 'Permission denied'}), 403
-    ratings = RatingDAO.get_ratings_by_chat(chat_id)
+    
+    ratings = ChatDAO.get_chat_by_rating(chat_id)
     return jsonify([r.to_dict() for r in ratings])
 
 
