@@ -79,7 +79,8 @@ def get_rating_by_chat(chat_id):
     if not current_user.is_admin:
         return jsonify({'error': 'Permission denied'}), 403
     
-    ratings = ChatDAO.get_chat_by_rating(chat_id)
+    ratings = [ChatDAO.get_rating_by_chat(chat_id)]
+    
     return jsonify([r.to_dict() for r in ratings])
 
 

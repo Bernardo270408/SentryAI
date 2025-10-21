@@ -121,7 +121,6 @@ def getwithfeedback(token, domain='localhost', port=5000, **kwargs):
         print(f"Error fetching ratings: {e}")
         return None
 
-    
 def update(rating_id, token, domain='localhost', port=5000, **kwargs):
     url = f"http://{domain}:{port}/ratings/{rating_id}"
 

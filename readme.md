@@ -208,6 +208,7 @@ Dicas:
 - `GET /chats/` — Lista todos os chats (admin)
 - `GET /chats/<id>` — Busca chat por ID (autenticado)
 - `GET /chats/user/<user_id>` — Chats de um usuário
+- `GET /chats/<id>/rating`  — Avaliação de um chat
 - `PUT /chats/<id>` — Atualiza chat
 - `DELETE /chats/<id>` — Remove chat
 
@@ -265,6 +266,7 @@ O Banco de Dados, atualmente é armazenado em um simples arquivo sql, mas, pode 
 | name       | String   |    |    | X        |                        | Nome do chat                   |
 | created_at | DateTime |    |    |          | db.func.now()          | Data de criação                |
 | user_id    | Integer  |    | X  | X        |                        | Usuário dono do chat           |
+| rating_id  | Integer  |    | X  |          | Null                   | ID da avaliação do chat        |
 
 ---
 
@@ -296,7 +298,6 @@ O Banco de Dados, atualmente é armazenado em um simples arquivo sql, mas, pode 
 |------------|----------|----|----|----------|---------|--------------------------------|
 | id         | Integer  | X  |    | X        | auto_inc| Identificador da avaliação     |
 | user_id    | Integer  |    | X  | X        |         | Usuário que avaliou            |
-| chat_id    | Integer  |    | X  | X        |         | Chat avaliado                  |
 | score      | Integer  |    |    | X        |         | Nota da avaliação (1-5)        |
 | feedback   | String   |    |    |          |         | Comentário adicional (opcional)|
 
@@ -311,6 +312,7 @@ O Banco de Dados, atualmente é armazenado em um simples arquivo sql, mas, pode 
 | message_user    | chat_id           | chat           | id             | N:1                    |
 | ai_message      | chat_id           | chat           | id             | N:1                    |
 | ai_message      | user_message_id   | message_user   | id             | N:1 (opcional)         |
+| rating          | chat_id           | chat           | id             | 1:1 (opcional)         |
 
 ---
 

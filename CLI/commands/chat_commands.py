@@ -14,7 +14,6 @@ def create(name,user_id,token,domain='localhost',port=5000,**kwargs):
         "user_id":user_id 
     }
 
-    
     payload.update(kwargs)
 
     try:
@@ -25,7 +24,6 @@ def create(name,user_id,token,domain='localhost',port=5000,**kwargs):
         print("\033[31m> ",f"ERROR: {e}\033[0m")
         return None
     
-
 def get(chat_id,token, domain='localhost',port=5000,**kwargs):
     url = f"http://{domain}:{port}/chats/{chat_id}"
 
