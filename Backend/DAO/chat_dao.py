@@ -44,7 +44,7 @@ class ChatDAO:
 		return True
 
 	@staticmethod
-	def get_all_messages_in_chat(chat_id):
+	def get_messages_formated(chat_id):
 		chat = ChatDAO.get_chat_by_id(chat_id)
 
 		messages = chat.user_messages + chat.ai_messages
@@ -54,7 +54,7 @@ class ChatDAO:
   
 		for i,message in enumerate(messages):
 			if i % 2 == 0:
-				history.append({'role':'user',    'message': message})
+				history.append({'role':'user','message': message})
 			else:
 				history.append({'role':'assistaint','message': message})
   

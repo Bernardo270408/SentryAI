@@ -4,7 +4,9 @@ from DAO.message_user_dao import UserMessageDAO
 from DAO.chat_dao import ChatDAO
 from datetime import datetime
 from middleware.jwt_util import token_required
-from services.ai_service import OllamaAIService
+from services.ai_service import generate_response, get_avalilable_models
+import dotenv
+
 
 message_ai_bp = Blueprint('ai_message', __name__, url_prefix='/ai-messages')
 
@@ -25,11 +27,11 @@ def create_ai_message():
     if not chat:
         return jsonify({'error': 'Chat not found'}), 404
     
-    ai_service = OllamaAIService()
-    
-    content = ai_service.generate_response(
+    openai_token = dotenv.get_key('.env', 'openai_token')
+    content = generate_response(
         user_id=user_id, 
         chat_id=chat_id, 
+        openai_token=openai_token,
         model=model
     )
     

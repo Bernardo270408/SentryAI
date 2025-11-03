@@ -1,58 +1,50 @@
-from DAO.user_dao import UserDAO
+from openai import OpenAI
 from DAO.chat_dao import ChatDAO
-import ollama
+from DAO.user_dao import UserDAO
+from typing import List, Dict, Any
+import json
 
-class OllamaAIService:
-    def __init__(self):
-        try:
-            with open("data/docs/aboutMe.txt") as me:
-                self.about_me = me.read()
-        except FileNotFoundError:
-            raise FileNotFoundError("The file 'data/docs/aboutMe.txt' was not found.")
-        except Exception as e:
-            raise RuntimeError(f"An error occurred while reading 'aboutMe.txt': {e}")
 
-    def generate_response(self, user_id, chat_id=None, model=None):
+def generate_response(chat_id: int, openai_token: str, model: str, user_id: str) -> Dict[str, Any]:   
+    client = OpenAI(api_key=openai_token)
 
-        #========== Validations ==========
-        print("validating parameters...")
-        if not user_id:
-            raise ValueError("Parameter 'user_id' is required.")
-        if not model:
-            raise ValueError("Parameter 'model' is required.")
+    try:
+        chat = ChatDAO.get_messages_formated(chat_id)
 
-        try:
-            available_models = [m["model"] for m in ollama.list().get("models", [])]
-        except Exception as e:
-            raise RuntimeError(f"Failed to retrieve available models: {e}")
+        context = get_context(user_id)
+        messages = [{"role": "system", "content": context}] + chat
 
-        if model not in available_models:
-            raise ValueError(f"Model '{model}' not available. Options: {available_models}")
+        completion = client.chat.completions.create(model=model, messages=messages)
 
+        return {
+            "status": "success",
+            "response": completion.choices[0].message.content
+        }
+
+    except Exception as e:
+        return {
+            "status": "error",
+            "response": str(e)
+        }
+    
+def get_avalilable_models(openai_token: str) -> List[Dict[str, Any]]:
+    client = OpenAI(api_key=openai_token)
+    try:
+        models = client.models.list()
+        return models.data
+    
+    except Exception as e:
+        return [{"error": str(e)}]
+    
+def get_context(user_id) -> str:
+    with open('Backend/services/data.json', 'r') as f: 
+        context_data = json.load(f)
         user = UserDAO.get_user_by_id(user_id)
+
         if not user:
-            raise ValueError(f"User with id '{user_id}' not found.")
-        
+            raise ValueError("User not found")
 
-        # ========= Prepare Messages ==========
-        about_user = user.to_dict()
+        context_data["user_name"] = user.name if user else "User"
 
-        messages = ChatDAO.get_all_messages_in_chat(chat_id) or []
-
-        system_prompt = (
-            "You are an AI assistant. "
-            "Use the following information to assist the user:\n\n"
-            f"About You:\n{self.about_me}\n\n"
-            f"About User:\n{about_user}\n\n"
-        )
-        messages.insert(0, {"role": "system", "content": system_prompt})
-        print("prepared messages for AI model.")
-        
-        # ========= Generate Response ==========
-        print(f"generating response using model '{model}'...")
-        try:
-            response = ollama.chat(model=model, messages=messages).message.content
-        except Exception as e:
-            raise RuntimeError(f"An error occurred while generating the AI response: {e}")
-
-        return response
+        return json.dumps(context_data)
+    return "no context avaliable."
