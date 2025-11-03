@@ -24,9 +24,10 @@ Atualmente estamos sem um front-end decente, então caso queira contribuir, agra
 O SentryAI, como dito antes, é uma aplicação em desenvolvimento, que visa coletar dados para uma pesquisa cujo objetivo é identificar falhas comuns no entendimento da lei, e fornecer auxílio para pessoas com tais dúvidas
 
 ## Tecnologias Utilizadas
-- **Ollama** - Serviço de IA
+> **Nota:** Nas últimas atualizações, nós, a equipe de desenvolvimento, decidimos por substituír o **Ollama** pela API da **OpenAI**, devido ao alto custo em hardware demandado por LLMs locais. Isso não significa que o projeto se perdeu, uma vêz que o caráter inicial sempre foi experimentação.
+
+- **OpenAI** - Serviço de IA (Substituíndo o Ollama)
 - **Flask** - Framework web para Python.
-- **Flask-Migrate** - Para migrações de banco de dados.
 - **SQLAlchemy** - ORM para interação com o banco de dados.
 - **JWT** - Tokens e Autenticação
 
@@ -39,13 +40,13 @@ Antes de rodar o projeto, certifique-se de ter o Python 3.x e o pip instalados.
 
 ### Passo a Passo
 
-1. Clone este repositório:
+**0.** Clone este repositório:
 ```bash
 git clone https://github.com/Bernardo270408/SentryAI
-cd nome-do-repositorio
+cd SentryAI
 ```
 
-2. Crie um ambiente virtual
+**1.** Crie um ambiente virtual
 ```bash
 cd Backend
 python3 -m venv venv
@@ -60,12 +61,17 @@ python3 -m venv venv
   ./venv\Scripts\activate
   ```
 
-3. Instale as dependencias do Backend
+**2.** Configure as variáveis de Ambiente
+> **Nota:** Atualmente a unica variável de ambiente necessária é `openai-token`. 
+
+Substitua o valor da variável `openai-token` por um token da OpenAI válido no arquivo `example.env`, e então altere seu nome para `.env`.
+
+**3.** Instale as dependencias do Backend
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Crie outro ambiente virtual para a CLI
+**4.** Crie outro ambiente virtual para a CLI
 ```bash
 cd ../CLI
 python3 -m venv venv
@@ -80,7 +86,7 @@ python3 -m venv venv
   ./venv\Scripts\activate
   ```
 
-5. Instale as dependencias da CLI
+**5.** Instale as dependencias da CLI
 ```bash
 pip install -r requirements.txt
 ```
@@ -89,7 +95,7 @@ pip install -r requirements.txt
 É recomendado adicionar o executável da CLI ao PATH de seu sistema.
 
 ### Configurando a CLI
-configure os valores padrão `domain` e `port`, que servirão para dizer à CLI onde exatamente está hospedada a API.
+Configure os valores padrão `domain` e `port`, que servirão para dizer à CLI onde exatamente está hospedada a API.
 Estes são os valores padrão:
 ```bash
 sentry run
@@ -97,9 +103,6 @@ sentry defaults -set key="domain" value="127.0.0.1"
 sentry defaults -set key="port" value="5000"
 sentry quit
 ```
-
-
-
 
 ## Rodando o Projeto
 
@@ -153,9 +156,12 @@ Backend/                    #
     message_user_router.py  # Mensagens de usuário
     message_ai_router.py    # Mensagens de IA
     rating_router.py        # Avaliações
+  services/                 # Serviços do BackEnd
+    ai_service.py           # Serviço de IA OpenAI
+    data.json               # Dados sobre o comportamento da IA
   middleware/               #
     jwt_util.py             # Autenticação JWT
-  migrations/               # Migrações Alembic
+  migrations/               # Migrações
   database/app.sqlite       # Banco SQLite
 CLI/                        #
   commands/                 # Comandos de gerenciamento
@@ -181,11 +187,8 @@ CLI/                        #
   
 ```
 
-
-
 ## Principais Endpoints
 Esta API tem dezenas de endpoints, estando todos listados a seguir.
-
 
 Dicas:
 - Todas as rotas protegidas exigem o header: `Authorization: Bearer <token>`
