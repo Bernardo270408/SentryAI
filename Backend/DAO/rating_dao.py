@@ -3,8 +3,8 @@ from extensions import db
 
 class RatingDAO:
     @staticmethod
-    def create_rating(user_id, chat_id, score, feedback=None):
-        rating = Rating(user_id=user_id, chat_id=chat_id, score=score, feedback=feedback)
+    def create_rating(user_id, score, feedback=None):
+        rating = Rating(user_id=user_id, score=score, feedback=feedback)
         db.session.add(rating)
         db.session.commit()
         return rating
@@ -16,10 +16,6 @@ class RatingDAO:
     @staticmethod
     def get_ratings_by_user(user_id):
         return Rating.query.filter_by(user_id=user_id).all()
-
-    @staticmethod
-    def get_ratings_by_chat(chat_id):
-        return Rating.query.filter_by(chat_id=chat_id).all()
 
     @staticmethod
     def get_all_ratings():
@@ -50,4 +46,17 @@ class RatingDAO:
     @staticmethod
     def get_ratings_with_feedback():
         return Rating.query.filter(Rating.feedback.isnot(None)).all()
-
+    
+    @staticmethod
+    def get_chat_by_rating(rating_id):
+        rating = RatingDAO.get_rating_by_id(rating_id)
+        if rating:
+            return rating.chat
+        return None
+    
+    
+    @staticmethod
+    def get_average_score():
+        from sqlalchemy import func
+        avg_score = db.session.query(func.avg(Rating.score)).scalar()
+        return avg_score

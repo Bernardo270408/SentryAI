@@ -1,8 +1,8 @@
-"""Initial migration
+"""first migration
 
-Revision ID: 862659d4f17e
+Revision ID: 8ce1bdf999ab
 Revises: 
-Create Date: 2025-08-22 00:21:22.298212
+Create Date: 2025-10-21 14:21:50.700283
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '862659d4f17e'
+revision = '8ce1bdf999ab'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -28,13 +28,24 @@ def upgrade():
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email')
     )
+    op.create_table('ratings',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('score', sa.Integer(), nullable=False),
+    sa.Column('feedback', sa.String(length=255), nullable=True),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('chats',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('rating_id', sa.Integer(), nullable=True),
     sa.Column('name', sa.String(length=100), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True),
+    sa.ForeignKeyConstraint(['rating_id'], ['ratings.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('rating_id')
     )
     op.create_table('ai_messages',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -65,5 +76,6 @@ def downgrade():
     op.drop_table('user_messages')
     op.drop_table('ai_messages')
     op.drop_table('chats')
+    op.drop_table('ratings')
     op.drop_table('users')
     # ### end Alembic commands ###

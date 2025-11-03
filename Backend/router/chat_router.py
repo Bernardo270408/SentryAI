@@ -102,3 +102,21 @@ def delete_chat(chat_id):
         return jsonify({"error": "Erro ao deletar chat."}), 500
 
     return jsonify({"message": "Chat deletado com sucesso."})
+
+@chat_bp.route("/<int:chat_id>/rating", methods=["GET"])
+@token_required
+def get_rating_by_chat(chat_id):
+    current_user = request.user
+    chat = ChatDAO.get_chat_by_id(chat_id)
+
+    if not chat:
+        return jsonify({"error": "Chat não encontrado."}), 404
+
+    if chat.user_id != current_user.id and not current_user.is_admin:
+        return jsonify({"error": "Permission denied"}), 403
+
+    rating = ChatDAO.get_rating_by_chat(chat_id)
+    if not rating:
+        return jsonify({"error": "Rating não encontrado para este chat."}), 404
+
+    return jsonify(rating.to_dict()), 200

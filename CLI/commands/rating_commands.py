@@ -2,7 +2,7 @@ import requests
 from commands import defaults_commands
 
 #Those are the rating-related commands for the CLI tool.
-def create(user_id, chat_id, score, feedback=None, domain='localhost', port=5000, **kwargs):
+def create(token,user_id, chat_id, score, feedback=None, domain='localhost', port=5000, **kwargs):
     url = f"http://{domain}:{port}/ratings/"
 
     payload = {
@@ -11,21 +11,30 @@ def create(user_id, chat_id, score, feedback=None, domain='localhost', port=5000
         "score": score,
         "feedback": feedback
     }
+
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+
     payload.update(kwargs)
     
     try:
-        response = requests.post(url, json=payload)
+        response = requests.post(url, json=payload, headers=headers)
         response.raise_for_status()
-        return "Rating created sucessfully"
+        return response.json()
     except requests.RequestException as e:
         print(f"Error creating rating: {e}")
         return None
 
 def get(rating_id, token, domain='localhost', port=5000, **kwargs):
     url = f"http://{domain}:{port}/ratings/{rating_id}"
+
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
     
     try:
-        response = requests.get(url)
+        response = requests.get(url,headers=headers)
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
@@ -35,8 +44,12 @@ def get(rating_id, token, domain='localhost', port=5000, **kwargs):
 def getbyuser(user_id, token, domain='localhost', port=5000, **kwargs):
     url = f"http://{domain}:{port}/ratings/user/{user_id}"
     
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+    
     try:
-        response = requests.get(url)
+        response = requests.get(url,headers=headers)
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
@@ -46,8 +59,12 @@ def getbyuser(user_id, token, domain='localhost', port=5000, **kwargs):
 def getbychat(chat_id, token, domain='localhost', port=5000, **kwargs):
     url = f"http://{domain}:{port}/ratings/chat/{chat_id}"
     
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+    
     try:
-        response = requests.get(url)
+        response = requests.get(url,headers=headers)
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
@@ -56,9 +73,17 @@ def getbychat(chat_id, token, domain='localhost', port=5000, **kwargs):
     
 def getall(token, domain='localhost', port=5000, **kwargs):
     url = f"http://{domain}:{port}/ratings/"
+
+    headers = {
+        token: f"Bearer {token}"
+    }
+    
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
     
     try:
-        response = requests.get(url)
+        response = requests.get(url,headers=headers)
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
@@ -68,8 +93,12 @@ def getall(token, domain='localhost', port=5000, **kwargs):
 def getbyscore(score, token, domain='localhost', port=5000, **kwargs):
     url = f"http://{domain}:{port}/ratings/score/{score}"
     
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+    
     try:
-        response = requests.get(url)
+        response = requests.get(url,headers=headers)
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
@@ -79,7 +108,12 @@ def getbyscore(score, token, domain='localhost', port=5000, **kwargs):
 def getwithfeedback(token, domain='localhost', port=5000, **kwargs):
     url = f"http://{domain}:{port}/ratings/feedback/"
     
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+    
     try:
+        response = requests.get(url,headers=headers)
         response = requests.get(url)
         response.raise_for_status()
         return response.json()
@@ -87,7 +121,6 @@ def getwithfeedback(token, domain='localhost', port=5000, **kwargs):
         print(f"Error fetching ratings: {e}")
         return None
 
-    
 def update(rating_id, token, domain='localhost', port=5000, **kwargs):
     url = f"http://{domain}:{port}/ratings/{rating_id}"
 
