@@ -1,7 +1,7 @@
 # SentryAI
 
 SentryAI é uma aplicação em desenvolvimento voltada ao gerenciamento de modelos de IA, específicamente ao caráter jurídico brasileiro.
-Atualmente estamos sem um front-end decente, então caso queira contribuir, agradeceriamos imensamente.
+Atualmente estamos sem um front-end decente, mas isso será corrigido em breve
 
 ## Índice
 
