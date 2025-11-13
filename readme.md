@@ -29,14 +29,16 @@ O SentryAI, como dito antes, é uma aplicação em desenvolvimento, que visa col
 - **OpenAI** - Serviço de IA (Substituíndo o Ollama)
 - **Flask** - Framework web para Python.
 - **SQLAlchemy** - ORM para interação com o banco de dados.
+- **MySQL** - RDBMS escolhido por sua simplicidade e robustez
 - **JWT** - Tokens e Autenticação
 
 ## Instalação
 
 ### Pré-Requisitos
 Antes de rodar o projeto, certifique-se de ter o Python 3.x e o pip instalados.
-- [python3.x](#https://www.python.org/)
-- [pip](#https://pip.pypa.io/en/stable/)
+- [Python3.x](#https://www.python.org/)
+- [Pip](#https://pip.pypa.io/en/stable/)
+- [MySQL](#https://www.mysql.com/)
 
 ### Passo a Passo
 
@@ -61,17 +63,34 @@ python3 -m venv venv
   ./venv\Scripts\activate
   ```
 
-**2.** Configure as variáveis de Ambiente
-> **Nota:** Atualmente a unica variável de ambiente necessária é `openai-token`. 
-
-Substitua o valor da variável `openai-token` por um token da OpenAI válido no arquivo `example.env`, e então altere seu nome para `.env`.
-
-**3.** Instale as dependencias do Backend
+**2.** Instale as dependencias do Backend
 ```bash
 pip install -r requirements.txt
 ```
 
-**4.** Crie outro ambiente virtual para a CLI
+**3.** Configure as variáveis de Ambiente
+Renomeie o arquivo `.env.example` para `.env` e configure as variáveis de ambiente:
+```python
+  SECRET_KEY="sua_chave_secreta_aqui"
+  DATABASE_URL="mysql://{usuário}:{senha}@localhost:3306/sentryai"
+  openai_token="seu-token"
+```
+
+
+**4.** Configure o Banco de Dados
+
+Primeiro crie **com o MySQL** uma base de dados de nome `sentryai`:
+```sql
+  CREATE DATABASE sentryai;
+```
+
+Após isso, na pasta do backend execute
+```bash
+  flask db upgrade
+```
+
+
+**5.** Crie outro ambiente virtual para a CLI
 ```bash
 cd ../CLI
 python3 -m venv venv
@@ -86,7 +105,7 @@ python3 -m venv venv
   ./venv\Scripts\activate
   ```
 
-**5.** Instale as dependencias da CLI
+**6.** Instale as dependencias da CLI
 ```bash
 pip install -r requirements.txt
 ```
@@ -162,7 +181,6 @@ Backend/                    #
   middleware/               #
     jwt_util.py             # Autenticação JWT
   migrations/               # Migrações
-  database/app.sqlite       # Banco SQLite
 CLI/                        #
   commands/                 # Comandos de gerenciamento
     __init__.py             #
@@ -246,7 +264,7 @@ Dicas:
 - `DELETE /ratings/<id>` — Remove a avaliação
 
 ## Modelo do Banco de Dados
-O Banco de Dados, atualmente é armazenado em um simples arquivo sql, mas, pode ser alterado para usar um servidor MySQL facilmente.
+O Banco de Dados é baseado em MySQL, podendo entretanto ser alterado com facilidade
 
 ### Estrutura das Tabelas do Banco de Dados
 

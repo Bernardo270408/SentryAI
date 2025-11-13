@@ -1,9 +1,7 @@
 import os
-from secrets import token_hex
+import dotenv
 
 class Config:
-    DB_PATH = os.path.join(os.path.dirname(__file__), 'database', 'app.sqlite')
-    SQLALCHEMY_DATABASE_URI = f'sqlite:///{DB_PATH}'
+    SECRET_KEY = dotenv.get_key(dotenv.find_dotenv(), 'SECRET_KEY')
+    SQLALCHEMY_DATABASE_URI = dotenv.get_key(dotenv.find_dotenv(), 'DB_PATH')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-
-    SECRET_KEY = token_hex(32)
