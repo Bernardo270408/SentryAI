@@ -202,6 +202,14 @@ CLI/                        #
   sentry.c                  # Código fonte do inicializador
   sentry.exe                # Inicializador pré-compilado Windows
   sentry                    # Inicializador pré-compilado Linux
+docs/                       # Documentação
+  API_ENDPOINTS.md          # Endpoints da API
+  CLI_COMMANDS.md           # Comandos da CLI
+  DB_SCHEMA.md              # Modelo do Banco de Dados
+.env.example                # Exemplo de variáveis de ambiente
+.env                        # Variáveis de ambiente (não sobe por nada)
+.gitignore                  # Arquivos ignorados pelo git
+readme.md                   # Você está aqui =D
   
 ```
 
