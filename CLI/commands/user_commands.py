@@ -1,5 +1,8 @@
 import requests
 from commands import defaults_commands
+import defaults
+from commands import auth_commands
+import json
 
 #Those are the user-related commands for the CLI tool.
 def create(username, email, password, extra_data=None, domain='localhost', port=5000, **kwargs):
@@ -16,9 +19,15 @@ def create(username, email, password, extra_data=None, domain='localhost', port=
     try:
         response = requests.post(url, json=payload)
         response.raise_for_status()
-        return "User created sucessfully"
+        print("\033[92m>","> User created sucessfully\033[0m")
+
+        login = input("Do you want to login with this user now? (y/n): ")
+        if login.lower() == "y":
+            return auth_commands.login(email, password, domain, port, **kwargs)
+            
     except requests.RequestException as e:
-        print(f"Error creating user: {e}")
+        print("\033[31m> ERROR: ",e,"\033[0m")
+        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
         return None
 
 def get(user_id, domain='localhost', port=5000, **kwargs):
@@ -29,7 +38,8 @@ def get(user_id, domain='localhost', port=5000, **kwargs):
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
-        print(f"Error fetching user: {e}")
+        print("\033[31m> ERROR: ",e,"\033[0m")
+        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
         return None
 
 def getbyemail(email, domain='localhost', port=5000, **kwargs):
@@ -40,7 +50,8 @@ def getbyemail(email, domain='localhost', port=5000, **kwargs):
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
-        print(f"Error fetching user: {e}")
+        print("\033[31m> ERROR: ",e,"\033[0m")
+        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
         return None
 
 def getall(domain='localhost', port=5000, **kwargs):
@@ -51,7 +62,8 @@ def getall(domain='localhost', port=5000, **kwargs):
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
-        print(f"Error fetching users: {e}")
+        print("\033[31m> ERROR: ",e,"\033[0m")
+        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
         return None
 
 def update(user_id, token, domain='localhost', port=5000, **kwargs):
@@ -65,7 +77,8 @@ def update(user_id, token, domain='localhost', port=5000, **kwargs):
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
-        print(f"Error updating user: {e}")
+        print("\033[31m> ERROR: ",e,"\033[0m")
+        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
         return None
 
 def delete(user_id, token, domain='localhost', port=5000, **kwargs):
@@ -76,9 +89,15 @@ def delete(user_id, token, domain='localhost', port=5000, **kwargs):
     try:
         response = requests.delete(url, headers=headers)
         response.raise_for_status()
+
+        defaults.defaults.pop("user_id", None)
+        defaults.defaults.pop("token", None)
+        defaults.save_defaults()
+
         return response.json()
     except requests.RequestException as e:
-        print(f"Error deleting user: {e}")
+        print("\033[31m> ERROR: ",e,"\033[0m")
+        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
         return None
     
 def open(user_id, **kwargs):

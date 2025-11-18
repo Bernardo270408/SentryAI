@@ -163,7 +163,9 @@ def main():
         except Exception as e:
             print(warn(f"An error occurred while processing command: {e}"))
             continue
-
+        
+        if action["command"] is None:
+            continue
         print("> Just a second...")
         bash, RUNNING = process_action(action)
 
@@ -177,6 +179,14 @@ def main():
 
 def breakdown_command(command: str):
     tokens = shlex.split(command)
+
+    if len(tokens) == 0:
+        return {
+        "command": None,
+        "subcommand": None,
+        "args": None,
+        "options": None
+        }
 
     if len(tokens) < 2:
         raise ValueError("Invalid command: commands must have at least a command")

@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from DAO.user_dao import UserDAO
 from middleware.jwt_util import token_required
 from werkzeug.security import generate_password_hash
+from email_validator import validate_email, EmailNotValidError
 
 user_bp = Blueprint('user', __name__, url_prefix='/users')
 
@@ -13,6 +14,12 @@ def create_user():
 	email = data.get('email')
 	extra_data = data.get('extra_data')
 	
+	#Email Validation
+	try:
+		email = validate_email(email).email
+	except EmailNotValidError as e:
+		return jsonify({'error': str(e)}), 400
+
     #Hashing Password
 	password = generate_password_hash(str(data.get('password')))
 	

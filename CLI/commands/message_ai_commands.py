@@ -21,7 +21,8 @@ def create(model, chat_id,user_id,token, domain='localhost',port=5000,**kwargs):
         return response.json()
     
     except requests.RequestException as e:
-        print("\033[31m> ",f"ERROR: {e}\033[0m")
+        print("\033[31m> ERROR: ",e,"\033[0m")
+        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
         return None
     
 def get(ai_message_id,token, domain='localhost',port=5000,**kwargs):
@@ -37,7 +38,8 @@ def get(ai_message_id,token, domain='localhost',port=5000,**kwargs):
         return response.json()
     
     except requests.RequestException as e:
-        print("\033[31m> ",f"ERROR: {e}\033[0m")
+        print("\033[31m> ERROR: ",e,"\033[0m")
+        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
         return None
 
 def getall(token,port=5000, domain='localhost',**kwargs):
@@ -53,7 +55,8 @@ def getall(token,port=5000, domain='localhost',**kwargs):
         return response.json()
     
     except requests.RequestException as e:
-        print("\033[31m> ",f"ERROR: {e}\033[0m")
+        print("\033[31m> ERROR: ",e,"\033[0m")
+        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
         return None
 
 def getbychat(chat_id,token, domain='localhost', port=5000,**kwargs):
@@ -70,7 +73,8 @@ def getbychat(chat_id,token, domain='localhost', port=5000,**kwargs):
         return response.json()
     
     except requests.RequestException as e:
-        print("\033[31m> ",f"ERROR: {e}\033[0m")
+        print("\033[31m> ERROR: ",e,"\033[0m")
+        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
         return None
     
 def getbymodel(model_name,token, domain='localhost',port=5000,**kwargs):
@@ -85,7 +89,8 @@ def getbymodel(model_name,token, domain='localhost',port=5000,**kwargs):
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
-        print("\033[31m> ",f"ERROR: {e}\033[0m")
+        print("\033[31m> ERROR: ",e,"\033[0m")
+        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
         return None
 
 def getbychatandmodel(chat_id, model_name, token, domain='localhost', port=5000, **kwargs):
@@ -100,7 +105,8 @@ def getbychatandmodel(chat_id, model_name, token, domain='localhost', port=5000,
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
-        print("\033[31m> ",f"ERROR: {e}\033[0m")
+        print("\033[31m> ERROR: ",e,"\033[0m")
+        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
         return None
 
 def update(ai_message_id, token, domain='localhost', port=5000, **kwargs):
@@ -114,9 +120,10 @@ def update(ai_message_id, token, domain='localhost', port=5000, **kwargs):
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
-        print(f"Error updating user: {e}")
+        print("\033[31m> ERROR: ",e,"\033[0m")
+        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
         return None
-
+    
 def delete(ai_message_id, token, domain='localhost', port=5000, **kwargs):
     url = f"http://{domain}:{port}/ai-messages/{ai_message_id}"
     headers = {
@@ -127,7 +134,8 @@ def delete(ai_message_id, token, domain='localhost', port=5000, **kwargs):
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
-        print(f"Error deleting user: {e}")
+        print("\033[31m> ERROR: ",e,"\033[0m")
+        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
         return None
 
 def open(ai_message_id, **kwargs):

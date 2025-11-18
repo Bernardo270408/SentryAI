@@ -23,7 +23,8 @@ def create(token,user_id, chat_id, score, feedback=None, domain='localhost', por
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
-        print(f"Error creating rating: {e}")
+        print("\033[31m> ERROR: ",e,"\033[0m")
+        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
         return None
 
 def get(rating_id, token, domain='localhost', port=5000, **kwargs):
@@ -38,7 +39,8 @@ def get(rating_id, token, domain='localhost', port=5000, **kwargs):
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
-        print(f"Error fetching rating: {e}")
+        print("\033[31m> ERROR: ",e,"\033[0m")
+        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
         return None
     
 def getbyuser(user_id, token, domain='localhost', port=5000, **kwargs):
@@ -53,7 +55,8 @@ def getbyuser(user_id, token, domain='localhost', port=5000, **kwargs):
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
-        print(f"Error fetching ratings: {e}")
+        print("\033[31m> ERROR: ",e,"\033[0m")
+        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
         return None
     
 def getbychat(chat_id, token, domain='localhost', port=5000, **kwargs):
@@ -68,7 +71,8 @@ def getbychat(chat_id, token, domain='localhost', port=5000, **kwargs):
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
-        print(f"Error fetching ratings: {e}")
+        print("\033[31m> ERROR: ",e,"\033[0m")
+        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
         return None
     
 def getall(token, domain='localhost', port=5000, **kwargs):
@@ -87,7 +91,8 @@ def getall(token, domain='localhost', port=5000, **kwargs):
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
-        print(f"Error fetching ratings: {e}")
+        print("\033[31m> ERROR: ",e,"\033[0m")
+        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
         return None
     
 def getbyscore(score, token, domain='localhost', port=5000, **kwargs):
@@ -102,7 +107,8 @@ def getbyscore(score, token, domain='localhost', port=5000, **kwargs):
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
-        print(f"Error fetching ratings: {e}")
+        print("\033[31m> ERROR: ",e,"\033[0m")
+        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
         return None
     
 def getwithfeedback(token, domain='localhost', port=5000, **kwargs):
@@ -118,7 +124,8 @@ def getwithfeedback(token, domain='localhost', port=5000, **kwargs):
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
-        print(f"Error fetching ratings: {e}")
+        print("\033[31m> ERROR: ",e,"\033[0m")
+        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
         return None
 
 def update(rating_id, token, domain='localhost', port=5000, **kwargs):
@@ -137,7 +144,8 @@ def update(rating_id, token, domain='localhost', port=5000, **kwargs):
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
-        print(f"Error updating rating: {e}")
+        print("\033[31m> ERROR: ",e,"\033[0m")
+        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
         return None
     
 def delete(rating_id, token, domain='localhost', port=5000, **kwargs):
@@ -150,7 +158,8 @@ def delete(rating_id, token, domain='localhost', port=5000, **kwargs):
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
-        print(f"Error deleting rating: {e}")
+        print("\033[31m> ERROR: ",e,"\033[0m")
+        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
         return None
 
 def open(rating_id, **kwargs):

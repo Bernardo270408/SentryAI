@@ -21,7 +21,8 @@ def create(name,user_id,token,domain='localhost',port=5000,**kwargs):
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
-        print("\033[31m> ",f"ERROR: {e}\033[0m")
+        print("\033[31m> ERROR: ",e,"\033[0m")
+        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
         return None
     
 def get(chat_id,token, domain='localhost',port=5000,**kwargs):
@@ -37,7 +38,8 @@ def get(chat_id,token, domain='localhost',port=5000,**kwargs):
         return response.json()
     
     except requests.RequestException as e:
-        print("\033[31m> ",f"ERROR: {e}\033[0m")
+        print("\033[31m> ERROR: ",e,"\033[0m")
+        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
         return None
 
 def getall(token, domain='localhost',port=5000,**kwargs):
@@ -53,7 +55,8 @@ def getall(token, domain='localhost',port=5000,**kwargs):
         return response.json()
     
     except requests.RequestException as e:
-        print("\033[31m> ",f"ERROR: {e}\033[0m")
+        print("\033[31m> ERROR: ",e,"\033[0m")
+        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
         return None
 
 def getbyuser(user_id,token, domain='localhost',port=5000,**kwargs):
@@ -69,7 +72,8 @@ def getbyuser(user_id,token, domain='localhost',port=5000,**kwargs):
         return response.json()
     
     except requests.RequestException as e:
-        print("\033[31m> ",f"ERROR: {e}\033[0m")
+        print("\033[31m> ERROR: ",e,"\033[0m")
+        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
         return None
     
 def update(chat_id, token, domain='localhost', port=5000, **kwargs):
@@ -83,7 +87,8 @@ def update(chat_id, token, domain='localhost', port=5000, **kwargs):
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
-        print(f"Error updating user: {e}")
+        print("\033[31m> ERROR: ",e,"\033[0m")
+        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
         return None
 
 def delete(chat_id, token, domain='localhost', port=5000, **kwargs):
@@ -96,7 +101,8 @@ def delete(chat_id, token, domain='localhost', port=5000, **kwargs):
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
-        print(f"Error deleting user: {e}")
+        print("\033[31m> ERROR: ",e,"\033[0m")
+        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
         return None
     
 def open(chat_id, **kwargs):

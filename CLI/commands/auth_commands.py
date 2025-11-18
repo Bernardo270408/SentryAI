@@ -8,24 +8,18 @@ def login(email, password, domain='localhost', port=5000,**kwargs):
         "email": email,
         "password": password
         }
-    
-    
     try:
         response = requests.post(url, json=payload)
         response.raise_for_status()
-
 
         token = response.json().get("token")
 
 
         if token:
-            with open("data/default_token.txt", "w") as f:
-                f.write(token)
-                
-            
-            print(kwargs)
-
             defaults.defaults["token"] = token
+            defaults.save_defaults()
+
+
             ask = input("Do you want to use this user as default to the next operations? (y/n): ")
 
             if ask.lower() == "y":
@@ -40,31 +34,28 @@ def login(email, password, domain='localhost', port=5000,**kwargs):
         else:
             print("Login failed: No token received.")
             return None
+        
     except requests.RequestException as e:
-        print(f"Error during authentication: {e}")
+        print("\033[31m> ERROR: ",e,"\033[0m")
+        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
         return None
     
 def gettoken(**kwargs):
-    try:
-        with open("data/default_token.txt", "r") as f:
-            token = f.read().strip()
-            if token:
-                return token
-            else:
-                print("No token found. Please log in.")
-                return None
-    except FileNotFoundError:
-        print("No token found. Please log in.")
-        return None
-    except Exception as e:
-        print(f"Error retrieving token: {e}")
+    token = defaults.defaults.get("token")
+    if token:
+        return token
+    else:
+        print("No token found. Please login first.")
         return None
 
 def logout(**kwargs):
-    try:
-        with open("data/default_token.txt", "w") as f:
-            f.write("")
-        defaults.defaults["token"] = None
-        print("Logged out successfully.")
-    except Exception as e:
-        print(f"Error during logout: {e}")
+    if "token" in defaults.defaults:
+        defaults.defaults.pop("token")
+
+        if "user_id" in defaults.defaults:
+            defaults.defaults.pop("user_id")
+
+        defaults.save_defaults()
+        print("Logged out successfully.")    
+    else:
+        print("No user is currently logged in.")

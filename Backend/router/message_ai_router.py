@@ -9,6 +9,8 @@ import dotenv
 
 
 message_ai_bp = Blueprint('ai_message', __name__, url_prefix='/ai-messages')
+openai_token = dotenv.get_key('.env', 'OPENAI_TOKEN')
+
 
 @message_ai_bp.route('/', methods=['POST'])
 @token_required
@@ -27,7 +29,6 @@ def create_ai_message():
     if not chat:
         return jsonify({'error': 'Chat not found'}), 404
     
-    openai_token = dotenv.get_key('.env', 'openai_token')
     content = generate_response(
         user_id=user_id, 
         chat_id=chat_id, 
