@@ -54,6 +54,7 @@ Você pode voltar para o readme por [este link](../readme.md).
 |------------|----------|----|----|----------|---------|--------------------------------|
 | id         | Integer  | X  |    | X        | auto_inc| Identificador da avaliação     |
 | user_id    | Integer  |    | X  | X        |         | Usuário que avaliou            |
+| chat_id    | Integer  |    | X  | X        |         | Chat avaliado                  |
 | score      | Integer  |    |    | X        |         | Nota da avaliação (1-5)        |
 | feedback   | String   |    |    |          |         | Comentário adicional (opcional)|
 

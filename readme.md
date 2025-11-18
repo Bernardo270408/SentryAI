@@ -240,7 +240,7 @@ sentry auth -login email='test@mail' password='1234'
 
 retorna o token, o seta como padrão e pergunta se o ID do usuário em questão deverá ser utilizado como padrão para próximas iterações
 
-> Nota: Há um documento detalhando cada comando da CLI e detalhes importantes de seu uso, acesse [este link](docs/CLI_COMMANDS.md).
+> Nota: Há um documento detalhando cada comando da CLI e detalhes importantes de seu uso. Para lê-lo, acesse [este link](docs/CLI_COMMANDS.md).
 
 Dicas:
 
@@ -248,6 +248,3 @@ Dicas:
 * Argumentos omitidos usarão valores default.
 * Parâmetros extras serão ignorados (não causam erro).
 * Desenvolvedores podem enviar todos os defaults sem risco.
-
-
-
