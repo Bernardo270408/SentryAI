@@ -13,8 +13,8 @@ def create_rating():
     current_user = request.user
 
     user_id = data.get('user_id')
-    score = data.get('score')
     chat_id = data.get('chat_id')
+    score = data.get('score')
     feedback = data.get('feedback')
 
     if not user_id or score is None:
@@ -29,7 +29,7 @@ def create_rating():
     if not chat:
         return jsonify({'error': 'Chat not found'}), 404    
     
-    rating = RatingDAO.create_rating(user_id, score, feedback)
+    rating = RatingDAO.create_rating(user_id, chat_id, score, feedback)
 
     ChatDAO.update_chat(chat_id, {'rating_id': rating.id})
 
