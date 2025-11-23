@@ -1,4 +1,3 @@
-// src/components/ChatPreview.jsx
 import React, { useEffect, useRef, useState } from 'react'
 import { FaPaperPlane, FaRegUserCircle } from 'react-icons/fa'
 import { GiArtificialIntelligence } from 'react-icons/gi'

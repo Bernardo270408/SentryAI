@@ -9,13 +9,13 @@ class UserMessage(db.Model):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     chat_id = Column(Integer, ForeignKey("chats.id"), nullable=False)
     content = Column(Text, nullable=False)
-    created_at = Column(DateTime, server_default=db.func.now())
-    updated_at = Column(DateTime, onupdate=db.func.now())
+
+    created_at = Column(DateTime, server_default=db.func.now(), nullable=False)
+    updated_at = Column(DateTime, server_default=db.func.now(), onupdate=db.func.now())
 
     user = relationship("User", back_populates="user_messages")
     chat = relationship("Chat", back_populates="user_messages")
 
-    
     def to_dict(self):
         return {
             "id": self.id,
@@ -26,14 +26,15 @@ class UserMessage(db.Model):
             "updated_at": self.updated_at.isoformat() if self.updated_at else None
         }
 
-    def __repr__(self):
-        return f"<Message {self.id} - User ID: {self.user_id} - Chat ID: {self.chat_id}>"
-    
     def update_from_dict(self, data):
+        # Apenas campos permitidos podem ser atualizados
+        allowed_fields = {"content"}
+
         for key, value in data.items():
-            if hasattr(self, key):
+            if key in allowed_fields:
                 setattr(self, key, value)
-                
+
         db.session.commit()
 
-
+    def __repr__(self):
+        return f"<UserMessage id={self.id} user={self.user_id} chat={self.chat_id}>"

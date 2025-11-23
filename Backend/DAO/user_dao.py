@@ -1,54 +1,57 @@
-from models.user import User
+from models.message_user import UserMessage
 from extensions import db
+from sqlalchemy import asc
 
-class UserDAO:
-	@staticmethod
-	def create_user(name, email, password, extra_data=None):
-		user = User(name=name, email=email, password=password, extra_data=extra_data)
+class UserMessageDAO:
 
-		#check if user email is already in use
-		if UserDAO.get_user_by_email(email):
-			return None
+    @staticmethod
+    def create_message(user_id, chat_id, content, created_at=None):
+        message = UserMessage(user_id=user_id, chat_id=chat_id, content=content)
+        if created_at:
+            message.created_at = created_at
 
-		db.session.add(user)
-		db.session.commit()
-		return user
+        db.session.add(message)
+        db.session.commit()
+        return message
 
-	@staticmethod
-	def get_user_by_id(user_id):
-		return User.query.get(user_id)
+    @staticmethod
+    def get_message_by_id(message_id):
+        return UserMessage.query.get(message_id)
 
-	@staticmethod
-	def get_user_by_email(email):
-		return User.query.filter_by(email=email).first()
+    @staticmethod
+    def get_messages_by_user(user_id):
+        return UserMessage.query.filter_by(user_id=user_id).order_by(asc(UserMessage.created_at)).all()
 
-	@staticmethod
-	def get_all_users():
-		return User.query.all()
-	
-	@staticmethod
-	def get_all_admins():
-		return User.query.filter_by(is_admin=True).all()
-	
-	@staticmethod
-	def is_user_admin(user_id):
-		user = User.query.get(user_id)
-		return user.is_admin if user else False
+    @staticmethod
+    def get_messages_by_chat(chat_id):
+        return UserMessage.query.filter_by(chat_id=chat_id).order_by(asc(UserMessage.created_at)).all()
 
-	@staticmethod
-	def update_user(user_id, data):
-		user = UserDAO.get_user_by_id(user_id)
-		if not user:
-			return None
-		data.pop("id", None)
-		user.update_from_dict(data)
-		return user
+    @staticmethod
+    def get_all_messages():
+        return UserMessage.query.order_by(asc(UserMessage.created_at)).all()
 
-	@staticmethod
-	def delete_user(user_id):
-		user = UserDAO.get_user_by_id(user_id)
-		if not user:
-			return False
-		db.session.delete(user)
-		db.session.commit()
-		return True
+    @staticmethod
+    def update_message(message_id, data):
+        message = UserMessageDAO.get_message_by_id(message_id)
+        if not message:
+            return None
+
+        # remover campos que não podem ser alterados
+        data.pop("id", None)
+        data.pop("user_id", None)
+        data.pop("chat_id", None)
+        data.pop("created_at", None)
+
+        message.update_from_dict(data)
+        db.session.commit()
+
+        return message
+
+    @staticmethod
+    def delete_message(message_id):
+        message = UserMessageDAO.get_message_by_id(message_id)
+        if not message:
+            return False
+        db.session.delete(message)
+        db.session.commit()
+        return True

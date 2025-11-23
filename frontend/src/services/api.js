@@ -9,7 +9,6 @@ async function request(path, method = "GET", body = null, auth = true) {
   const token = localStorage.getItem("token");
   if (auth && token) headers["Authorization"] = `Bearer ${token}`;
 
-  // REMOVE BARRAS DUPLICADAS
   const url = `${BASE}${path}`.replace(/([^:]\/)\/+/g, "$1");
 
   const response = await fetch(url, {
@@ -34,7 +33,51 @@ async function request(path, method = "GET", body = null, auth = true) {
   return data;
 }
 
-// ENDPOINTS DE ALTO NÍVEL
+/* ======================================================
+   STREAMING: SSE → /ai-messages/send-stream
+   ====================================================== */
+
+function streamChatMessage({ message, onChunk, onEnd, onError }) {
+  const userId = localStorage.getItem("user_id");
+  const openaiToken = localStorage.getItem("openai_token");
+  const model = localStorage.getItem("model") || "gpt-4.1-mini";
+
+  const url = `${BASE}/ai-messages/send-stream`
+    + `?user_id=${userId}`
+    + `&openai_token=${openaiToken}`
+    + `&model=${model}`;
+
+  const es = new EventSource(url);
+
+  es.addEventListener("chunk", (event) => {
+    const data = JSON.parse(event.data);
+    const token = data.token || "";
+    onChunk && onChunk(token);
+  });
+
+  es.addEventListener("end", () => {
+    onEnd && onEnd();
+    es.close();
+  });
+
+  es.onerror = (err) => {
+    onError && onError(err);
+    es.close();
+  };
+
+  // Enviar mensagem via fetch (mesmo endpoint)
+  fetch(url, {
+    method: "POST",
+    body: JSON.stringify({ message }),
+    headers: { "Content-Type": "application/json" },
+  });
+
+  return es; // para permitir frontend chamar es.close()
+}
+
+// ======================================================
+// EXPORTS DE ALTO NÍVEL
+// ======================================================
 
 export default {
   request,
@@ -69,4 +112,7 @@ export default {
   // ---------- RATING ----------
   getRating: (chatId) =>
     request(`/chats/${chatId}/rating`, "GET"),
+
+  // ---------- STREAMING ----------
+  streamChatMessage,
 };
