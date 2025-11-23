@@ -7,15 +7,14 @@ class Chat(db.Model):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    rating_id = Column(Integer, ForeignKey("ratings.id"), unique=True, nullable=True)
     name = Column(String(100), nullable=False)
     created_at = Column(DateTime, server_default=db.func.now())
 
-
     user = relationship("User", back_populates="chats")
+    rating = relationship("Rating", back_populates="chat", uselist=False)
     user_messages = relationship("UserMessage", back_populates="chat", cascade="all, delete-orphan")
     ai_messages = relationship("AIMessage", back_populates="chat", cascade="all, delete-orphan")
-    rating = relationship("Rating", back_populates="chat", uselist=False)
+
 
     def to_dict(self):
         return {

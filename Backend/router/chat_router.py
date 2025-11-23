@@ -11,16 +11,13 @@ def create_chat():
     current_user = request.user
     data = request.json
 
-    user_id = data.get("user_id")
+    # NÃO pegamos mais o user_id do body (data). Usamos o do token (current_user).
     name = data.get("name")
-
-    if user_id != current_user.id and not current_user.is_admin:
-        return jsonify({"error": "Permission denied"}), 403
-    
 
     if not name:
         return jsonify({"error": "O campo 'name' é obrigatório."}), 400
 
+    # Cria o chat vinculando diretamente ao usuário logado
     chat = ChatDAO.create_chat(user_id=current_user.id, name=name)
     return jsonify(chat.to_dict()), 201
 

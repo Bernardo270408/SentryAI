@@ -1,0 +1,319 @@
+/* src/styles/global.css - Landing additions and theme (updated) */
+:root{
+  --bg-900: #040405;
+  --bg-800: #0b0c0d;
+  --panel: #0f1214;
+  --muted: #9aa3ab;      /* corpo / conteúdo = cinza */
+  --text: #e6eef6;       /* headings = branco */
+  --accent: #ffffff;     /* acentos brancos */
+  --card: #0b0d0f;
+  --radius: 12px;
+  --gap: 20px;
+  --container: 1100px;
+  --glass: rgba(255,255,255,0.03);
+  --glass-strong: rgba(255,255,255,0.06);
+  --user-bubble: rgba(255,255,255,0.96);
+  --assistant-bubble: rgba(255,255,255,0.06);
+}
+
+/* base */
+*{box-sizing:border-box}
+html,body,#root{height:100%}
+body{
+  margin:0;
+  font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  background:var(--bg-900); /* <<< fundo sólido sem degradê */
+  color:var(--text);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  -webkit-font-feature-settings: "liga" 0;
+}
+
+/* Remover quaisquer bullets globais */
+section ul, section li {
+  list-style: none !important;
+  padding-left: 0 !important;
+  margin-left: 0 !important;
+}
+
+/* layout helpers */
+.container{max-width:var(--container);margin:0 auto;padding:0 20px}
+.muted{color:var(--muted)}
+.lead{color:var(--muted);font-size:15px;line-height:1.5}
+
+/* Header */
+.landing-header{
+  display:flex;align-items:center;justify-content:space-between;padding:18px 36px;
+  border-bottom:1px solid rgba(255,255,255,0.03);
+}
+.logo{display:flex;gap:12px;align-items:center}
+.logo .brand{display:flex;flex-direction:column;font-size:14px}
+.logo .tag{font-size:12px;color:var(--muted)}
+.top-nav{display:flex;gap:8px;align-items:center}
+
+/* Buttons */
+.btn{
+  cursor:pointer;border-radius:10px;padding:10px 14px;border:1px solid var(--glass);background:transparent;color:var(--text);
+  transition:all .14s ease;
+}
+.btn:hover{transform:translateY(-2px); opacity:0.98}
+.btn.small{padding:8px 10px}
+.btn.tiny{padding:6px 8px;font-size:13px}
+
+/* Primary = branco com texto escuro (alto contraste) */
+.btn.primary{
+  background:linear-gradient(90deg,var(--accent), #f4f4f4);
+  color:#071018;border:0;box-shadow:0 6px 18px rgba(0,0,0,0.45);
+}
+.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04)}
+.btn.outline{background:transparent;border:1px solid rgba(255,255,255,0.12);color:var(--text)}
+
+/* Hero */
+.hero-section{padding:60px 0}
+.hero-inner{display:flex;gap:40px;max-width:1200px;margin:0 auto;padding:0 20px}
+.hero-left{flex:1;min-width:320px}
+.hero-right{flex:0 0 420px;display:flex;align-items:flex-start;justify-content:center}
+.hero-icon{margin-bottom:18px}
+h1{font-size:40px;margin:0 0 10px;color:var(--text)}
+.subtitle{font-size:18px;color:var(--muted);margin:0 0 18px}
+.hero-desc{color:var(--muted);max-width:600px}
+.hero-ctas{display:flex;gap:12px;margin-top:18px}
+.micro{font-size:13px;color:var(--muted);margin-top:10px}
+
+/* Features */
+.features{padding:48px 20px;max-width:1200px;margin:0 auto}
+.features h3{text-align:center;margin-bottom:6px;color:var(--text)}
+.features .muted{text-align:center;margin-bottom:20px;color:var(--muted)}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:16px}
+.card{
+  background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+  padding:20px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);
+  min-height:180px;display:flex;flex-direction:column;gap:12px;
+}
+.card h4{color:var(--text);margin:0}
+.card p{color:var(--muted);margin:0}
+.card .card-icon{width:44px;height:44px;border-radius:10px;background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center}
+
+/* Tech advanced */
+.tech-advanced{display:flex;gap:40px;max-width:1200px;margin:40px auto;padding:20px}
+.tech-left{flex:1}
+.tech-right{flex:0 0 420px}
+.eyebrow{font-size:12px;color:var(--muted);margin-bottom:8px}
+
+/* mais espaço entre textos e botões */
+.example-card p, .tech-left p {
+  margin-bottom:16px !important;
+}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.example-card{background:var(--card);padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.04)}
+.example-card h4{color:var(--text);margin-bottom:8px}
+.example-card p{color:var(--muted);margin:0}
+
+/* spacing for example card buttons */
+.example-ctas{
+  margin-top:22px !important;
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+
+/* Preview section */
+.preview-section{display:flex;gap:36px;max-width:1200px;margin:40px auto;padding:20px}
+.preview-left{flex:1}
+.preview-right{flex:0 0 420px}
+.preview-card{
+  background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+  padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.04)
+}
+.preview-card h4{color:var(--text);margin:0 0 12px}
+.preview-card .hint{color:var(--muted);font-size:13px}
+
+/* ===== CHAT PREVIEW - MODERNO & MINIMALISTA ===== */
+.chat-preview{
+  --pad:14px;
+  background:rgba(255,255,255,0.015);
+  border-radius:14px;
+  padding:var(--pad);
+  width:100%;
+  height:320px;
+  border:1px solid rgba(255,255,255,0.06);
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.02);
+  overflow:hidden;
+}
+
+/* messages container */
+.chat-messages{
+  flex:1;overflow:auto;padding-right:8px;display:flex;flex-direction:column;gap:10px;
+  scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.06) transparent;
+}
+.chat-messages::-webkit-scrollbar{height:8px;width:8px}
+.chat-messages::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.06);border-radius:8px}
+
+/* message row */
+.msg{
+  display:flex;gap:10px;align-items:flex-end;max-width:86%;animation:fadeUp .28s ease both;
+}
+.msg .avatar{
+  width:34px;height:34px;border-radius:999px;flex:0 0 34px;display:inline-flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,0.04);
+  color:var(--text);font-size:14px;
+  border:1px solid rgba(255,255,255,0.04);
+}
+
+/* user message aligned right */
+.msg.user{margin-left:auto;flex-direction:row-reverse;}
+.msg.user .bubble{
+  background:var(--user-bubble);color:#071018;border-radius:12px;padding:10px 14px;box-shadow:0 6px 18px rgba(0,0,0,0.25);
+  border:1px solid rgba(0,0,0,0.06);max-width:80%;
+}
+
+/* assistant message aligned left */
+.msg.assistant{margin-right:auto;}
+.msg.assistant .bubble{
+  background:var(--assistant-bubble);color:var(--text);border-radius:12px;padding:10px 14px;border:1px solid rgba(255,255,255,0.04);
+  backdrop-filter: blur(4px);
+}
+
+/* bubble text + meta */
+.bubble .text{white-space:pre-wrap;line-height:1.45;color:inherit;font-size:14px}
+.bubble .meta{display:block;font-size:11px;color:var(--muted);margin-top:8px;opacity:0.9}
+
+/* typing indicator (dots) */
+.typing-dots{display:inline-flex;gap:6px;align-items:center}
+.typing-dots span{
+  width:6px;height:6px;border-radius:999px;background:var(--muted);opacity:0.85;transform:translateY(0);
+  animation:dot 1s infinite ease-in-out;
+}
+.typing-dots span:nth-child(2){animation-delay:0.12s}
+.typing-dots span:nth-child(3){animation-delay:0.24s}
+
+/* input area — REMOVIDO VISUALMENTE */
+.chat-input{
+  display:none !important;
+}
+
+/* nota de login — REMOVIDA */
+.preview-note{
+  display:none !important;
+}
+
+/* tech badges — remover ollama */
+.badge[data-tech="ollama"]{
+  display:none !important;
+}
+
+/* animations */
+@keyframes dot{
+  0%{transform:translateY(0);opacity:0.5}
+  50%{transform:translateY(-6px);opacity:1}
+  100%{transform:translateY(0);opacity:0.6}
+}
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:none}
+}
+
+/* footer */
+.site-footer{
+  margin-top:40px;
+  border-top:1px solid rgba(255,255,255,0.03);
+  padding:30px 20px;
+  color:var(--muted);
+}
+.footer-inner{
+  display:flex;
+  gap:40px;
+  max-width:1200px;
+  margin:0 auto;
+  align-items:flex-start;
+  justify-content:space-between;
+}
+.brand-block{
+  display:flex;
+  gap:12px;
+  align-items:center;
+}
+.footer-links{
+  display:flex;
+  gap:40px;
+}
+.footer-links h5{
+  color:var(--text);
+  margin-bottom:8px;
+}
+.footer-bottom{
+  max-width:1200px;
+  margin:18px auto 0;
+  padding:0 20px;
+  display:flex;
+  justify-content:space-between;
+  color:var(--muted);
+  font-size:12px;
+}
+
+/* responsive */
+@media (max-width:980px){
+  .hero-inner{flex-direction:column-reverse;padding-bottom:10px}
+  .cards{grid-template-columns:1fr}
+  .tech-advanced{flex-direction:column}
+  .preview-section{flex-direction:column}
+  .chat-preview{height:420px}
+  .footer-inner{flex-direction:column;gap:12px}
+}
+
+/* ============================
+   BADGES — seção premium
+============================ */
+.tech-badges {
+  text-align: center;
+  margin: 60px auto 40px;
+  padding: 20px 0;
+}
+
+.tech-badges h4 {
+  font-size: 22px;
+  margin-bottom: 18px;
+  font-weight: 600;
+}
+
+/* container centralizado com espaçamento grande */
+.badges {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 20px auto 26px;
+  max-width: 900px;
+}
+
+/* badges maiores + look Vision Pro */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  font-size: 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  font-weight: 500;
+  backdrop-filter: blur(6px);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03),
+              0 4px 18px rgba(0,0,0,0.35);
+  transition: transform .18s ease, opacity .18s ease;
+}
+
+.badge:hover {
+  transform: translateY(-3px);
+  opacity: 0.92;
+}
+
+/* remover ollama */
+.badge[data-tech="ollama"] {
+  display: none !important;
+}
