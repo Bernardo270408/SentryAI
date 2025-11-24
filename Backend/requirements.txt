@@ -7,4 +7,5 @@ PyJWT
 openai
 dotenv
 pymysql
+requests
 email-validator

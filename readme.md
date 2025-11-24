@@ -39,6 +39,7 @@ Antes de rodar o projeto, certifique-se de ter o Python 3.x e o pip instalados.
 - [Python3.x](#https://www.python.org/)
 - [Pip](#https://pip.pypa.io/en/stable/)
 - [MySQL](#https://www.mysql.com/)
+- [NPM](#https://www.npmjs.com/)
 
 ### Passo a Passo
 
@@ -68,7 +69,14 @@ python3 -m venv venv
 pip install -r requirements.txt
 ```
 
-**3.** Configure as variáveis de Ambiente
+**3.** Configure o Banco de Dados
+
+Primeiro crie **com o MySQL** uma base de dados de nome `sentryai`:
+```sql
+  CREATE DATABASE sentryai;
+```
+
+**4.** Configure as variáveis de Ambiente
 Renomeie o arquivo `.env.example` para `.env` e configure as variáveis de ambiente:
 ```python
   SECRET_KEY="sua_chave_secreta_aqui"
@@ -76,21 +84,19 @@ Renomeie o arquivo `.env.example` para `.env` e configure as variáveis de ambie
   openai_token="seu-token"
 ```
 
-
-**4.** Configure o Banco de Dados
-
-Primeiro crie **com o MySQL** uma base de dados de nome `sentryai`:
-```sql
-  CREATE DATABASE sentryai;
-```
-
 Após isso, na pasta do backend execute
 ```bash
   flask db upgrade
 ```
 
+**5.** Instale as dependencias do Frontend
+```bash
+  cd ../frontend
+  npm install
+```
 
-**5.** Crie outro ambiente virtual para a CLI
+
+**5.** Crie outro ambiente virtual para a CLI (para usuários avançados)
 ```bash
 cd ../CLI
 python3 -m venv venv
@@ -105,7 +111,7 @@ python3 -m venv venv
   ./venv\Scripts\activate
   ```
 
-**6.** Instale as dependencias da CLI
+**6.** Instale as dependencias da CLI (para usuários avançados)
 ```bash
 pip install -r requirements.txt
 ```
@@ -113,7 +119,7 @@ pip install -r requirements.txt
 
 É recomendado adicionar o executável da CLI ao PATH de seu sistema.
 
-### Configurando a CLI
+### Configurando a CLI (Para Usuários Avançados apenas)
 Configure os valores padrão `domain` e `port`, que servirão para dizer à CLI onde exatamente está hospedada a API.
 Estes são os valores padrão:
 ```bash
@@ -125,26 +131,34 @@ sentry quit
 
 ## Rodando o Projeto
 
-### Inicializando a API
-Para iniciar a API, caso esteja em um ambiente de testes, rode
+### Inicializando a API (Back-End)
+Para iniciar a API, caso esteja em um ambiente de testes, rode dentro da pasta do backend
 ```bash
-cd Backend
 flask run --debug
 ```
-Em outros casos, recomenda-se o uso de **gunicorn**
+Em outros casos, recomenda-se o uso de `gunicorn`
 
+### Inicializando o Client (Front-End)
+Para iniciar o Client, caso esteja em um ambiente de testes, rode dentro da pasta do frontend
+```bash
+npm run dev
+```
+Em outros casos, recomenda-se usar `npm run buid`
 
-### Inicializando a CLI
+### Inicializando a CLI (Para usuários avançados)
 
-Para iniciar a CLI, simplesmente digite
+Para iniciar a CLI, simplesmente digite:
 ```bash
 sentry run
 ```
 
-Caso não tenha sido incluida ao path, o comando será
+Caso não tenha sido incluida ao path, o comando deverá ser feito na pasta da CLI, sendo então:
 ```bash
 ./sentry run
 ```
+
+- **Observação**: o uso de `./` apenas é necessário para o comando `run`, não sendo utilizado nos demais comandos da CLI.
+
 
 ###
 
