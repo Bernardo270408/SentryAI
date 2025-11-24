@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-import API from "../api"; // IMPORTA SUA API CENTRALIZADA
 
 function ChatArea({ selectedChat, messages, onSendMessage, userName }) {
   const [input, setInput] = useState("");
