@@ -80,7 +80,7 @@ Primeiro crie **com o MySQL** uma base de dados de nome `sentryai`:
 Renomeie o arquivo `.env.example` para `.env` e configure as variáveis de ambiente:
 ```python
   SECRET_KEY="sua_chave_secreta_aqui"
-  DATABASE_URL="mysql://{usuário}:{senha}@localhost:3306/sentryai"
+  DATABASE_URL="mysql+pymysql://{usuário}:{senha}@localhost:3306/sentryai"
   openai_token="seu-token"
 ```
 
@@ -96,7 +96,7 @@ Após isso, na pasta do backend execute
 ```
 
 
-**5.** Crie outro ambiente virtual para a CLI (para usuários avançados)
+**6.** Crie outro ambiente virtual para a CLI (para usuários avançados)
 ```bash
 cd ../CLI
 python3 -m venv venv
@@ -111,7 +111,7 @@ python3 -m venv venv
   ./venv\Scripts\activate
   ```
 
-**6.** Instale as dependencias da CLI (para usuários avançados)
+**7.** Instale as dependencias da CLI (para usuários avançados)
 ```bash
 pip install -r requirements.txt
 ```

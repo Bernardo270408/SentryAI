@@ -3,8 +3,8 @@ from extensions import db
 
 class RatingDAO:
     @staticmethod
-    def create_rating(user_id, chat_id, score, feedback=None):
-        rating = Rating(user_id=user_id, chat_id=chat_id, score=score, feedback=feedback)
+    def create_rating(user_id, score, feedback=None):
+        rating = Rating(user_id=user_id, score=score, feedback=feedback)
         db.session.add(rating)
         db.session.commit()
         return rating

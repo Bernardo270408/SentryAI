@@ -2,14 +2,14 @@ import React, { useEffect, useState } from "react";
 import ChatList from "../components/ChatList";
 import ChatArea from "../components/ChatArea";
 import api from "../services/api";
-import NewChatModal from "../components/NewChatModal";   // <<–– IMPORTA AQUI
+import NewChatModal from "../components/NewChatModal";
 
 export default function ChatApp() {
   const user = JSON.parse(localStorage.getItem("user") || "null");
 
   const [chats, setChats] = useState([]);
   const [activeChatId, setActiveChatId] = useState(null);
-  const [modalOpen, setModalOpen] = useState(false);     // <<–– CONTROLA MODAL
+  const [modalOpen, setModalOpen] = useState(false);
 
   async function loadChats() {
     if (!user) return;
@@ -42,9 +42,24 @@ export default function ChatApp() {
     if (activeChatId === id) setActiveChatId(null);
   }
 
+  // PEGAR CHAT ATUAL
+  const activeChat = chats.find(c => c.id === activeChatId) || null;
+
+  // ADICIONA MENSAGEM DENTRO DO CHAT CERTO
+  function handleSendMessage(newMsg) {
+    if (!activeChatId) return;
+
+    setChats(prev =>
+      prev.map(c =>
+        c.id === activeChatId
+          ? { ...c, messages: [...(c.messages || []), newMsg] }
+          : c
+      )
+    );
+  }
+
   return (
     <>
-      {/* MODAL */}
       {modalOpen && (
         <NewChatModal
           onClose={() => setModalOpen(false)}
@@ -58,10 +73,15 @@ export default function ChatApp() {
           activeChatId={activeChatId}
           onSelect={setActiveChatId}
           onDelete={handleDelete}
-          onNewChat={() => setModalOpen(true)}   // <<–– ABRE MODAL
+          onNewChat={() => setModalOpen(true)}
         />
 
-        <ChatArea chatId={activeChatId} />
+        <ChatArea
+          selectedChat={activeChat}
+          messages={activeChat?.messages ?? []}
+          onSendMessage={handleSendMessage}
+          userName={user?.name || ""}
+        />
       </div>
     </>
   );
