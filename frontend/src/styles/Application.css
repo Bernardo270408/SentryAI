@@ -1,0 +1,394 @@
+/* src/styles/Application.css - Aprimoramento de Layout e Correções */
+
+/* Variáveis (Assumindo que estão definidas em um global.css ou :root)
+ * Exemplo de variáveis esperadas: 
+ * --text: #f0f0f0; 
+ * --muted: #a0a0a0; 
+ * --card: #151618; 
+ * --bg-800: #0b0c0d; 
+ * --accent: #4A90E2; 
+ * --glass: rgba(255, 255, 255, 0.08); 
+ * --glass-strong: rgba(255, 255, 255, 0.12);
+ * --radius: 12px;
+ */
+
+/* --- HEADER & USER PROFILE (Ajustes finos) --- */
+
+.landing-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg-900, #000000);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.logo-app {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+/* CORREÇÃO: Força o subtítulo a quebrar linha */
+.brand-app {
+    display: flex;
+    flex-direction: column; 
+    font-size: 14px;
+}
+
+.brand-app strong { 
+    font-size: 18px; 
+    line-height: 1.1; 
+}
+.tag-app { 
+    font-size: 11px; 
+    color: var(--muted); 
+}
+
+.user-profile-nav {
+    position: relative; /* Necessário para posicionar o modal abaixo dele */
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: var(--radius);
+    background: var(--glass);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition: all .14s ease;
+    z-index: 102; /* Garante que o container do usuário fique acima do resto */
+}
+
+.user-profile-nav:hover {
+    background: var(--glass-strong);
+    transform: translateY(-1px);
+}
+
+.user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgb(39, 38, 38); /* Usando variável para padronizar cor */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+/* --- CORREÇÃO: CSS DO MODAL DE USUÁRIO (Estilo e Posicionamento) --- */
+.user-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.0);
+    animation: fadeIn .15s ease-out;
+}
+
+.user-modal-content {
+    /* POSICIONAMENTO FIXO E ESTILIZADO */
+    position: fixed; 
+    top: 65px; /* Ajuste para cair logo abaixo do header */
+    right: 20px;
+    width: 220px;
+    background: var(--bg-800, #0b0c0d);
+    border-radius: 10px; 
+    padding: 6px; 
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05); 
+    border: none;
+    backdrop-filter: blur(8px); 
+    display: flex;
+    flex-direction: column;
+    animation: scaleIn .2s ease-out;
+    z-index: 101;
+}
+
+.modal-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    text-align: left;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background .15s, color .15s;
+    font-size: 14px;
+}
+
+.modal-option:hover {
+    background: var(--glass-strong);
+    color: var(--accent);
+}
+
+.modal-option.logout {
+    color: #FF7070;
+}
+.modal-option.logout:hover {
+    background: rgba(255, 112, 112, 0.1);
+    color: #ffc2c2;
+}
+
+.divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    margin: 4px 0;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes scaleIn { 
+    from { 
+        opacity: 0; 
+        transform: scale(0.95) translateY(-5px); 
+    } 
+    to { 
+        opacity: 1; 
+        transform: scale(1) translateY(0); 
+    } 
+}
+
+/* --- MAIN CONTENT & LAYOUT ASSIMÉTRICO (Mantido e Integrado) --- */
+.application-main {
+    padding-top: 40px;
+    padding-bottom: 60px;
+}
+
+.main-title {
+    font-size: 32px;
+    margin-bottom: 6px;
+}
+
+.lead-app {
+    font-size: 16px;
+    margin-bottom: 30px;
+}
+
+.features-title {
+    font-size: 20px;
+    color: var(--text);
+    margin: 30px 0 15px;
+}
+
+/* --------------------------------------
+ * GRID ASSIMÉTRICO (MASONRY/PAINEL)
+ * -------------------------------------- */
+.app-grid-container {
+    display: grid;
+    gap: 18px;
+    /* Define o layout: 3 colunas, com a primeira coluna sendo 2/3 do tamanho das outras duas */
+    grid-template-columns: 2fr 1fr 1fr; 
+    grid-template-rows: auto auto; /* Duas linhas */
+}
+
+.grid-item {
+    background: var(--card);
+    padding: 24px;
+    border-radius: var(--radius);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: all .2s;
+    cursor: pointer;
+    position: relative;
+}
+
+.grid-item:hover {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.grid-item h4 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.grid-item p {
+    flex-grow: 1; 
+    margin-bottom: 12px;
+}
+
+.item-header {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+    margin-bottom: 10px;
+}
+
+/* Layout do Chat: Ocupa 2 colunas na primeira linha (Largo na horizontal) */
+.grid-item.item-chat {
+    grid-column: 1 / 3; 
+    display: flex;
+    flex-direction: row; 
+    align-items: center;
+    gap: 20px;
+}
+.chat-content {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+}
+.chat-icon-main {
+    width: 80px;
+    height: 80px;
+    border-radius: 16px;
+    background: #ffffff; 
+    color: #000000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* Layout do Dashboard Completo: Ocupa 2 linhas na segunda coluna (Alto na vertical) */
+.grid-item.item-dashboard {
+    grid-row: 2 / 4; 
+    min-height: 250px;
+}
+
+/* Layout do Análise de Contratos: Ocupa o último espaço */
+.grid-item.item-analysis {
+    grid-column: 3 / 4;
+}
+
+/* --------------------------------------
+ * CARROSSEL DE ALERTAS
+ * -------------------------------------- */
+
+.alert-carousel-wrap {
+    overflow: hidden;
+    position: relative;
+    padding-bottom: 30px; 
+    margin-bottom: 20px;
+}
+
+.alert-carousel-track {
+    display: flex;
+    overflow-x: auto; 
+    scroll-snap-type: x mandatory; 
+    -webkit-overflow-scrolling: touch;
+    gap: 18px;
+    padding-bottom: 10px;
+    scrollbar-width: none; 
+    -ms-overflow-style: none;
+}
+.alert-carousel-track::-webkit-scrollbar {
+    display: none;
+}
+
+.carousel-tile {
+    flex: 0 0 450px; 
+    scroll-snap-align: start;
+    background: var(--card);
+    padding: 20px;
+    border-radius: var(--radius);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    transition: all .2s;
+    cursor: pointer;
+}
+
+.carousel-tile:hover {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.carousel-tile .tile-content {
+    flex-grow: 1;
+}
+
+.carousel-tile .alert-title {
+    font-size: 16px;
+    margin: 0 0 4px;
+}
+
+.carousel-tile .tile-icon {
+    flex-shrink: 0;
+    margin-top: 5px;
+}
+
+/* Cores dos Tipos de Alerta */
+.carousel-tile.warning { border-color: rgba(255, 192, 0, 0.2); }
+.carousel-tile.warning .tile-icon { color: #FFC000; }
+
+.carousel-tile.info { border-color: rgba(74, 144, 226, 0.2); }
+.carousel-tile.info .tile-icon { color: #4A90E2; }
+
+.carousel-tile.tip { border-color: rgba(60, 201, 60, 0.2); }
+.carousel-tile.tip .tile-icon { color: #3CC93C; }
+
+
+.carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    transition: background .3s, transform .2s;
+}
+
+.dot.active {
+    background: var(--text);
+    transform: scale(1.2);
+}
+
+
+/* --- RESPONSIVIDADE --- */
+@media (max-width: 980px) {
+    .app-grid-container {
+        /* Em telas menores, volta para o layout de 1 coluna */
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+    }
+
+    .grid-item.item-chat {
+        flex-direction: column; 
+        grid-column: auto;
+    }
+    .grid-item.item-chat .chat-content {
+        align-items: center;
+        text-align: center;
+    }
+    .grid-item.item-dashboard,
+    .grid-item.item-analysis {
+        grid-row: auto; 
+        grid-column: auto;
+        min-height: auto;
+    }
+    
+    .carousel-tile {
+        flex: 0 0 90%; 
+    }
+    
+    .user-name {
+        display: inline;
+    }
+}

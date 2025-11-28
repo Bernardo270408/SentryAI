@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import App from "./App";
 import Home from "./pages/Home";
+import Aplication from "./pages/Aplication";
 import ChatApp from "./pages/ChatApp";
 import "./styles/global.css";
 import "./styles/chat.css";
@@ -30,7 +31,7 @@ createRoot(document.getElementById("root")).render(
             </Protected>
           }
         >
-          <Route index element={<ChatApp />} />
+          <Route index element={<Aplication />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />
