@@ -40,7 +40,6 @@ def create_rating():
 @token_required
 def get_all_ratings():
     current_user = request.user
-    print(current_user)
 
     if not current_user.is_admin:
         return jsonify({'error': 'Permission denied'}), 403

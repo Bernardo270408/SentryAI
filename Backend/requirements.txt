@@ -10,3 +10,14 @@ pymysql
 requests
 email-validator
 google-generativeai
+cryptography
+
+#file_readers
+python-docx
+python-pptx
+openpyxl
+pypdf2
+odfpy
+pyyaml
+beautifulsoup4
+striprtf

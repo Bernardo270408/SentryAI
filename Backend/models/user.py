@@ -16,6 +16,7 @@ class User(db.Model):
     chats = relationship("Chat", back_populates="user", cascade="all, delete-orphan")
     user_messages = relationship("UserMessage", back_populates="user", cascade="all, delete-orphan")
     ratings = relationship("Rating", back_populates="user", cascade="all, delete-orphan")
+    contracts = relationship("Contract", back_populates="user", cascade="all, delete-orphan")
 
     def to_dict(self):
         return {
