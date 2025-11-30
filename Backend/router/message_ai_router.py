@@ -4,7 +4,7 @@ from DAO.message_user_dao import UserMessageDAO
 from DAO.chat_dao import ChatDAO
 from datetime import datetime
 from middleware.jwt_util import token_required
-from services.ai_service import generate_response, generate_response_stream
+from services.ai_service import generate_response, generate_response_stream, generate_chat_title
 
 from dotenv import load_dotenv
 import os
@@ -29,18 +29,35 @@ def get_api_key_for_model(model_name):
         return GEMINI_API_KEY
     return OPENAI_TOKEN
 
+def check_and_update_title(chat_id, user_content, history):
+    """
+    Se o histórico estiver vazio (primeira mensagem), gera um título
+    com IA e atualiza o chat.
+    """
+    if not history:
+        try:
+            # Garante que user_content é string e não está vazio
+            if user_content and isinstance(user_content, str):
+                new_title = generate_chat_title(user_content)
+                ChatDAO.update_chat(chat_id, {'name': new_title})
+                logger.info(f"Chat {chat_id} renomeado para: {new_title}")
+        except Exception as e:
+            logger.error(f"Falha ao renomear chat: {e}")
+
 @message_ai_bp.route("/send", methods=["POST"])
 @token_required
 def send_message():
     data = request.json or {}
     current_user = request.user
+    
+    # Extração de dados
     user_id_primitive = current_user.id
     user_name = current_user.name
 
     chat_id = data.get("chat_id")
     content = data.get("content")
     
-    # --- MODELO ATUALIZADO (FLASH) ---
+    # Modelo padrão atualizado
     model = data.get("model", "gemini-2.5-flash-preview-09-2025")
 
     if not content or not chat_id:
@@ -60,6 +77,9 @@ def send_message():
 
     # Carrega histórico
     history = ChatDAO.get_messages_formated(chat_id) or []
+
+    # --- AUTO-RENAME CHECK ---
+    check_and_update_title(chat_id, content, history)
 
     # Salva msg usuário
     user_msg = UserMessageDAO.create_message(
@@ -110,7 +130,7 @@ def send_stream():
     chat_id = data.get("chat_id")
     content = data.get("content")
     
-    # --- MODELO ATUALIZADO (FLASH) ---
+    # Modelo padrão atualizado
     model = data.get("model", "gemini-2.5-flash-preview-09-2025") 
 
     if not content or not chat_id:
@@ -128,8 +148,11 @@ def send_stream():
     except ValueError as e:
         return jsonify({"error": str(e)}), 500
 
-    # Carrega histórico AGORA
+    # Carrega histórico
     history = ChatDAO.get_messages_formated(chat_id) or []
+
+    # --- AUTO-RENAME CHECK (Antes de iniciar o stream) ---
+    check_and_update_title(chat_id, content, history)
 
     # Salva msg usuário
     UserMessageDAO.create_message(
@@ -161,7 +184,6 @@ def send_stream():
                     
             except Exception as e:
                 logger.exception("Error while streaming to client")
-                # Tratamento de erro de cota no stream para o usuário
                 err_msg = str(e)
                 if "429" in err_msg:
                     err_msg = "Limite de requisições excedido. Tente novamente em instantes."
@@ -196,7 +218,7 @@ def create_ai_message():
     target_user_id = data.get('user_id')
     chat_id = data.get('chat_id')
     
-    # --- MODELO ATUALIZADO (FLASH) ---
+    # Modelo padrão atualizado
     model = data.get("model", "gemini-2.5-flash-preview-09-2025")
     
     prompt = data.get('prompt')
@@ -217,6 +239,9 @@ def create_ai_message():
     target_user_name = target_user.name if target_user else "Usuário"
     
     history = ChatDAO.get_messages_formated(chat_id) or []
+
+    # Auto-rename
+    check_and_update_title(chat_id, prompt, history)
 
     try:
         api_key = get_api_key_for_model(model)
@@ -246,7 +271,8 @@ def create_ai_message():
 
     return jsonify(message_ai.to_dict()), 201
 
-# ... (Rotas GET/PUT/DELETE mantidas inalteradas) ...
+# ... Rotas GET/PUT/DELETE padrão ...
+
 @message_ai_bp.route('/<int:message_id>', methods=['GET'])
 @token_required
 def get_ai_message_detail(message_id):
