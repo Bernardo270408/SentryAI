@@ -1,9 +1,10 @@
 import React from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import AppHeader from "./components/AppHeader";
 
 export default function App() {
   const navigate = useNavigate();
+  const location = useLocation(); // Hook para pegar a rota atual
   const user = JSON.parse(localStorage.getItem("user")) || { name: "Usuário", initial: "U" };
 
   function handleLogout() {
@@ -12,10 +13,13 @@ export default function App() {
     navigate("/");
   }
 
+  // Verifica se é a página de chat
+  const isChatPage = location.pathname.includes("/chat");
+
   return (
     <div className="app-root">
-      {/* Passamos apenas a função de logout e o usuário; AppHeader usa useNavigate internamente */}
-      <AppHeader user={user} onLogout={handleLogout} />
+      {/* Renderiza AppHeader APENAS se NÃO for a página de chat */}
+      {!isChatPage && <AppHeader user={user} onLogout={handleLogout} />}
 
       <main className="main-wrapper">
         <Outlet />
