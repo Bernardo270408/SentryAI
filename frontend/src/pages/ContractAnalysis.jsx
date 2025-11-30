@@ -1,20 +1,18 @@
 import React, { useState, useRef } from "react";
 import { FiZap, FiPlay, FiArrowUp, FiPaperclip, FiArrowUpCircle } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
 import FooterContent from "../components/FooterComponent";
 import "../styles/contractAnalysis.css";
 import api from "../services/api";
 
 /* COMPONENTE VISUAL DA BARRA DE RISCO */
 function RiskMeter({ score }) {
-  // Define nível
   let level = "safe";
   if (score > 30) level = "warning";
   if (score > 60) level = "danger";
 
-  // Cria 10 segmentos (cada um vale 10 pontos)
   const segments = Array.from({ length: 20 }, (_, i) => {
-    // Se o score for 45, active até o segmento 9 (45/5 = 9)
     const isActive = i < (score / 5); 
     return <div key={i} className={`risk-segment ${isActive ? "active" : ""}`} />;
   });
@@ -50,7 +48,7 @@ function heuristicAnalyze(text) {
     const low = ln.toLowerCase();
     keywords.forEach((kw) => {
       if (kw.k.some(w => low.includes(w))) {
-        riskPoints += 15; // Pontua risco
+        riskPoints += 15;
         highlights.push({
           id: `${i}-${kw.tag}`,
           lineNumber: i + 1,
@@ -84,7 +82,6 @@ export default function ContractAnalysis() {
   const fileRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
 
-  // --- Lógica de Drag/Drop e Arquivo ---
   function handleDrop(e) {
     e.preventDefault();
     setIsDragging(false);
@@ -103,7 +100,6 @@ export default function ContractAnalysis() {
     }
   }
 
-  // --- AÇÃO DE ANALISAR ---
   async function handleAnalyze() {
     if (!file && !textPreview.trim()) return alert("Envie um arquivo ou cole texto.");
     setStatus("processing");
@@ -117,7 +113,6 @@ export default function ContractAnalysis() {
         const res = await api.analyzeContract(form);
         setAnalysis(res);
       } else {
-        // Fallback se API offline
         setTimeout(() => setAnalysis(heuristicAnalyze(textPreview)), 1500);
       }
     } catch (err) {
@@ -129,7 +124,6 @@ export default function ContractAnalysis() {
     }
   }
 
-  // --- CHAT SOBRE O CONTRATO ---
   async function sendChat(msg) {
     if (!msg.trim()) return;
     setMessages(prev => [...prev, { id: Date.now(), role: "user", text: msg }]);
@@ -146,7 +140,6 @@ export default function ContractAnalysis() {
     }
   }
 
-  // Determina a classe de cor de fundo baseada no risco
   const getRiskClass = () => {
     if (!analysis) return "";
     const s = analysis.risk.score;
@@ -156,95 +149,99 @@ export default function ContractAnalysis() {
   };
 
   return (
-    <div className="ca-wrapper">
-      <header className="ca-header">
-        <div className="ca-header-left">
-          <FiZap size={22} />
-          <span>Análise de Contrato</span>
-        </div>
-      </header>
+    // ESTRUTURA ALTERADA: contract-page-root envolve tudo
+    <div className="contract-page-root">
+      
+      {/* Wrapper limita apenas o conteúdo principal */}
+      <div className="ca-wrapper">
+        <header className="ca-header">
+          <div className="ca-header-left">
+            <FiZap size={22} />
+            <span>Análise de Contrato</span>
+          </div>
+        </header>
 
-      <main className="ca-main">
-        {/* COLUNA ESQUERDA (INPUT) */}
-        <section className="ca-col">
-          <div className="ca-card">
-            <h3>1. Documento</h3>
-            <div
-              className={`ca-upload ${isDragging ? "dragover" : ""}`}
-              onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-              onDragLeave={() => setIsDragging(false)}
-              onDrop={handleDrop}
-              onClick={() => fileRef.current?.click()}
-            >
-              <div>
-                <FiArrowUpCircle size={32} style={{ marginBottom: 8, opacity: 0.7 }} />
-                <p>{file ? file.name : "Arraste ou clique"}</p>
+        <main className="ca-main">
+          {/* COLUNA ESQUERDA */}
+          <section className="ca-col">
+            <div className="ca-card">
+              <h3>1. Documento</h3>
+              <div
+                className={`ca-upload ${isDragging ? "dragover" : ""}`}
+                onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                onDragLeave={() => setIsDragging(false)}
+                onDrop={handleDrop}
+                onClick={() => fileRef.current?.click()}
+              >
+                <div>
+                  <FiArrowUpCircle size={32} style={{ marginBottom: 8, opacity: 0.7 }} />
+                  <p>{file ? file.name : "Arraste ou clique"}</p>
+                </div>
+                <input type="file" ref={fileRef} onChange={(e) => processFile(e.target.files[0])} hidden />
               </div>
-              <input type="file" ref={fileRef} onChange={(e) => processFile(e.target.files[0])} hidden />
+
+              <button
+                className="ca-btn primary full ca-send-btn"
+                onClick={handleAnalyze}
+                disabled={status === "processing"}
+              >
+                <FiPlay /> {status === "processing" ? "Analisando IA..." : "Analisar Risco"}
+              </button>
             </div>
 
-            <button
-              className="ca-btn primary full ca-send-btn"
-              onClick={handleAnalyze}
-              disabled={status === "processing"}
-            >
-              <FiPlay /> {status === "processing" ? "Analisando IA..." : "Analisar Risco"}
-            </button>
-          </div>
-
-          <div className="ca-card">
-            <h3>Pré-visualização</h3>
-            <textarea
-              className="ca-textarea"
-              value={textPreview}
-              onChange={e => setTextPreview(e.target.value)}
-              placeholder="Cole o texto do contrato aqui..."
-            />
-          </div>
-        </section>
-
-        {/* COLUNA DIREITA (RESULTADO) */}
-        <section className="ca-col">
-          {/* CARD DE RESULTADO COM CLASSE DINÂMICA */}
-          <div className={`ca-card ${getRiskClass()}`}>
-            <h3>Resultado da Análise</h3>
-
-            {status === "idle" && <p className="muted small">Aguardando documento...</p>}
-            {status === "processing" && <p className="muted small">A IA está lendo o contrato...</p>}
-
-            {status === "done" && analysis && (
-              <div className="fade-in">
-                {/* COMPONENTE DA BARRINHA */}
-                <RiskMeter score={analysis.risk.score} />
-
-                <p className="small" style={{ lineHeight: 1.6 }}>{analysis.summary}</p>
-
-                <h4 style={{ marginTop: 20, marginBottom: 10 }}>Pontos de Atenção</h4>
-                <ul className="ca-highlight-list">
-                  {analysis.highlights.map((h, i) => (
-                    <li key={i} className="ca-highlight-item">
-                      <div className="tag">{h.tag}</div>
-                      <div className="snippet">"{h.snippet}"</div>
-                      <div className="line muted small">Ref: Linha {h.lineNumber || "?"}</div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-
-          {/* CHAT */}
-          <div className="ca-card">
-            <h3>Dúvidas sobre o contrato</h3>
-            <div className="ca-chat-box">
-              {messages.map(m => (
-                <div key={m.id} className={`ca-msg ${m.role}`}>{m.text}</div>
-              ))}
+            <div className="ca-card">
+              <h3>Pré-visualização</h3>
+              <textarea
+                className="ca-textarea"
+                value={textPreview}
+                onChange={e => setTextPreview(e.target.value)}
+                placeholder="Cole o texto do contrato aqui..."
+              />
             </div>
-            <ChatInput onSend={sendChat} disabled={!analysis} />
-          </div>
-        </section>
-      </main>
+          </section>
+
+          {/* COLUNA DIREITA */}
+          <section className="ca-col">
+            <div className={`ca-card ${getRiskClass()}`}>
+              <h3>Resultado da Análise</h3>
+
+              {status === "idle" && <p className="muted small">Aguardando documento...</p>}
+              {status === "processing" && <p className="muted small">A IA está lendo o contrato...</p>}
+
+              {status === "done" && analysis && (
+                <div className="fade-in">
+                  <RiskMeter score={analysis.risk.score} />
+                  <p className="small" style={{ lineHeight: 1.6 }}>{analysis.summary}</p>
+                  <h4 style={{ marginTop: 20, marginBottom: 10 }}>Pontos de Atenção</h4>
+                  <ul className="ca-highlight-list">
+                    {analysis.highlights.map((h, i) => (
+                      <li key={i} className="ca-highlight-item">
+                        <div className="tag">{h.tag}</div>
+                        <div className="snippet">"{h.snippet}"</div>
+                        <div className="line muted small">Ref: Linha {h.lineNumber || "?"}</div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            <div className="ca-card">
+              <h3>Dúvidas sobre o contrato</h3>
+              <div className="ca-chat-box">
+                {messages.map(m => (
+                  <div key={m.id} className={`ca-msg ${m.role}`}>
+                    <ReactMarkdown>{m.text}</ReactMarkdown>
+                  </div>
+                ))}
+              </div>
+              <ChatInput onSend={sendChat} disabled={!analysis} />
+            </div>
+          </section>
+        </main>
+      </div>
+
+      {/* Footer fora do wrapper limitado */}
       <FooterContent />
     </div>
   );

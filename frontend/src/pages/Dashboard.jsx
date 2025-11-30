@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
     FileText, TrendingUp, AlertCircle, MessageSquare, 
-    AlertTriangle, ArrowRight, ShieldAlert 
+    ShieldAlert, ArrowRight 
 } from 'lucide-react';
 import { 
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
@@ -12,7 +12,10 @@ import FooterContent from '../components/FooterComponent.jsx';
 import api from '../services/api';
 import '../styles/dashboard.css';
 
-const COLORS = ['#4A90E2', '#50E3C2', '#F5A623', '#D0021B', '#9B59B6'];
+const COLORS = [
+    '#4A90E2', '#50E3C2', '#F5A623', '#D0021B', '#9B59B6', 
+    '#FF6B6B', '#1DD1A1', '#54A0FF', '#5F27CD', '#FF9FF3'
+];
 
 export default function Dashboard() {
     const navigate = useNavigate();
@@ -23,7 +26,7 @@ export default function Dashboard() {
         categories: [],
         history: [],
         risk_alerts: [],
-        top_doubts: [], // Novo campo
+        top_doubts: [],
         insight: { type: 'neutral', text: '...' }
     });
 
@@ -39,7 +42,11 @@ export default function Dashboard() {
             return (
                 <div className="custom-chart-tooltip">
                     <p className="label">{`${label}`}</p>
-                    <p style={{ color: payload[0].color }}>{`Interações: ${payload[0].value}`}</p>
+                    {payload.map((entry, index) => (
+                        <p key={index} style={{ color: entry.color, fontSize: '12px', margin: 0 }}>
+                            {entry.name}: {entry.value}
+                        </p>
+                    ))}
                 </div>
             );
         }
@@ -49,7 +56,7 @@ export default function Dashboard() {
     if (loading) {
         return (
             <div className="landing-root dashboard-root">
-                <main className="container dashboard-main" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <main className="container dashboard-main center-loading">
                     <p className="muted">Analisando dados...</p>
                 </main>
             </div>
@@ -141,35 +148,63 @@ export default function Dashboard() {
 
                 {/* 3. GRÁFICOS */}
                 <section className="charts-grid">
+                    {/* Gráfico de Volume */}
                     <div className="chart-container main-chart">
                         <div className="chart-header"><h4>Volume de Consultas (7 dias)</h4></div>
-                        <div style={{ width: '100%', height: 300 }}>
+                        <div style={{ width: '100%', height: 350 }}>
                             <ResponsiveContainer>
                                 <AreaChart data={stats.chart_data}>
-                                    <defs>
-                                        <linearGradient id="colorConsultas" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#4A90E2" stopOpacity={0.8}/><stop offset="95%" stopColor="#4A90E2" stopOpacity={0}/>
-                                        </linearGradient>
-                                    </defs>
                                     <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
                                     <XAxis dataKey="name" stroke="#a0a0a0" tick={{fontSize: 12}} />
                                     <YAxis stroke="#a0a0a0" tick={{fontSize: 12}} />
                                     <Tooltip content={<CustomTooltip />} />
-                                    <Area type="monotone" dataKey="consultas" stroke="#4A90E2" strokeWidth={2} fill="url(#colorConsultas)" />
+                                    
+                                    {stats.categories.map((cat, index) => (
+                                        <Area 
+                                            key={cat.name}
+                                            type="monotone" 
+                                            dataKey={cat.name} 
+                                            stackId="1" 
+                                            stroke={COLORS[index % COLORS.length]} 
+                                            fill={COLORS[index % COLORS.length]} 
+                                            fillOpacity={0.6}
+                                        />
+                                    ))}
                                 </AreaChart>
                             </ResponsiveContainer>
                         </div>
                     </div>
+                    
+                    {/* Gráfico de Pizza - CORRIGIDO (Legenda Horizontal) */}
                     <div className="chart-container pie-chart">
-                        <div className="chart-header"><h4>Áreas de Interesse (Por Chat)</h4></div>
-                        <div style={{ width: '100%', height: 300 }}>
+                        <div className="chart-header"><h4>Áreas de Interesse</h4></div>
+                        <div style={{ width: '100%', height: 380 }}> 
                             <ResponsiveContainer>
                                 <PieChart>
-                                    <Pie data={stats.categories} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={4} dataKey="value">
-                                        {stats.categories.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
+                                    <Pie 
+                                        data={stats.categories} 
+                                        cx="50%" // Centralizado
+                                        cy="45%" // Um pouco para cima para dar espaço à legenda embaixo
+                                        innerRadius={70} 
+                                        outerRadius={100} 
+                                        paddingAngle={4} 
+                                        dataKey="value"
+                                    >
+                                        {stats.categories.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
                                     </Pie>
                                     <Tooltip />
-                                    <Legend layout="vertical" verticalAlign="middle" align="right" wrapperStyle={{ fontSize: '12px', color: '#ccc' }} />
+                                    <Legend 
+                                        layout="horizontal" 
+                                        verticalAlign="bottom" 
+                                        align="center"
+                                        wrapperStyle={{ 
+                                            fontSize: '11px', 
+                                            color: '#ccc',
+                                            paddingTop: '20px'
+                                        }} 
+                                    />
                                 </PieChart>
                             </ResponsiveContainer>
                         </div>
@@ -203,8 +238,6 @@ export default function Dashboard() {
 
                     <div className="insights-panel">
                         <h4>Sentry AI Insights</h4>
-                        
-                        {/* Dica do Dia */}
                         <div className={`insight-card ${stats.insight?.type === 'warning' ? 'warning' : ''}`} style={{marginBottom: 10}}>
                             <TrendingUp className="accent-icon" size={24} />
                             <div>
@@ -212,8 +245,6 @@ export default function Dashboard() {
                                 <p className="muted">{stats.insight?.text}</p>
                             </div>
                         </div>
-
-                        {/* NOVO: Maiores Dúvidas Identificadas (Dados REAIS das mensagens) */}
                         <div className="insight-card" style={{ flexDirection: 'column', gap: '10px', borderLeft: '4px solid #50E3C2' }}>
                             <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                                 <FileText className="accent-icon" size={24} style={{ color: '#50E3C2' }} />

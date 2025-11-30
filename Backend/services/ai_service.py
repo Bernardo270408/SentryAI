@@ -160,7 +160,7 @@ def analyze_contract_text(text: str) -> Dict:
     genai.configure(api_key=api_key)
     
     model = genai.GenerativeModel(
-        model_name="gemini-2.5-flash-preview-09-2025", 
+        model_name="gemini-2.0-flash", 
         generation_config=GEMINI_JSON_CONFIG,
         system_instruction="""
         Você é um auditor jurídico sênior.
@@ -185,7 +185,7 @@ def analyze_contract_text(text: str) -> Dict:
 def chat_about_contract(message: str, context: str) -> str:
     api_key = os.getenv("GEMINI_API_KEY")
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-2.5-flash-preview-09-2025")
+    model = genai.GenerativeModel("gemini-2.0-flash")
     res = model.generate_content(f"Contexto: {context}\n\nPergunta: {message}")
     return res.text
 

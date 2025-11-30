@@ -44,6 +44,8 @@ section ul, section li {
 .landing-header{
   display:flex;align-items:center;justify-content:space-between;padding:18px 36px;
   border-bottom:1px solid rgba(255,255,255,0.03);
+  width: 100%;       /* Força largura total */
+  max-width: 100%;   /* Garante override se a classe .container estiver no elemento */
 }
 .logo{display:flex;gap:12px;align-items:center}
 .logo .brand{display:flex;flex-direction:column;font-size:14px}

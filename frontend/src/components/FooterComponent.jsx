@@ -8,7 +8,7 @@ const FooterContent = () => (
           <span className="badge">React</span>
           <span className="badge">Flask</span>
           <span className="badge">MySQL</span>
-          <span className="badge">GPT-5</span>
+          <span className="badge">Gemini 2.5 Flash</span>
         </div>
         <p className="muted small">Arquitetura moderna para desempenho, privacidade e escalabilidade.</p>
       </section>
