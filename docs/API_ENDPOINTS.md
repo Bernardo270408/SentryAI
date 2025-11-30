@@ -9,6 +9,8 @@ Dicas:
 - Todas as respostas negativas seguirão com um código HTTP e uma descrição do problema na key `error`. Em caso de `HTTP 500`, por favor abra uma issue para nos informar.
 
 ## Índice
+- [Análise de Contratos](#análise-de-contratos)
+- [Dashboard](#dashboard)
 - [Autenticação](#autenticação)
 - [Usuários](#usuários)
 - [Chats](#chats)
@@ -208,7 +210,6 @@ Rotas relacionadas ao CRUD do usuário.
     ```js
     {
         "name": "Nome do Chat"
-        "rating_id": 1
     }
     ```
     - Resposta Esperada
@@ -219,9 +220,8 @@ Rotas relacionadas ao CRUD do usuário.
         "name": "Nome do Chat",
         "rating_id": null,
         "created_at": "2024-01-01T00:00:00"
-        "updated_at": "2024-01-02T00:00:00"
     }
-    ```
+    ```},{find:
 - `DELETE /chats/<id>` — Remove chat (autenticado)
     - Resposta Esperada
     ```js
@@ -487,6 +487,73 @@ Rotas relacionadas ao CRUD do usuário.
     ```js
     {
         "message": "AI Message deleted"
+    }
+    ```
+
+## Análise de Contratos
+Rotas para análise de documentos e interação com a IA sobre o contexto.
+
+- `POST /contract/analyze` — Envia um texto ou arquivo para análise estruturada pela IA. (autenticado)
+    - Corpo da Requisição (multipart/form-data ou application/json):
+    ```js
+    // Exemplo com texto
+    {
+        "text": "Conteúdo do contrato para análise..."
+    }
+    // Exemplo com arquivo (multipart/form-data)
+    // file: [conteúdo do arquivo]
+    // text: [texto opcional para contexto]
+    ```
+    - Resposta Esperada (JSON estruturado pela IA):
+    ```js
+    {
+        "analise_geral": "...",
+        "clausulas_criticas": [
+            {"titulo": "...", "risco": "...", "sugestao": "..."}
+        ],
+        "resumo_executivo": "..."
+    }
+    ```
+
+- `POST /contract/chat` — Permite conversar com a IA sobre o contexto da análise de contrato. (autenticado)
+    - Corpo da Requisição:
+    ```js
+    {
+        "message": "Qual o risco da cláusula 5?",
+        "context": "Resumo da análise anterior (opcional, mas recomendado)"
+    }
+    ```
+    - Resposta Esperada:
+    ```js
+    {
+        "reply": "A cláusula 5 apresenta um risco de..."
+    }
+    ```
+
+## Dashboard
+Rotas para obter estatísticas e insights do usuário.
+
+- `GET /dashboard/stats` — Retorna estatísticas chave, dados para gráficos e insights da IA. (autenticado)
+    - Resposta Esperada:
+    ```js
+    {
+        "kpis": {
+            "active_cases": 5,
+            "docs_analyzed": 12,
+            "risks_avoided": 3,
+            "next_deadline": "N/A"
+        },
+        "chart_data": [
+            {"name": "25/11", "consultas": 2, "analises": 0},
+            // ... dados dos últimos 7 dias
+        ],
+        "history": [
+            {"id": 10, "action": "Revisão de Contrato", "date": "29/11 14:30", "status": "Ativo"}
+        ],
+        "insight": {
+            "type": "success",
+            "text": "Com base em sua última interação, lembre-se de verificar a validade das assinaturas digitais."
+        }
     }
     ```
 

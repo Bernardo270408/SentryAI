@@ -1,7 +1,6 @@
 # SentryAI
 
-SentryAI é uma aplicação em desenvolvimento voltada ao gerenciamento de modelos de IA, específicamente ao caráter jurídico brasileiro.
-Atualmente estamos sem um front-end decente, mas isso será corrigido em breve
+SentryAI é uma aplicação em desenvolvimento voltada ao gerenciamento de modelos de IA, específicamente ao caráter jurídico brasileiro, cuja principal funcionalidade é a possibilidade de realizar um chat com uma IA especializada na lei brasileira.
 
 ## Índice
 
@@ -24,9 +23,9 @@ Atualmente estamos sem um front-end decente, mas isso será corrigido em breve
 O SentryAI, como dito antes, é uma aplicação em desenvolvimento, que visa coletar dados para uma pesquisa cujo objetivo é identificar falhas comuns no entendimento da lei, e fornecer auxílio para pessoas com tais dúvidas
 
 ## Tecnologias Utilizadas
-> **Nota:** Nas últimas atualizações, nós, a equipe de desenvolvimento, decidimos por substituír o **Ollama** pela API da **OpenAI**, devido ao alto custo em hardware demandado por LLMs locais. Isso não significa que o projeto se perdeu, uma vêz que o caráter inicial sempre foi experimentação.
+> **Nota:** Nas atualizações mais recentes, nós da equipe de desenvolvimento, optamos por subistituír o serviço de IA utilizado anteriormente, o **Ollama** pela api do **ChatGPT 5**, e posteriormente pelo **Gemini 2.5**, ambas pela mesma motivação: custo elevado em hardware e em tokens. Isso não significa que o projeto se perdeu, uma vêz que o caráter inicial sempre foi experimentação.
 
-- **OpenAI** - Serviço de IA (Substituíndo o Ollama)
+- **OpenAI / Gemini** - Serviço de IA (Substituíndo o Ollama. Suporte mútuo)
 - **Flask** - Framework web para Python.
 - **SQLAlchemy** - ORM para interação com o banco de dados.
 - **MySQL** - RDBMS escolhido por sua simplicidade e robustez
@@ -160,9 +159,6 @@ Caso não tenha sido incluida ao path, o comando deverá ser feito na pasta da C
 - **Observação**: o uso de `./` apenas é necessário para o comando `run`, não sendo utilizado nos demais comandos da CLI.
 
 
-###
-
-
 ## Estrutura do Projeto
 ```
 Backend/                    #
@@ -184,13 +180,15 @@ Backend/                    #
     rating.py               # Avaliações
   router/                   # Rotas Flask (API REST)
     auth_router.py          # Autenticação (login)
+    contract_router.py      # Análise de Contratos
+    dashboard_router.py     # Estatísticas e Insights
     user_router.py          # Usuários
     chat_router.py          # Chats
     message_user_router.py  # Mensagens de usuário
     message_ai_router.py    # Mensagens de IA
     rating_router.py        # Avaliações
   services/                 # Serviços do BackEnd
-    ai_service.py           # Serviço de IA OpenAI
+    ai_service.py           # Serviço de IA OpenAI/Gemini
     data.json               # Dados sobre o comportamento da IA
   middleware/               #
     jwt_util.py             # Autenticação JWT

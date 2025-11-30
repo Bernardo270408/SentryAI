@@ -32,6 +32,7 @@ Você pode voltar para o readme por [este link](../readme.md).
 | id         | Integer  | X  |    | X        | auto_inc               | Identificador da mensagem      |
 | content    | Text     |    |    | X        |                        | Conteúdo da mensagem           |
 | created_at | DateTime |    |    |          | db.func.now()          | Data de criação                |
+| updated_at | DateTime |    |    |          | db.func.now()          | Data da última atualização     |
 | user_id    | Integer  |    | X  | X        |                        | Usuário autor                  |
 | chat_id    | Integer  |    | X  | X        |                        | Chat relacionado               |
 
@@ -43,6 +44,7 @@ Você pode voltar para o readme por [este link](../readme.md).
 | id               | Integer  | X  |    | X        | auto_inc     | Identificador da mensagem de IA        |
 | content          | Text     |    |    | X        |              | Conteúdo da resposta da IA             |
 | created_at       | DateTime |    |    |          | db.func.now()| Data de criação                        |
+| updated_at       | DateTime |    |    |          | db.func.now()| Data da última atualização             |
 | model_name       | String   |    |    | X        |              | Nome do modelo utilizado               |
 | chat_id          | Integer  |    | X  | X        |              | Chat relacionado                       |
 | user_message_id  | Integer  |    | X  |          |              | Mensagem de usuário origem (opcional)  |
