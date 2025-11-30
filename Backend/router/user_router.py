@@ -100,3 +100,5 @@ def delete_user(user_id):
         return jsonify({'error': 'Usuário não encontrado.'}), 404
     
     return jsonify({'message': 'Usuário deletado com sucesso.'})
+
+

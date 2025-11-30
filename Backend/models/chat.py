@@ -8,7 +8,7 @@ class Chat(db.Model):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     rating_id = Column(Integer, ForeignKey("ratings.id"), unique=True, nullable=True)
-    name = Column(String(100), nullable=False)
+    name = Column(String(100), nullable=True)
     created_at = Column(DateTime, server_default=db.func.now())
 
 

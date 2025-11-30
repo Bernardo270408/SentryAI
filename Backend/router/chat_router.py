@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
 from DAO.chat_dao import ChatDAO
 from middleware.jwt_util import token_required
+from services import ai_service
+from dotenv import load_dotenv
 
 chat_bp = Blueprint("chat", __name__, url_prefix="/chats")
 
@@ -11,11 +13,10 @@ def create_chat():
     current_user = request.user
     data = request.json
 
-    # NÃO pegamos mais o user_id do body (data). Usamos o do token (current_user).
     name = data.get("name")
 
-    if not name:
-        return jsonify({"error": "O campo 'name' é obrigatório."}), 400
+    if name and len(name) > 100:
+        return jsonify({"error": "O campo 'name' deve ter no máximo 100 caracteres."}), 400
 
     # Cria o chat vinculando diretamente ao usuário logado
     chat = ChatDAO.create_chat(user_id=current_user.id, name=name)
@@ -74,6 +75,11 @@ def update_chat(chat_id):
 
     if chat.user_id != current_user.id and not current_user.is_admin:
         return jsonify({"error": "Permission denied"}), 403
+    
+    name = data.get("name")
+    if name and len(name) > 100:
+        return jsonify({"error": "O campo 'name' deve ter no máximo 100 caracteres."}), 400
+
 
     allowed_fields = {"name"}
     data = {k: v for k, v in data.items() if k in allowed_fields}
@@ -117,3 +123,25 @@ def get_rating_by_chat(chat_id):
         return jsonify({"error": "Rating não encontrado para este chat."}), 404
 
     return jsonify(rating.to_dict()), 200
+
+# gerador de nome de chat usando AI
+@chat_bp.route("/<int:chat_id>/generate_name", methods=["POST"])
+@token_required
+def generate_chat_name(chat_id):
+    current_user = request.user
+    chat = ChatDAO.get_chat_by_id(chat_id)
+
+    if not chat:
+        return jsonify({"error": "Chat não encontrado."}), 404
+
+    if chat.user_id != current_user.id and not current_user.is_admin:
+        return jsonify({"error": "Permission denied"}), 403
+
+    # Gera um nome usando o serviço de AI
+    generated_name = ai_service.generate_chat_name(chat_id)
+    if not generated_name:
+        return jsonify({"error": "Erro ao gerar nome para o chat."}), 500
+    
+    # Atualiza o nome do chat
+    updated_chat = ChatDAO.update_chat(chat_id, {"name": generated_name})
+    return jsonify(updated_chat.to_dict()), 200

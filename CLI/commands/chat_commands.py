@@ -2,7 +2,7 @@ import requests
 from commands import defaults_commands
 #Those are the chat-related commands for the CLI tool.
 
-def create(name,user_id,token,domain='localhost',port=5000,**kwargs):
+def create(user_id,token,name=None,domain='localhost',port=5000,**kwargs):
     url = f"http://{domain}:{port}/chats/"
 
     headers = {

@@ -264,3 +264,42 @@ def analyze_user_doubts(messages_list: List[str]) -> List[str]:
     except Exception as e:
         logger.error(f"Erro ao analisar dúvidas: {e}")
         return ["Não foi possível analisar as dúvidas."]
+    
+
+def generate_chat_name(chat_history: List[Dict], api_key: str, model: str) -> str:
+    """
+    Gera um nome para o chat baseado no histórico.
+    """
+    system_instruction = "Você é um assistente que cria nomes curtos e descritivos para conversas jurídicas."
+    prompt = "Baseado na conversa abaixo, sugira um nome conciso (máx 5 palavras) para este chat:\n\n"
+    for msg in chat_history:
+        role = msg.get("role", "user")
+        content = msg.get("content", "")
+        prompt += f"{role.capitalize()}: {content}\n"
+    prompt += "\nNome do chat:"
+
+    # Se for Gemini
+    if "gemini" in model.lower():
+        try:
+            genai.configure(api_key=api_key)
+            generative_model = genai.GenerativeModel(
+                model_name=model,
+                system_instruction=system_instruction,
+                generation_config=GEMINI_CONFIG
+            )
+            chat_session = generative_model.start_chat()
+            response = chat_session.send_message(prompt)
+            return response.text.strip()
+        except Exception as e:
+            logger.exception(f"Erro na geração de nome com Gemini: {e}")
+            return "Erro ao gerar nome (Gemini)."
+
+    # Fallback OpenAI
+    try:
+        client = OpenAI(api_key=api_key)
+        messages = [{"role": "system", "content": system_instruction}, {"role": "user", "content": prompt}]
+        response = client.chat.completions.create(model=model, messages=messages)
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        logger.error(f"Erro na geração de nome com OpenAI: {e}")
+        return "Erro ao gerar nome (OpenAI)."
