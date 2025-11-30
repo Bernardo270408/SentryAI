@@ -26,7 +26,7 @@ def create_app():
     from router.user_router import user_bp
     from router.message_user_router import message_user_bp
     from router.message_ai_router import message_ai_bp
-    from router.chat_router import chat_bp
+    from Backend.services.chat_router import chat_bp
     from router.rating_router import rating_bp
     from router.contract_router import contract_bp
     from router.dashboard_router import dashboard_bp
