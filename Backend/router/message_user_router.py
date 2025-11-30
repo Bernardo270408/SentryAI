@@ -19,12 +19,19 @@ def create_message():
     if not user_id or not chat_id or not content:
         return jsonify({'error': 'user_id, chat_id e content são obrigatórios'}), 400
 
+    # Verifica se o usuário está tentando postar como ele mesmo
     if current_user.id != user_id and not current_user.is_admin:
         return jsonify({'error': 'Permission denied'}), 403
     
     chat = ChatDAO.get_chat_by_id(chat_id)
     if not chat:
         return jsonify({'error': 'Chat not found'}), 404
+
+    # --- SUGESTÃO DE SEGURANÇA ADICIONAL ---
+    # Verifica se o chat pertence ao usuário que está postando
+    if chat.user_id != current_user.id and not current_user.is_admin:
+        return jsonify({'error': 'Permission denied: You do not own this chat'}), 403
+    # ---------------------------------------
 
     message = UserMessageDAO.create_message(user_id, chat_id, content)
     return jsonify(message.to_dict()), 201

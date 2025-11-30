@@ -9,3 +9,4 @@ dotenv
 pymysql
 requests
 email-validator
+google-generativeai

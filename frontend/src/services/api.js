@@ -34,45 +34,85 @@ async function request(path, method = "GET", body = null, auth = true) {
 }
 
 /* ======================================================
-   STREAMING: SSE → /ai-messages/send-stream
+   STREAMING: Fetch com ReadableStream (Compatível com POST + Auth)
    ====================================================== */
 
-function streamChatMessage({ message, onChunk, onEnd, onError }) {
-  const userId = localStorage.getItem("user_id");
-  const openaiToken = localStorage.getItem("openai_token");
-  const model = localStorage.getItem("model") || "gpt-4.1-mini";
+async function streamChatMessage({ chatId, content, onChunk, onEnd, onError }) {
+  const token = localStorage.getItem("token");
+  
+  // MODELO PADRÃO ATUALIZADO PARA GEMINI 2.0 FLASH (Mais rápido e maior cota)
+  // Se preferir o 2.5 flash, pode usar: "gemini-2.5-flash"
+  const model = localStorage.getItem("model") || "gemini-2.5-flash-preview-09-2025"; 
 
-  const url = `${BASE}/ai-messages/send-stream`
-    + `?user_id=${userId}`
-    + `&openai_token=${openaiToken}`
-    + `&model=${model}`;
+  const url = `${BASE}/ai-messages/send-stream`;
 
-  const es = new EventSource(url);
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`, // Envia o Token corretamente
+        "Accept": "text/event-stream",
+      },
+      body: JSON.stringify({
+        chat_id: chatId,  // Backend espera snake_case
+        content: content, 
+        model: model      
+      }),
+    });
 
-  es.addEventListener("chunk", (event) => {
-    const data = JSON.parse(event.data);
-    const token = data.token || "";
-    onChunk && onChunk(token);
-  });
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(errText || response.statusText);
+    }
 
-  es.addEventListener("end", () => {
+    // Leitura do Stream
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder("utf-8");
+    let buffer = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value, { stream: true });
+      buffer += chunk;
+
+      // Processar linhas SSE (data: ...)
+      const lines = buffer.split("\n");
+      buffer = lines.pop(); // Mantém o resto incompleto no buffer
+
+      for (const line of lines) {
+        if (line.startsWith("data: ")) {
+          const dataStr = line.slice(6).trim();
+          
+          if (dataStr === "[DONE]") {
+            onEnd && onEnd();
+            return;
+          }
+
+          try {
+            const data = JSON.parse(dataStr);
+            // Backend envia { token: "texto" } ou { error: "..." }
+            if (data.token) {
+              onChunk && onChunk(data.token);
+            } else if (data.error) {
+              throw new Error(data.error);
+            }
+          } catch (e) {
+            console.warn("Erro ao fazer parse do chunk SSE:", e);
+          }
+        }
+      }
+    }
+    
+    // Finalizar se sair do loop normalmente
     onEnd && onEnd();
-    es.close();
-  });
 
-  es.onerror = (err) => {
+  } catch (err) {
+    console.error("Stream error:", err);
     onError && onError(err);
-    es.close();
-  };
-
-  // Enviar mensagem via fetch (mesmo endpoint)
-  fetch(url, {
-    method: "POST",
-    body: JSON.stringify({ message }),
-    headers: { "Content-Type": "application/json" },
-  });
-
-  return es; // para permitir frontend chamar es.close()
+  }
 }
 
 // ======================================================
