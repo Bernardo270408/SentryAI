@@ -110,18 +110,46 @@ export default function ChatPage() {
         }
     }, []);
 
-    // 2. Carregar Mensagens ao trocar Chat
+    // 2. Carregar Mensagens ao trocar Chat (CORRIGIDO)
     useEffect(() => {
         if (!activeChat) {
             setMessages([]);
             return;
         }
         setLoadingMessages(true);
-        api.getMessages(activeChat.id).then(msgs => {
-            setMessages(msgs || []);
+
+        // Busca mensagens de Usuário E da IA
+        Promise.all([
+            api.getUserMessages(activeChat.id),
+            api.getAIMessages(activeChat.id)
+        ])
+        .then(([userMsgs, aiMsgs]) => {
+            // Formata User Messages
+            const formattedUserMsgs = (userMsgs || []).map(m => ({ 
+                ...m, 
+                role: 'user', 
+                timestamp: new Date(m.created_at) 
+            }));
+            
+            // Formata AI Messages
+            const formattedAiMsgs = (aiMsgs || []).map(m => ({ 
+                ...m, 
+                role: 'assistant', 
+                timestamp: new Date(m.created_at) 
+            }));
+
+            // Junta e Ordena
+            const allMessages = [...formattedUserMsgs, ...formattedAiMsgs];
+            allMessages.sort((a, b) => a.timestamp - b.timestamp);
+
+            setMessages(allMessages);
             setTimeout(scrollToBottom, 50);
-        }).catch(err => console.error(err))
-          .finally(() => setLoadingMessages(false));
+        })
+        .catch(err => {
+            console.error("Erro ao carregar mensagens:", err);
+        })
+        .finally(() => setLoadingMessages(false));
+
     }, [activeChat]);
 
     const scrollToBottom = () => {

@@ -1,11 +1,9 @@
 const BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
-// 1. Função request ATUALIZADA (suporta FormData para upload de arquivos)
+// 1. Função request (suporta FormData para upload de arquivos)
 async function request(path, method = "GET", body = null, auth = true, isFormData = false) {
   const headers = { Accept: "application/json" };
 
-  // Se não for FormData, define JSON. 
-  // Se for FormData, o browser define o Content-Type (multipart) automaticamente.
   if (body && !isFormData) {
     headers["Content-Type"] = "application/json";
   }
@@ -38,12 +36,10 @@ async function request(path, method = "GET", body = null, auth = true, isFormDat
 }
 
 /* ======================================================
-   STREAMING: Fetch com ReadableStream (Restaurado)
+   STREAMING: Fetch com ReadableStream
    ====================================================== */
 async function streamChatMessage({ chatId, content, onChunk, onEnd, onError }) {
   const token = localStorage.getItem("token");
-  
-  // Define o modelo padrão (usando o 2.5 flash conforme você queria)
   const model = localStorage.getItem("model") || "gemini-2.5-flash-preview-09-2025"; 
 
   const url = `${BASE}/ai-messages/send-stream`;
@@ -68,7 +64,6 @@ async function streamChatMessage({ chatId, content, onChunk, onEnd, onError }) {
       throw new Error(errText || response.statusText);
     }
 
-    // Leitura do Stream
     const reader = response.body.getReader();
     const decoder = new TextDecoder("utf-8");
     let buffer = "";
@@ -80,9 +75,8 @@ async function streamChatMessage({ chatId, content, onChunk, onEnd, onError }) {
       const chunk = decoder.decode(value, { stream: true });
       buffer += chunk;
 
-      // Processar linhas SSE (data: ...)
       const lines = buffer.split("\n");
-      buffer = lines.pop(); // Mantém o resto incompleto no buffer
+      buffer = lines.pop(); 
 
       for (const line of lines) {
         if (line.startsWith("data: ")) {
@@ -116,7 +110,7 @@ async function streamChatMessage({ chatId, content, onChunk, onEnd, onError }) {
 }
 
 // ======================================================
-// EXPORTS (Incluindo os novos métodos de contrato)
+// EXPORTS
 // ======================================================
 
 export default {
@@ -124,7 +118,7 @@ export default {
 
   // ---------- AUTH ----------
   login: (email, password) => request("/login/", "POST", { email, password }, false),
-  register: (username, email, password) => request("/register/", "POST", { username, email, password }, false),
+  register: (username, email, password) => request("/users/", "POST", { name: username, email, password }, false),
 
   // ---------- CHATS ----------
   createChat: (name) => request("/chats/", "POST", { name }),
@@ -132,17 +126,18 @@ export default {
   getUserChats: (userId) => request(`/chats/user/${userId}`, "GET"),
   deleteChat: (id) => request(`/chats/${id}`, "DELETE"),
 
-  // ---------- MESSAGES ----------
+  // ---------- MESSAGES (CORRIGIDO) ----------
   sendMessage: (chatId, content) => request("/messages/", "POST", { chat_id: chatId, content }),
-  getMessages: (chatId) => request(`/messages/${chatId}`, "GET"),
+  
+  // Novas funções para buscar histórico completo
+  getUserMessages: (chatId) => request(`/messages/chat/${chatId}`, "GET"),
+  getAIMessages: (chatId) => request(`/ai-messages/chat/${chatId}`, "GET"),
 
   // ---------- RATING ----------
   getRating: (chatId) => request(`/chats/${chatId}/rating`, "GET"),
 
-  // ---------- CONTRACT ANALYSIS (NOVO) ----------
-  // Passamos isFormData = true aqui
+  // ---------- CONTRACT ANALYSIS ----------
   analyzeContract: (formData) => request("/contract/analyze", "POST", formData, true, true),
-  
   chatContract: (data) => request("/contract/chat", "POST", data),
   getDashboardStats: () => request("/dashboard/stats", "GET"),
 

@@ -229,3 +229,38 @@ def generate_dashboard_insight(user_name: str, last_interaction: str) -> str:
             return "Mantenha seus documentos organizados para facilitar consultas futuras."
     
     return "IA de insights indisponível no momento."
+
+def analyze_user_doubts(messages_list: List[str]) -> List[str]:
+    """
+    Analisa uma lista de mensagens do usuário e retorna as 3 principais áreas de dúvida.
+    """
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key or not messages_list:
+        return ["Sem dados suficientes."]
+
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel(
+        model_name="gemini-2.5-flash-preview-09-2025",
+        generation_config={"response_mime_type": "application/json"}
+    )
+
+    # Contexto das últimas mensagens
+    recent_msgs = "\n".join(messages_list[-20:])
+
+    prompt = f"""
+    Analise as perguntas feitas por um usuário:
+    ---
+    {recent_msgs}
+    ---
+    Identifique as 3 maiores dúvidas jurídicas ou problemas que ele enfrenta.
+    Seja curto (máximo 6 palavras por item).
+    Retorne JSON: {{ "doubts": ["Dúvida 1", "Dúvida 2", "Dúvida 3"] }}
+    """
+
+    try:
+        response = model.generate_content(prompt)
+        data = json.loads(response.text)
+        return data.get("doubts", ["Análise inconclusiva"])
+    except Exception as e:
+        logger.error(f"Erro ao analisar dúvidas: {e}")
+        return ["Não foi possível analisar as dúvidas."]
