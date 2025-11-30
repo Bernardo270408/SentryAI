@@ -23,10 +23,12 @@ SentryAI é uma aplicação em desenvolvimento voltada ao gerenciamento de model
 O SentryAI, como dito antes, é uma aplicação em desenvolvimento, que visa coletar dados para uma pesquisa cujo objetivo é identificar falhas comuns no entendimento da lei, e fornecer auxílio para pessoas com tais dúvidas
 
 ## Tecnologias Utilizadas
-> **Nota:** Nas atualizações mais recentes, nós da equipe de desenvolvimento, optamos por subistituír o serviço de IA utilizado anteriormente, o **Ollama** pela api do **ChatGPT 5**, e posteriormente pelo **Gemini 2.5**, ambas pela mesma motivação: custo elevado em hardware e em tokens. Isso não significa que o projeto se perdeu, uma vêz que o caráter inicial sempre foi experimentação.
+> **Nota:** Nas últimas atualizações, nós, a equipe de desenvolvimento, decidimos por substituír o **Ollama** pela API da **OpenAI** e do **Gemini 2.5**, ficando a critério do usuário qual utilizar. A mudança se deve ao alto custo em hardware demandado por LLMs locais. Isso não significa que o projeto se perdeu, uma vêz que o caráter inicial sempre foi experimentação na área das Inteligências Artificiais.
 
-- **OpenAI / Gemini** - Serviço de IA (Substituíndo o Ollama. Suporte mútuo)
+- **OpenAI** - Serviço de IA
+- **Gemini** - Serviço de IA
 - **Flask** - Framework web para Python.
+- **React + Vite** - Frameworks para o Front-End.
 - **SQLAlchemy** - ORM para interação com o banco de dados.
 - **MySQL** - RDBMS escolhido por sua simplicidade e robustez
 - **JWT** - Tokens e Autenticação
@@ -39,6 +41,7 @@ Antes de rodar o projeto, certifique-se de ter o Python 3.x e o pip instalados.
 - [Pip](#https://pip.pypa.io/en/stable/)
 - [MySQL](#https://www.mysql.com/)
 - [NPM](#https://www.npmjs.com/)
+
 
 ### Passo a Passo
 
@@ -68,19 +71,19 @@ python3 -m venv venv
 pip install -r requirements.txt
 ```
 
-**3.** Configure o Banco de Dados
-
-Primeiro crie **com o MySQL** uma base de dados de nome `sentryai`:
-```sql
-  CREATE DATABASE sentryai;
-```
-
-**4.** Configure as variáveis de Ambiente
+**3.** Configure as variáveis de Ambiente
 Renomeie o arquivo `.env.example` para `.env` e configure as variáveis de ambiente:
 ```python
   SECRET_KEY="sua_chave_secreta_aqui"
   DATABASE_URL="mysql+pymysql://{usuário}:{senha}@localhost:3306/sentryai"
-  openai_token="seu-token"
+  GEMINI_API_KEY="sua-chave-gemini-aqui"
+  OPENAI_TOKEN="seu-token"
+```
+**4.** Configure o Banco de Dados
+
+Primeiro crie **com o MySQL** uma base de dados de nome `sentryai`:
+```sql
+  CREATE DATABASE sentryai;
 ```
 
 Após isso, na pasta do backend execute
@@ -94,8 +97,12 @@ Após isso, na pasta do backend execute
   npm install
 ```
 
+### Configurando a CLI (Para Usuários Avançados apenas)
+O SentryAI conta com uma CLI (Command Line Interface) para facilitar o uso da API, e permitir que usuários avancados possam interagir com o sistema sem a necessidade de uma interface gráfica.
 
-**6.** Crie outro ambiente virtual para a CLI (para usuários avançados)
+#### Instalando a CLI
+
+**1.** Crie outro ambiente virtual para a CLI 
 ```bash
 cd ../CLI
 python3 -m venv venv
@@ -110,15 +117,19 @@ python3 -m venv venv
   ./venv\Scripts\activate
   ```
 
-**7.** Instale as dependencias da CLI (para usuários avançados)
+**2.** Instale as dependencias da CLI 
 ```bash
 pip install -r requirements.txt
 ```
-**Obs:** O inicializador é pre-compilado para Linux e Windows, mas caso seja necessário, o código fonte `sentry.c` está na mesma pasta, e pode ser compilado para o OS desejado.
 
-É recomendado adicionar o executável da CLI ao PATH de seu sistema.
+>**Nota:** O inicializador da CLI é pre-compilado para Linux e Windows, mas caso seja necessário, o código fonte `sentry.c` está na mesma pasta, e pode ser compilado para o OS desejado.
 
-### Configurando a CLI (Para Usuários Avançados apenas)
+> É recomendado adicionar o executável da CLI ao PATH de seu sistema.
+
+
+#### Configurando os Defaults da CLI (Opcional)
+A CLI utiliza alguns valores default para facilitar o uso. Estes valores são armazenados em arquivos na pasta `CLI/data/`.
+
 Configure os valores padrão `domain` e `port`, que servirão para dizer à CLI onde exatamente está hospedada a API.
 Estes são os valores padrão:
 ```bash
@@ -127,6 +138,7 @@ sentry defaults -set key="domain" value="127.0.0.1"
 sentry defaults -set key="port" value="5000"
 sentry quit
 ```
+> **Nota:** Este passo é apenas necessário caso a API esteja rodando em um domínio ou porta diferente do padrão (localhost:5000).
 
 ## Rodando o Projeto
 
@@ -144,9 +156,9 @@ npm run dev
 ```
 Em outros casos, recomenda-se usar `npm run buid`
 
-### Inicializando a CLI (Para usuários avançados)
+### Inicializando a CLI (Command Line Interface)
 
-Para iniciar a CLI, simplesmente digite:
+Para iniciar a CLI, simplesmente digite no terminal:
 ```bash
 sentry run
 ```
@@ -156,12 +168,12 @@ Caso não tenha sido incluida ao path, o comando deverá ser feito na pasta da C
 ./sentry run
 ```
 
-- **Observação**: o uso de `./` apenas é necessário para o comando `run`, não sendo utilizado nos demais comandos da CLI.
+> **Nota:** o uso de `./` apenas é necessário para o comando `run`, não sendo utilizado nos demais comandos da CLI.
 
 
 ## Estrutura do Projeto
 ```
-Backend/                    #
+Backend/                    # Backend Flask
   app.py                    # Inicialização da aplicação Flask
   config.py                 # Configurações (DB, secret key)
   requirements.txt          # Dependências
@@ -193,7 +205,7 @@ Backend/                    #
   middleware/               #
     jwt_util.py             # Autenticação JWT
   migrations/               # Migrações
-CLI/                        #
+CLI/                        # Command Line Interface
   commands/                 # Comandos de gerenciamento
     __init__.py             #
     auth_commands.py        # Autenticação
@@ -214,6 +226,41 @@ CLI/                        #
   sentry.c                  # Código fonte do inicializador
   sentry.exe                # Inicializador pré-compilado Windows
   sentry                    # Inicializador pré-compilado Linux
+frontend/                   # Front-end (React + Vite)
+  index.html                # Entrada do aplicativo (HTML)
+  package.json              # Dependências e scripts do frontend
+  README.md                 # Documentação do frontend
+  vite.config.js            # Configuração do Vite
+  src/                      # Código fonte React
+    App.jsx                 # Componente raiz
+    main.jsx                # Ponto de entrada do React
+    components/             # Componentes reutilizáveis
+      AppHeader.jsx         # Cabeçalho do app
+      AuthModal.jsx         # Modal de autenticação
+      ChatHeader.jsx        # Cabeçalho do chat
+      ChatPreview.jsx       # Visualização do chat
+      FooterComponent.jsx   # Rodapé do app
+      NewChatModal.jsx      # Modal para novo chat
+    pages/                  # Páginas do app
+      Aplication.jsx        # Página principal
+      ChatPage.jsx          # Página de chat
+      ContractAnalysis.jsx  # Análise de contratos
+      Dashboard.jsx         # Painel de controle
+      Home.jsx              # Página inicial
+      RightsExplorer.jsx    # Explorador de direitos
+      Settings.jsx          # Configurações
+    services/               # Serviços do frontend
+      api.js                # Comunicação com a API
+    styles/                 # Arquivos CSS
+      AppHeader.css         # Estilos do cabeçalho do app
+      Application.css       # Estilos da aplicação
+      chatpage.css          # Estilos da página de chat
+      contractAnalysis.css  # Estilos da análise de contratos
+      dashboard.css         # Estilos do painel de controle
+      footer.css            # Estilos do rodapé
+      global.css            # Estilos globais
+      rights.css            # Estilos do explorador de direitos 
+      settings.css          # Estilos da página de configurações
 docs/                       # Documentação
   API_ENDPOINTS.md          # Endpoints da API
   CLI_COMMANDS.md           # Comandos da CLI
@@ -228,7 +275,7 @@ readme.md                   # Você está aqui =D
 ## Principais Endpoints
 Ao rodar o backend, uma API ficará disponível em http://localhost:5000/ (ou em outra rota determinada, caso altere manualmente).
 
-> Nota: A forma recomendada de acessar os endpoints atualmente é pela CLI, mas caso queira fazer as requisições de maneira alternativa, pode ler cada um dos endpoints disponiveis [neste link](docs/API_ENDPOINTS.md).
+> **Nota:** A forma recomendada de acesso à API é utilizando o *frontend* ou a *CLI*. Caso queira fazer as requisições de maneira alternativa, pode ler cada um dos endpoints disponiveis [neste link](docs/API_ENDPOINTS.md).
 
 Dicas:
 - Todas as rotas protegidas exigem o header: `Authorization: Bearer <token>`

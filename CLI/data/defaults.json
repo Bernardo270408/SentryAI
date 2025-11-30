@@ -1,6 +1,3 @@
 {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaXNfYWRtaW4iOmZhbHNlfQ.ye922JbYS764WsocwgYqFsKWUExXgkFLu9G71-bs9g8",
-    "user_id": 3,
-    "model": "deepseek-r1:8b",
-    "chat_id": 1
+
 }
