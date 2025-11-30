@@ -9,13 +9,12 @@ chat_bp = Blueprint("chat", __name__, url_prefix="/chats")
 @token_required
 def create_chat():
     current_user = request.user
-    data = request.json
+    data = request.json or {}
 
-    # NÃO pegamos mais o user_id do body (data). Usamos o do token (current_user).
+    # Se o nome não vier ou for vazio, usa padrão
     name = data.get("name")
-
-    if not name:
-        return jsonify({"error": "O campo 'name' é obrigatório."}), 400
+    if not name or not name.strip():
+        name = "Nova Conversa"
 
     # Cria o chat vinculando diretamente ao usuário logado
     chat = ChatDAO.create_chat(user_id=current_user.id, name=name)

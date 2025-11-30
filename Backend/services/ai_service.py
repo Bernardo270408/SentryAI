@@ -42,7 +42,6 @@ def _format_history_for_gemini(history: List[Dict]) -> List[Dict]:
     return gemini_history
 
 def get_context(user_name: str) -> str:
-    # ... (código mantido igual ao seu) ...
     try:
         path = os.path.join(os.path.dirname(__file__), 'data.json')
         with open(path, 'r', encoding='utf-8') as f:
@@ -152,38 +151,26 @@ def generate_response_stream(user_name: str, history: List[Dict], api_key: str, 
         logger.exception("Streaming OpenAI falhou")
         yield f"[ERROR] {str(e)}"
 
-# --- NOVA FUNÇÃO: ANÁLISE DE CONTRATO (RETORNA JSON) ---
+# --- ANÁLISE DE CONTRATO (RETORNA JSON) ---
 def analyze_contract_text(text: str) -> Dict:
-    """Analisa contrato e retorna JSON com score de risco."""
-    # Pega a chave do ambiente (prioridade Gemini)
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
         return {"error": "Chave Gemini não configurada"}
 
     genai.configure(api_key=api_key)
     
-    # Modelo Flash é ideal para isso
     model = genai.GenerativeModel(
         model_name="gemini-2.5-flash-preview-09-2025", 
-        generation_config=GEMINI_JSON_CONFIG, # Força JSON
+        generation_config=GEMINI_JSON_CONFIG,
         system_instruction="""
         Você é um auditor jurídico sênior.
         Analise o contrato fornecido e retorne um JSON.
-        O 'score' deve ser de 0 a 100, onde:
-        - 0-30: Baixo Risco (Seguro)
-        - 31-60: Risco Médio (Atenção)
-        - 61-100: Alto Risco (Perigo)
-        
+        O 'score' deve ser de 0 a 100.
         FORMATO JSON OBRIGATÓRIO:
         {
             "summary": "Resumo de 2 parágrafos.",
-            "risk": {
-                "score": <inteiro 0-100>,
-                "label": "Baixo" | "Médio" | "Alto"
-            },
-            "highlights": [
-                { "tag": "Tipo", "snippet": "Trecho", "lineNumber": 1 }
-            ]
+            "risk": { "score": 0, "label": "Baixo" },
+            "highlights": [ { "tag": "Tipo", "snippet": "Trecho", "lineNumber": 1 } ]
         }
         """
     )
@@ -196,71 +183,60 @@ def analyze_contract_text(text: str) -> Dict:
         return {"risk": {"score": 0, "label": "Erro"}, "summary": "Falha na análise."}
 
 def chat_about_contract(message: str, context: str) -> str:
-    """Chat simples sobre o contrato."""
     api_key = os.getenv("GEMINI_API_KEY")
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel("gemini-2.5-flash-preview-09-2025")
     res = model.generate_content(f"Contexto: {context}\n\nPergunta: {message}")
     return res.text
 
-# ... (código existente)
-
 def generate_dashboard_insight(user_name: str, last_interaction: str) -> str:
-    """
-    Gera uma frase curta de insight/dica para o dashboard baseada na última msg.
-    """
     api_key = os.getenv("GEMINI_API_KEY") or os.getenv("OPENAI_TOKEN")
-    if not api_key:
-        return "Configure sua chave de API para receber insights."
-
-    # Se for Gemini
+    if not api_key: return "Configure sua chave de API."
     if os.getenv("GEMINI_API_KEY"):
         try:
             genai.configure(api_key=api_key)
-            model = genai.GenerativeModel("gemini-2.0-flash") # Modelo rápido
-            prompt = f"""
-            Com base na última pergunta do usuário: "{last_interaction}",
-            Gere uma ÚNICA frase curta (máx 15 palavras) de conselho jurídico preventivo ou encorajamento.
-            Seja direto. Não use "Olá" ou introduções.
-            """
+            model = genai.GenerativeModel("gemini-2.5-flash-preview-09-2025")
+            prompt = f"Com base na pergunta: '{last_interaction}', gere uma frase curta de conselho jurídico."
             response = model.generate_content(prompt)
             return response.text.strip()
-        except:
-            return "Mantenha seus documentos organizados para facilitar consultas futuras."
-    
-    return "IA de insights indisponível no momento."
+        except: return "Mantenha seus documentos organizados."
+    return "IA indisponível."
 
 def analyze_user_doubts(messages_list: List[str]) -> List[str]:
-    """
-    Analisa uma lista de mensagens do usuário e retorna as 3 principais áreas de dúvida.
-    """
     api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key or not messages_list:
-        return ["Sem dados suficientes."]
-
+    if not api_key or not messages_list: return ["Sem dados."]
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel(
-        model_name="gemini-2.5-flash-preview-09-2025",
-        generation_config={"response_mime_type": "application/json"}
-    )
-
-    # Contexto das últimas mensagens
-    recent_msgs = "\n".join(messages_list[-20:])
-
-    prompt = f"""
-    Analise as perguntas feitas por um usuário:
-    ---
-    {recent_msgs}
-    ---
-    Identifique as 3 maiores dúvidas jurídicas ou problemas que ele enfrenta.
-    Seja curto (máximo 6 palavras por item).
-    Retorne JSON: {{ "doubts": ["Dúvida 1", "Dúvida 2", "Dúvida 3"] }}
-    """
-
+    model = genai.GenerativeModel("gemini-2.5-flash-preview-09-2025", generation_config={"response_mime_type": "application/json"})
+    recent = "\n".join(messages_list[-20:])
+    prompt = f"Analise as perguntas: {recent}. Retorne JSON {{ 'doubts': ['Dúvida 1', 'Dúvida 2'] }}."
     try:
         response = model.generate_content(prompt)
-        data = json.loads(response.text)
-        return data.get("doubts", ["Análise inconclusiva"])
+        return json.loads(response.text).get("doubts", [])
+    except: return ["Erro na análise."]
+
+# --- GERAÇÃO DE TÍTULO AUTOMÁTICO ---
+def generate_chat_title(message_content: str) -> str:
+    """Gera um título curto (3-6 palavras) para o chat baseado na primeira mensagem."""
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        return "Nova Conversa"
+
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel("gemini-2.5-flash-preview-09-2025")
+    
+    prompt = f"""
+    Analise a seguinte mensagem inicial de um usuário em um chat jurídico:
+    "{message_content}"
+    
+    Gere um título extremamente conciso (máximo 5 palavras) que resuma o tópico jurídico.
+    Exemplos: "Cálculo de Rescisão", "Dúvida sobre Horas Extras", "Ação de Divórcio".
+    Não use pontuação final. Retorne apenas o título.
+    """
+    
+    try:
+        response = model.generate_content(prompt)
+        title = response.text.strip().replace('"', '').replace("'", "")
+        return title if title else "Nova Conversa"
     except Exception as e:
-        logger.error(f"Erro ao analisar dúvidas: {e}")
-        return ["Não foi possível analisar as dúvidas."]
+        logger.error(f"Erro ao gerar título: {e}")
+        return "Nova Conversa"
