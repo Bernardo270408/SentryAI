@@ -15,6 +15,7 @@ def create_chat():
 
     if name and len(name) > 100:
         return jsonify({"error": "O campo 'name' deve ter no máximo 100 caracteres."}), 400
+    
     if not name or not name.strip():
         name = "Nova Conversa"
 
@@ -123,4 +124,4 @@ def get_rating_by_chat(chat_id):
         return jsonify({"error": "Rating não encontrado para este chat."}), 404
 
     return jsonify(rating.to_dict()), 200
-z
+
