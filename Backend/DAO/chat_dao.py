@@ -3,7 +3,7 @@ from extensions import db
 
 class ChatDAO:
 	@staticmethod
-	def create_chat(user_id, name=None, rating_id=None):
+	def create_chat(user_id, name, rating_id=None):
 		chat = Chat(user_id=user_id, name=name,rating_id=rating_id)
 		db.session.add(chat)
 		db.session.commit()
