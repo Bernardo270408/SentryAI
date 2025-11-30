@@ -6,9 +6,12 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import App from "./App";
 import Home from "./pages/Home";
 import Aplication from "./pages/Aplication";
-import ChatApp from "./pages/ChatApp";
+import Dashboard from "./pages/Dashboard";
+import ChatPage from "./pages/ChatPage";
+import RightsExplorer from "./pages/RightsExplorer";
+import ContractAnalysis from "./pages/ContractAnalysis";
+import Settings from "./pages/Settings";
 import "./styles/global.css";
-import "./styles/chat.css";
 
 function Protected({ children }) {
   const token = localStorage.getItem("token");
@@ -32,6 +35,11 @@ createRoot(document.getElementById("root")).render(
           }
         >
           <Route index element={<Aplication />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="chat" element={<ChatPage />} />
+            <Route path="rights" element={<RightsExplorer />} />
+            <Route path="contract-analysis" element={<ContractAnalysis />} />
+            <Route path="settings" element={<Settings />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

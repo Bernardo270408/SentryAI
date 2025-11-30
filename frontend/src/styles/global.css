@@ -28,9 +28,8 @@ body{
   -moz-osx-font-smoothing:grayscale;
   -webkit-font-feature-settings: "liga" 0;
 }
-
 /* Remover quaisquer bullets globais */
-section ul, section li {
+section ul, section li {    
   list-style: none !important;
   padding-left: 0 !important;
   margin-left: 0 !important;

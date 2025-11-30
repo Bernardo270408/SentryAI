@@ -1,0 +1,203 @@
+/* HEADER EM ESTILO DE PÍLULA (GLASSMORPHISM) */
+.app-header-pill {
+    width: calc(30% - 40px); /* Ajuste conforme seu layout */
+    min-width: 320px;
+    margin: 16px auto;
+    padding: 10px 20px; /* Padding levemente ajustado */
+
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(18px) saturate(180%);
+    -webkit-backdrop-filter: blur(18px) saturate(180%);
+
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    position: sticky;
+    top: 12px;
+    z-index: 999;
+
+    box-shadow: 
+        0 8px 24px rgba(0, 0, 0, 0.25),
+        inset 0 0 18px rgba(255, 255, 255, 0.05);
+
+    transition: all 0.25s ease;
+}
+
+/* LOGO + BRAND */
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    outline: none; /* Focus style gerido via border/shadow se necessário */
+}
+
+.header-logo svg {
+    color: #76797c;
+    filter: drop-shadow(0 0 5px rgba(74, 144, 226, 0.6));
+}
+
+.brand-app {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+
+.brand-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #fff;
+}
+
+.brand-subtitle {
+    font-size: 0.7rem;
+    color: #c7c7c7;
+}
+
+/* =========================================
+   USER WRAPPER & BUTTON
+   ========================================= */
+
+/* Importante: Contexto de posicionamento para o dropdown */
+.header-user-wrap {
+    position: relative;
+}
+
+.header-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    background: rgba(255, 255, 255, 0.12);
+    padding: 6px 12px 6px 6px; /* Padding assimétrico para o avatar */
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+
+    cursor: pointer;
+    transition: 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.header-user:hover,
+.header-user.active {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.user-avatar {
+    background: rgba(255, 255, 255, 0.18);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: #fff;
+}
+
+.username {
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding-right: 4px;
+}
+
+/* =========================================
+   DROPDOWN PANEL (EXPANSÃO)
+   ========================================= */
+
+.user-dropdown-panel {
+    /* Posicionamento */
+    position: absolute;
+    top: calc(100% + 8px); /* Espaço logo abaixo da pílula */
+    right: 0;
+    width: 220px; /* Largura fixa confortável */
+    
+    /* Estilo Visual (Glassmorphism consistente) */
+    background: rgba(40, 40, 45, 0.85); /* Fundo um pouco mais escuro para contraste */
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+
+    box-shadow: 
+        0 10px 30px rgba(0, 0, 0, 0.4),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+
+    /* Estado Inicial da Animação (Fechado) */
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
+    transform-origin: top right;
+    pointer-events: none;
+    visibility: hidden;
+
+    /* Transição Suave */
+    transition: 
+        opacity 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+        transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+        visibility 0.2s;
+}
+
+/* Estado Aberto */
+.user-dropdown-panel.open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+    visibility: visible;
+}
+
+/* Botões Internos */
+.dropdown-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    width: 100%;
+    padding: 10px 12px;
+    
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+
+    color: #e0e0e0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: left;
+
+    transition: background 0.2s ease;
+}
+
+.dropdown-option:hover,
+.dropdown-option:focus {
+    background: rgba(255, 255, 255, 0.1);
+    outline: none;
+    color: #fff;
+}
+
+/* Divider */
+.divider {
+    width: 100%;
+    height: 1px;
+    margin: 6px 0;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Logout */
+.logout {
+    color: #ff6b6b;
+}
+
+.logout:hover, 
+.logout:focus {
+    background: rgba(255, 70, 70, 0.15);
+    color: #ff8585;
+}

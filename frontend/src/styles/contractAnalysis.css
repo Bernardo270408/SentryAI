@@ -1,0 +1,389 @@
+/* ---------------------------------------------------
+   VARIÁVEIS FUTURISTAS — Ultra Refinado
+----------------------------------------------------*/
+:root {
+  --bg: #07080a;
+  --bg-glass: rgba(255, 255, 255, 0.025);
+
+  --panel: rgba(255, 255, 255, 0.035);
+  --panel-strong: rgba(255, 255, 255, 0.08);
+
+  --border-glow: rgba(255, 255, 255, 0.16);
+  --border-hard: rgba(0, 0, 0, 0.55);
+
+  --radius: 14px;
+  --radius-lg: 22px;
+
+  --text: #eef3fa;
+  --muted: #8f99a4;
+
+  --accent: #5f8dff;
+  --accent-soft: rgba(95, 141, 255, 0.23);
+
+  --shadow-deep: 0 18px 40px rgba(0, 0, 0, 0.55);
+  --shadow-soft: 0 10px 26px rgba(0, 0, 0, 0.32);
+
+  --glow-hover: 0 0 18px rgba(95, 141, 255, 0.55);
+}
+
+/* ===================================================
+   WRAPPER
+=================================================== */
+.ca-wrapper {
+  padding: 36px;
+  max-width: 1450px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+/* ===================================================
+   HEADER — Futurista Premium
+=================================================== */
+.ca-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  background: var(--panel);
+  backdrop-filter: blur(22px);
+
+  padding: 28px 34px;
+  border-radius: var(--radius-lg);
+
+  border: 1px solid var(--border-glow);
+  box-shadow: var(--shadow-deep);
+
+  transition: 0.35s ease;
+}
+
+.ca-header:hover {
+  border-color: var(--accent);
+  box-shadow: var(--glow-hover);
+}
+
+.ca-header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.4px;
+}
+
+/* ===================================================
+   GRID RESPONSIVO
+=================================================== */
+.ca-main {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 36px;
+}
+
+@media (max-width: 1050px) {
+  .ca-main {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===================================================
+   CARDS — Design 2035
+=================================================== */
+.ca-card {
+  background: var(--panel);
+  backdrop-filter: blur(20px);
+
+  border-radius: var(--radius);
+  padding: 24px;
+
+  border: 1px solid var(--border-glow);
+  box-shadow: var(--shadow-soft);
+
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+
+  transition: 0.35s ease;
+}
+
+.ca-card:hover {
+  background: var(--panel-strong);
+  border-color: var(--accent);
+  transform: translateY(-4px);
+  box-shadow: var(--glow-hover);
+}
+
+.ca-col:nth-child(2) .ca-card:first-child {
+  transform: translateY(-10px);
+}
+.ca-col:nth-child(1) .ca-card:nth-child(2) {
+  transform: translateY(10px);
+}
+
+/* ===================================================
+   UPLOAD — Drag & Drop Futurista
+=================================================== */
+.ca-upload {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+
+  border: 2px dashed var(--border-glow);
+  padding: 32px;
+
+  border-radius: var(--radius);
+  cursor: pointer;
+
+  background: rgba(255, 255, 255, 0.03);
+  transition: 0.3s ease;
+
+  text-align: center;
+}
+
+.ca-upload:hover {
+  background: rgba(255,255,255,0.07);
+  border-color: var(--accent);
+  box-shadow: var(--glow-hover);
+}
+
+.ca-upload.dragover {
+  border-color: var(--accent);
+  background: rgba(95, 141, 255, 0.12);
+}
+
+/* ===================================================
+   TEXTAREA — Preview Futurista
+=================================================== */
+.ca-textarea {
+  width: 100%;
+  height: 240px;
+  resize: vertical;
+
+  background: rgba(255,255,255,0.035);
+  backdrop-filter: blur(14px);
+
+  border: 1px solid var(--border-glow);
+  border-radius: var(--radius);
+
+  padding: 18px;
+  color: var(--text);
+  line-height: 1.55;
+  font-size: 15px;
+
+  transition: 0.3s ease;
+}
+
+.ca-textarea:focus {
+  border-color: var(--accent);
+  box-shadow: var(--glow-hover);
+}
+
+/* ===================================================
+   RESULTADO — Glow lateral gradiente
+=================================================== */
+.ca-card.resultado {
+  border-left: 6px solid transparent;
+  background: rgba(255,255,255,0.035);
+}
+
+.ca-card.resultado.baixo {
+  border-left-color: #2ecc71;
+  background: rgba(46, 204, 113, 0.12);
+}
+
+.ca-card.resultado.medio {
+  border-left-color: #f1c40f;
+  background: rgba(241, 196, 15, 0.16);
+}
+
+.ca-card.resultado.alto {
+  border-left-color: #e74c3c;
+  background: rgba(231, 76, 60, 0.20);
+}
+
+.ca-risk-tag {
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  display: inline-block;
+  width: fit-content;
+
+  backdrop-filter: blur(10px);
+  letter-spacing: 0.2px;
+}
+
+.ca-risk-tag.baixo { background: rgba(46,204,113,0.3); color:#2ecc71; }
+.ca-risk-tag.medio { background: rgba(241,196,15,0.3); color:#f1c40f; }
+.ca-risk-tag.alto  { background: rgba(231,76,60,0.3); color:#ff6b6b; }
+
+/* ===================================================
+   HIGHLIGHTS — Cleaner
+=================================================== */
+.ca-highlight-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ca-highlight-item {
+  background: rgba(255,255,255,0.045);
+  border: 1px solid var(--border-glow);
+  border-radius: 14px;
+
+  padding: 16px;
+  backdrop-filter: blur(14px);
+
+  transition: 0.25s ease;
+}
+
+.ca-highlight-item:hover {
+  border-color: var(--accent);
+  box-shadow: var(--glow-hover);
+}
+
+.tag {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.snippet {
+  color: var(--text);
+  margin-top: 6px;
+}
+
+/* ===================================================
+   CHAT — Bolhas orgânicas 2035
+=================================================== */
+.ca-chat-box {
+  height: 300px;
+  overflow-y: auto;
+
+  padding-right: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ca-msg {
+  padding: 14px 18px;
+  border-radius: 18px;
+  max-width: 78%;
+
+  line-height: 1.55;
+  backdrop-filter: blur(14px);
+}
+
+.ca-msg.user {
+  align-self: flex-end;
+  background: rgba(95,141,255,0.22);
+  border: 1px solid rgba(95,141,255,0.32);
+}
+
+.ca-msg.assistant {
+  align-self: flex-start;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border-glow);
+}
+
+/* ===================================================
+   CHAT INPUT — UX finalizada sem bugs
+=================================================== */
+.ca-chat-input {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  background: rgba(255,255,255,0.07);
+  backdrop-filter: blur(18px);
+
+  border: 1px solid var(--border-glow);
+  border-radius: 999px;
+
+  padding: 14px 20px;
+  transition: 0.3s ease;
+}
+
+.ca-chat-input:focus-within {
+  border-color: var(--accent);
+  box-shadow: var(--glow-hover);
+}
+
+.ca-chat-field {
+  flex: 1;
+  background: transparent;
+  outline: none;
+  border: none;
+  color: var(--text);
+  font-size: 15px;
+}
+
+/* ===================================================
+   CORREÇÃO FINAL — Botão não fica mais branco ⚡
+=================================================== */
+
+/* Força aparência correta */
+.ca-btn.primary,
+.ca-send-btn {
+  background: var(--accent) !important;
+
+  border: none !important;
+  border-radius: 12px;
+
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  padding: 12px 22px;
+  min-height: 46px;
+
+  font-weight: 600 !important;
+  font-size: 15px;
+
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+/* Hover */
+.ca-btn.primary:hover:not(:disabled),
+.ca-send-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--glow-hover);
+}
+
+/* Disabled */
+.ca-btn.primary:disabled,
+.ca-send-btn:disabled {
+  opacity: 0.45 !important;
+  cursor: not-allowed;
+}
+
+/* ===================================================
+   ÍCONE 100% VISÍVEL (correção total)
+=================================================== */
+
+.ca-btn.primary svg,
+.ca-send-btn svg {
+  width: 20px;
+  height: 20px;
+
+  stroke: #fff !important;
+  fill: none !important;
+
+  opacity: 1 !important;     /* evita resets que escondem */
+  color: #fff !important;     /* força currentColor */
+}
+
+
+/* texte interno nunca some */
+.ca-btn.primary *,
+.ca-send-btn * {
+  color: #fff !important;
+  fill: #fff !important;
+  stroke: #fff !important;
+  opacity: 1 !important;
+}

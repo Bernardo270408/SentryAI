@@ -1,0 +1,469 @@
+@import './global.css';
+
+/* ============================================================
+   PALETAS DE COR DAS SEÇÕES
+   ============================================================ */
+:root {
+  --color-trab: #4A90E2;     /* Azul */
+  --color-const: #3CC93C;    /* Verde */
+  --color-mulher: #FF6B6B;   /* Vermelho / Rosa */
+  --color-cons: #FF8C42;     /* Laranja */
+}
+
+/* ============================================================
+   CONTAINER BASE
+   ============================================================ */
+.container {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 18px;
+}
+
+/* ============================================================
+   BOTÃO VOLTAR (PILL)
+   ============================================================ */
+.rights-top {
+  padding: 12px 20px;
+}
+
+.back-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.15s ease;
+}
+
+.back-pill:hover {
+  background: rgba(255, 255, 255, 0.10);
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.rights-header {
+  text-align: center;
+  margin: 8px 0 18px;
+}
+
+.rights-header h1 {
+  font-size: 25px;
+  margin: 6px 0 8px;
+  font-weight: 700;
+}
+
+.rights-header .lead {
+  color: var(--muted);
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+/* ============================================================
+   TABS
+   ============================================================ */
+.rights-tabs {
+  display: inline-flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.rights-tabs .tab {
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  cursor: pointer;
+  transition: 0.15s ease;
+}
+
+.rights-tabs .tab:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.rights-tabs .tab.active {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* ============================================================
+   CATEGORY TILES
+   ============================================================ */
+.category-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin: 28px 0;
+}
+
+.cat-tile {
+  padding: 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  transition: 0.2s ease;
+  cursor: pointer;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--text);
+}
+
+.cat-tile:hover {
+  transform: translateY(-6px);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.cat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.03);
+  font-size: 20px;
+}
+
+/* ============================================================
+   ESTADO: SELECTED (por categoria)
+   ============================================================ */
+.cat-tile.trabalhistas.selected {
+  border-color: rgba(74, 144, 226, 0.25);
+  box-shadow: 0 10px 30px rgba(74, 144, 226, 0.14);
+}
+.cat-tile.trabalhistas.selected .cat-icon {
+  background: rgba(74, 144, 226, 0.15);
+  color: var(--color-trab);
+}
+
+.cat-tile.constitucionais.selected {
+  border-color: rgba(60, 201, 60, 0.25);
+  box-shadow: 0 10px 30px rgba(60, 201, 60, 0.14);
+}
+.cat-tile.constitucionais.selected .cat-icon {
+  background: rgba(60, 201, 60, 0.15);
+  color: var(--color-const);
+}
+
+.cat-tile.mulher.selected {
+  border-color: rgba(255, 107, 107, 0.28);
+  box-shadow: 0 10px 30px rgba(255, 107, 107, 0.16);
+}
+.cat-tile.mulher.selected .cat-icon {
+  background: rgba(255, 107, 107, 0.15);
+  color: var(--color-mulher);
+}
+
+.cat-tile.consumidor.selected {
+  border-color: rgba(255, 140, 66, 0.28);
+  box-shadow: 0 10px 30px rgba(255, 140, 66, 0.16);
+}
+.cat-tile.consumidor.selected .cat-icon {
+  background: rgba(255, 140, 66, 0.15);
+  color: var(--color-cons);
+}
+
+/* ============================================================
+   PANELS
+   ============================================================ */
+.panels-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 48px;
+}
+
+.panel {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 12px;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(6px);
+}
+
+.panel-title {
+  margin-bottom: 12px;
+}
+
+.panel-title strong {
+  font-size: 16px;
+}
+
+/* ======================= ACCENTS POR CATEGORIA ======================= */
+.panel.trabalhistas .panel-title strong,
+.btn.accent-btn.trabalhistas,
+.panel.trabalhistas .res-left {
+  color: var(--color-trab);
+}
+.panel.trabalhistas .res-left {
+  background: rgba(74, 144, 226, 0.10);
+}
+
+.panel.constitucionais .panel-title strong,
+.btn.accent-btn.constitucionais,
+.panel.constitucionais .res-left {
+  color: var(--color-const);
+}
+.panel.constitucionais .res-left {
+  background: rgba(60, 201, 60, 0.10);
+}
+
+.panel.mulher .panel-title strong,
+.btn.accent-btn.mulher,
+.panel.mulher .res-left {
+  color: var(--color-mulher);
+}
+.panel.mulher .res-left {
+  background: rgba(255, 107, 107, 0.12);
+}
+
+.panel.consumidor .panel-title strong,
+.btn.accent-btn.consumidor,
+.panel.consumidor .res-left {
+  color: var(--color-cons);
+}
+.panel.consumidor .res-left {
+  background: rgba(255, 140, 66, 0.12);
+}
+
+/* ============================================================
+   ACCORDION
+   ============================================================ */
+.accordion {
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  padding-top: 10px;
+  margin-top: 8px;
+}
+
+.accordion-toggle {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text);
+  border-radius: 8px;
+  transition: 0.15s ease;
+}
+
+.accordion-toggle:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.accordion .chev {
+  transition: transform 0.2s ease;
+  color: var(--muted);
+}
+
+.accordion.open .chev {
+  transform: rotate(180deg);
+  color: var(--text);
+}
+
+.accordion-panel {
+  padding: 8px 8px 12px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* ============================================================
+   RESOURCE LIST
+   ============================================================ */
+.resource-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.resource-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: 0.15s ease;
+}
+
+.resource-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.res-left {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+}
+
+.res-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.res-body .small {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.panel-actions,
+.res-actions {
+  margin-top: 16px;
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  transition: 0.15s ease;
+}
+
+.btn:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.btn.primary {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.btn.accent-btn {
+  background: transparent;
+}
+
+/* BORDAS CORRETAS POR CATEGORIA */
+.btn.accent-btn.trabalhistas {
+  border-color: rgba(74, 144, 226, 0.30);
+}
+.btn.accent-btn.constitucionais {
+  border-color: rgba(60, 201, 60, 0.30);
+}
+.btn.accent-btn.mulher {
+  border-color: rgba(255, 107, 107, 0.30);
+}
+.btn.accent-btn.consumidor {
+  border-color: rgba(255, 140, 66, 0.30);
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 980px) {
+  .category-tiles {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .panels-grid {
+    grid-template-columns: 1fr;
+  }
+  .container {
+    padding: 0 12px;
+  }
+}
+
+/* ============================================================
+   FIX GLOBAL PARA IMPEDIR EXTRAPOLAÇÃO (SEM MUDAR ESTÉTICA)
+   ============================================================ */
+
+/* Garante que nada ultrapasse o limite horizontal */
+* {
+  min-width: 0;
+}
+
+/* Impede overflow dos painéis */
+.panel,
+.panel-left,
+.panel-right {
+  overflow: hidden;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Para textos, títulos e listas longas */
+.panel *,
+.resource-item *,
+.accordion-panel *,
+.res-body *,
+.res-title {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+/* Resource item não pode forçar a linha para fora */
+.resource-item {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.res-body {
+  min-width: 0;
+  width: 100%;
+}
+
+/* Botões nunca quebram layout */
+.res-actions,
+.panel-actions {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  flex-wrap: wrap;
+}
+
+/* Accordion seguro */
+.accordion {
+  min-width: 0;
+}
+.accordion-toggle {
+  min-width: 0;
+}
+.accordion-panel {
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* GRID SEM EXTRAPOLAR */
+.panels-grid {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Mobile — reforço */
+@media (max-width: 980px) {
+  .resource-item {
+    flex-direction: column;
+  }
+}

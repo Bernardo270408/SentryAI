@@ -1,0 +1,168 @@
+// src/components/AppHeader.jsx
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { FiUser, FiSettings, FiLogOut } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
+import "../styles/AppHeader.css";
+
+export default function AppHeader({ user, onLogout }) {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  // Refs
+  const wrapRef = useRef(null);      // Container relativo
+  const menuRef = useRef(null);      // O painel do dropdown
+  const firstBtnRef = useRef(null);  // Foco inicial
+  const lastBtnRef = useRef(null);   // Focus trap
+  
+  const navigate = useNavigate();
+
+  // Handlers
+  const toggleMenu = useCallback(() => setIsOpen(prev => !prev), []);
+  const closeMenu = useCallback(() => setIsOpen(false), []);
+
+  const goTo = (path) => {
+    closeMenu();
+    navigate(path);
+  };
+
+  const handleLogoutClick = () => {
+    closeMenu();
+    if (onLogout) onLogout();
+  };
+
+  // Click Outside: Fecha ao clicar fora do componente
+  useEffect(() => {
+    function onDocClick(e) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    }
+    // Usa mousedown para detectar o clique antes do 'click' event completo
+    if (isOpen) {
+      document.addEventListener("mousedown", onDocClick);
+    }
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, [isOpen]);
+
+  // Acessibilidade: ESC e Focus Management
+  useEffect(() => {
+    if (!isOpen) return;
+
+    // Move foco para o primeiro item ao abrir
+    const timer = setTimeout(() => {
+      firstBtnRef.current?.focus();
+    }, 50);
+
+    function onKey(e) {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        closeMenu();
+      }
+      
+      // Loop de foco (Focus Trap simples para o dropdown)
+      if (e.key === "Tab") {
+        const focusable = menuRef.current?.querySelectorAll('button:not([disabled])');
+        if (!focusable || focusable.length === 0) return;
+        
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        } else if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      }
+    }
+
+    document.addEventListener("keydown", onKey);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [isOpen, closeMenu]);
+
+  return (
+    <header className="app-header-pill">
+      {/* Lado Esquerdo: Logo */}
+      <div 
+        className="header-left" 
+        onClick={() => navigate("/app")}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => e.key === 'Enter' && navigate("/app")}
+      >
+        <div className="header-logo" aria-hidden>
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" 
+            viewBox="0 0 24 24" fill="none" stroke="currentColor" 
+            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path>
+            <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path>
+            <path d="M7 21h10"></path>
+            <path d="M12 3v18"></path>
+            <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"></path>
+          </svg>
+        </div>
+
+        <div className="brand-app">
+          <span className="brand-title">Sentry AI</span>
+          <span className="brand-subtitle">Democratizando o acesso jurídico</span>
+        </div>
+      </div>
+
+      {/* Lado Direito: User Wrapper (Relative) */}
+      <div className="header-user-wrap" ref={wrapRef}>
+        <button
+          className={`header-user ${isOpen ? 'active' : ''}`}
+          aria-haspopup="true"
+          aria-expanded={isOpen}
+          aria-controls="user-dropdown-panel"
+          onClick={toggleMenu}
+        >
+          <div className="user-avatar" aria-hidden>
+            <FiUser size={18} />
+          </div>
+          <span className="username">{user?.name || "Usuário"}</span>
+        </button>
+
+        {/* Dropdown Panel renderizado inline */}
+        <div 
+          id="user-dropdown-panel"
+          className={`user-dropdown-panel ${isOpen ? 'open' : ''}`}
+          ref={menuRef}
+          role="dialog"
+          aria-label="Menu do usuário"
+        >
+          <button
+            ref={firstBtnRef}
+            onClick={() => goTo("/profile")}
+            className="dropdown-option"
+            type="button"
+          >
+            <FiUser size={16} /> Perfil
+          </button>
+
+          <button
+            onClick={() => goTo("/app/settings")}
+            className="dropdown-option"
+            type="button"
+          >
+            <FiSettings size={16} /> Configurações
+          </button>
+
+          <div className="divider" />
+
+          <button
+            ref={lastBtnRef}
+            onClick={handleLogoutClick}
+            className="dropdown-option logout"
+            type="button"
+          >
+            <FiLogOut size={16} /> Sair
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+}

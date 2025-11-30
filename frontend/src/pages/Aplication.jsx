@@ -1,264 +1,197 @@
+// src/pages/Aplication.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-// Ícones mais modernos e visuais
-import { FiUser, FiSettings, FiLogOut, FiBookOpen, FiZap, FiLayout, FiAlertTriangle, FiArrowRight } from 'react-icons/fi';
-import { FaCommentDots, FaBrain } from 'react-icons/fa'; 
+// Ícones usados nesta página
+import { FiBookOpen, FiZap, FiLayout, FiAlertTriangle, FiArrowRight, FiSettings } from 'react-icons/fi';
 import '../styles/application.css';
 
-// Componente para o Modal de Usuário (Atualizado)
-const UserModal = ({ isOpen, onClose, onLogout, navigate, targetRef }) => {
-    if (!isOpen) return null;
+// Conteúdo do Footer (Mantido e exportado, caso App precise dele)
+export const FooterContent = () => (
+  <>
+    <section className="tech-badges container">
+      <h4 style={{ color: 'var(--text)' }}>Tecnologias</h4>
+      <div className="badges">
+        <span className="badge">React</span>
+        <span className="badge">Flask</span>
+        <span className="badge">MySQL</span>
+        <span className="badge">GPT-5</span>
+      </div>
+      <p className="muted small">Arquitetura moderna para desempenho, privacidade e escalabilidade.</p>
+    </section>
 
-    return (
-        // O elemento UserModal será posicionado via CSS, usando o .user-modal-content
-        <div className="user-modal-overlay" onClick={onClose}>
-            <div className="user-modal-content" onClick={e => e.stopPropagation()} ref={targetRef}>
-                <button onClick={() => navigate('/profile')} className="modal-option">
-                    <FiUser size={18} /> Perfil
-                </button>
-                <button onClick={() => navigate('/settings')} className="modal-option">
-                    <FiSettings size={18} /> Configurações
-                </button>
-                <div className="divider" />
-                <button onClick={onLogout} className="modal-option logout">
-                    <FiLogOut size={18} /> Sair
-                </button>
-            </div>
-        </div>
-    );
-};
-
-// Conteúdo do Footer (Mantido por ser reutilizado)
-const FooterContent = () => (
-    <>
-      <section className="tech-badges container">
-        <h4 style={{ color: 'var(--text)' }}>Tecnologias</h4>
-        <div className="badges">
-          <span className="badge">React</span>
-          <span className="badge">Flask</span>
-          <span className="badge">MySQL</span>
-          <span className="badge">GPT-5</span>
-        </div>
-        <p className="muted small">Arquitetura moderna para desempenho, privacidade e escalabilidade.</p>
-      </section>
-  
-      <footer className="site-footer">
-        <div className="footer-inner">
-          <div className="brand-block">
-            <div className="logo-small" aria-hidden>
-              <div aria-hidden style={{ display: 'flex', alignItems: 'center' }}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                  viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                  strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                  style={{ color: "#fff" }}
-                >
-                  <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path>
-                  <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path>
-                  <path d="M7 21h10"></path>
-                  <path d="M12 3v18"></path>
-                  <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"></path>
-                </svg>
-              </div>
-            </div>
-            <div>
-              <strong>Sentry AI</strong>
-              <div className="tagline muted">Democratizando o acesso à orientação jurídica através da inteligência artificial.</div>
+    <footer className="site-footer">
+      <div className="footer-inner">
+        <div className="brand-block">
+          <div className="logo-small" aria-hidden>
+            <div aria-hidden style={{ display: 'flex', alignItems: 'center' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                style={{ color: "#fff" }}
+              >
+                <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path>
+                <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path>
+                <path d="M7 21h10"></path>
+                <path d="M12 3v18"></path>
+                <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"></path>
+              </svg>
             </div>
           </div>
-  
-          <div className="footer-links">
-            <div>
-              <h5>Recursos</h5>
-              <ul>
-                <li className="muted">IA Jurídica</li>
-                <li className="muted">Explorar Direitos</li>
-                <li className="muted">Base de Conhecimento</li>
-                <li className="muted">Documentação</li>
-              </ul>
-            </div>
-            <div>
-              <h5>Legal</h5>
-              <ul>
-                <li className="muted">Termos de Uso</li>
-                <li className="muted">Política de Privacidade</li>
-                <li className="muted">Disclaimer</li>
-              </ul>
-            </div>
-            <div>
-              <h5>Conecte-se</h5>
-              <div className="socials" role="list">
-                <a aria-label="GitHub" href="#" role="listitem" className="muted">GH</a>
-                <a aria-label="Twitter" href="#" role="listitem" className="muted">TW</a>
-                <a aria-label="LinkedIn" href="#" role="listitem" className="muted">IN</a>
-              </div>
+          <div>
+            <strong>Sentry AI</strong>
+            <div className="tagline muted">Democratizando o acesso à orientação jurídica através da inteligência artificial.</div>
+          </div>
+        </div>
+
+        <div className="footer-links">
+          <div>
+            <h5>Recursos</h5>
+            <ul>
+              <li className="muted">IA Jurídica</li>
+              <li className="muted">Explorar Direitos</li>
+              <li className="muted">Base de Conhecimento</li>
+              <li className="muted">Documentação</li>
+            </ul>
+          </div>
+          <div>
+            <h5>Legal</h5>
+            <ul>
+              <li className="muted">Termos de Uso</li>
+              <li className="muted">Política de Privacidade</li>
+              <li className="muted">Disclaimer</li>
+            </ul>
+          </div>
+          <div>
+            <h5>Conecte-se</h5>
+            <div className="socials" role="list">
+              <a aria-label="GitHub" href="#" role="listitem" className="muted">GH</a>
+              <a aria-label="Twitter" href="#" role="listitem" className="muted">TW</a>
+              <a aria-label="LinkedIn" href="#" role="listitem" className="muted">IN</a>
             </div>
           </div>
         </div>
-  
-        <div className="footer-bottom">
-          <small className="muted">© 2025 Sentry AI. Projeto social dedicado à democratização do conhecimento jurídico.</small>
-          <small className="muted">Informação orientativa, não substitui advogado.</small>
-        </div>
-      </footer>
-    </>
+      </div>
+
+      <div className="footer-bottom">
+        <small className="muted">© 2025 Sentry AI. Projeto social dedicado à democratização do conhecimento jurídico.</small>
+        <small className="muted">Informação orientativa, não substitui advogado.</small>
+      </div>
+    </footer>
+  </>
+);
+
+// Componente de Carrossel para Alertas (Mantido e exportado)
+export const AlertCarousel = ({ alerts, navigate }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const carouselRef = useRef(null);
+
+  // Efeito para rolagem automática
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % alerts.length);
+    }, 5000); // Rola a cada 5 segundos
+
+    return () => clearInterval(interval);
+  }, [alerts.length]);
+
+  // Efeito para rolar o elemento quando o índice muda
+  useEffect(() => {
+    if (carouselRef.current) {
+      const firstTile = carouselRef.current.querySelector('.carousel-tile');
+      if (firstTile) {
+        const scrollPosition = currentIndex * firstTile.offsetWidth;
+        carouselRef.current.scrollTo({
+          left: scrollPosition,
+          behavior: 'smooth'
+        });
+      }
+    }
+  }, [currentIndex]);
+
+  return (
+    <div className="alert-carousel-wrap">
+      <div className="alert-carousel-track" ref={carouselRef}>
+        {alerts.map((alert, index) => (
+          <div
+            key={index}
+            className={`carousel-tile ${alert.type}`}
+            onClick={() => navigate(alert.ctaLink)}
+          >
+            <div className="tile-icon">{alert.icon}</div>
+            <div className="tile-content">
+              <h4 className='alert-title'>{alert.title}</h4>
+              <p className="muted">{alert.description}</p>
+            </div>
+            <button className="btn tiny primary">
+              {alert.ctaText} <FiArrowRight size={14} style={{ marginLeft: '4px' }} />
+            </button>
+          </div>
+        ))}
+      </div>
+      <div className="carousel-dots">
+        {alerts.map((_, index) => (
+          <span
+            key={index}
+            className={`dot ${index === currentIndex ? 'active' : ''}`}
+            onClick={() => setCurrentIndex(index)}
+          />
+        ))}
+      </div>
+    </div>
   );
-
-// Componente de Carrossel para Alertas (Mantido)
-const AlertCarousel = ({ alerts, navigate }) => {
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const carouselRef = useRef(null);
-    
-    // Efeito para rolagem automática
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setCurrentIndex((prevIndex) => (prevIndex + 1) % alerts.length);
-        }, 5000); // Rola a cada 5 segundos
-
-        return () => clearInterval(interval);
-    }, [alerts.length]);
-    
-    // Efeito para rolar o elemento quando o índice muda
-    useEffect(() => {
-        if (carouselRef.current) {
-            // Garante que o scroll só ocorra se houver itens
-            const firstTile = carouselRef.current.querySelector('.carousel-tile');
-            if (firstTile) {
-                const scrollPosition = currentIndex * firstTile.offsetWidth;
-                carouselRef.current.scrollTo({
-                    left: scrollPosition,
-                    behavior: 'smooth'
-                });
-            }
-        }
-    }, [currentIndex]);
-    
-    return (
-        <div className="alert-carousel-wrap">
-            <div className="alert-carousel-track" ref={carouselRef}>
-                {alerts.map((alert, index) => (
-                    <div 
-                        key={index} 
-                        className={`carousel-tile ${alert.type}`}
-                        onClick={() => navigate(alert.ctaLink)}
-                    >
-                        <div className="tile-icon">{alert.icon}</div>
-                        <div className="tile-content">
-                            <h4 className='alert-title'>{alert.title}</h4>
-                            <p className="muted">{alert.description}</p>
-                        </div>
-                        <button className="btn tiny primary">
-                            {alert.ctaText} <FiArrowRight size={14} style={{marginLeft: '4px'}}/>
-                        </button>
-                    </div>
-                ))}
-            </div>
-            <div className="carousel-dots">
-                {alerts.map((_, index) => (
-                    <span 
-                        key={index}
-                        className={`dot ${index === currentIndex ? 'active' : ''}`}
-                        onClick={() => setCurrentIndex(index)}
-                    />
-                ))}
-            </div>
-        </div>
-    );
 };
 
-
-// Componente Principal da Aplicação
-export default function Application() {
+// Componente Principal da Aplicação (Apenas o conteúdo da rota /app)
+export default function Aplication() {
   const navigate = useNavigate();
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const user = JSON.parse(localStorage.getItem('user')) || { name: 'Usuário', initial: 'U' };
-  const userNavRef = useRef(null); // Referência para o container do usuário
-
-  const handleLogout = () => {
-    navigate('/');
-  };
 
   const alerts = [
-      {
-          type: 'warning',
-          icon: <FiAlertTriangle size={20} />,
-          title: 'Alerta de Prazo!',
-          description: 'Ação preventiva: Não esqueça de protocolar o aditivo contratual até o fim da semana.',
-          ctaText: 'Ver Detalhes',
-          ctaLink: '/dashboard/prazo'
-      },
-      {
-          type: 'info',
-          icon: <FiBookOpen size={20} />,
-          title: 'Leitura Recomendada',
-          description: 'Sugerimos o guia sobre Férias e Abonos para entender seus direitos anuais.',
-          ctaText: 'Acessar Guia',
-          ctaLink: '/rights-explorer'
-      },
-      {
-          type: 'tip',
-          icon: <svg xmlns="http://www.w3.org/2000/svg"
-                width="20" height="20" viewBox="0 0 24 24"
-                fill="none" stroke="currentColor" strokeWidth="2"
-                strokeLinecap="round" strokeLinejoin="round"
-              >
-                <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"></path>
-                <path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"></path>
-                <path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"></path>
-                <path d="M17.599 6.5a3 3 0 0 0 .399-1.375"></path>
-                <path d="M6.003 5.125A3 3 0 0 0 6.401 6.5"></path>
-                <path d="M3.477 10.896a4 4 0 0 1 .585-.396"></path>
-                <path d="M19.938 10.5a4 4 0 0 1 .585.396"></path>
-                <path d="M6 18a4 4 0 0 1-1.967-.516"></path>
-                <path d="M19.967 17.484A4 4 0 0 1 18 18"></path>
-              </svg>,
-          title: 'Dica da IA',
-          description: 'Use o chat para analisar documentos. É mais rápido e seguro que buscar online.',
-          ctaText: 'Testar Chat',
-          ctaLink: '/chat'
-      }
+    {
+      type: 'warning',
+      icon: <FiAlertTriangle size={20} />,
+      title: 'Alerta de Prazo!',
+      description: 'Ação preventiva: Não esqueça de protocolar o aditivo contratual até o fim da semana.',
+      ctaText: 'Ver Detalhes',
+      ctaLink: '/dashboard/prazo'
+    },
+    {
+      type: 'info',
+      icon: <FiBookOpen size={20} />,
+      title: 'Leitura Recomendada',
+      description: 'Sugerimos o guia sobre Férias e Abonos para entender seus direitos anuais.',
+      ctaText: 'Acessar Guia',
+      ctaLink: '/rights-explorer'
+    },
+    {
+      type: 'tip',
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg"
+          width="20" height="20" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" strokeWidth="2"
+          strokeLinecap="round" strokeLinejoin="round"
+        >
+          <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"></path>
+          <path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"></path>
+          <path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"></path>
+          <path d="M17.599 6.5a3 3 0 0 0 .399-1.375"></path>
+          <path d="M6.003 5.125A3 3 0 0 0 6.401 6.5"></path>
+          <path d="M3.477 10.896a4 4 0 0 1 .585-.396"></path>
+          <path d="M19.938 10.5a4 4 0 0 1 .585.396"></path>
+          <path d="M6 18a4 4 0 0 1-1.967-.516"></path>
+          <path d="M19.967 17.484A4 4 0 0 1 18 18"></path>
+        </svg>
+      ),
+      title: 'Dica da IA',
+      description: 'Use o chat para analisar documentos. É mais rápido e seguro que buscar online.',
+      ctaText: 'Testar Chat',
+      ctaLink: '/chat'
+    }
   ];
 
   return (
     <div className="landing-root">
-      {/* --- HEADER --- */}
-      <header className="landing-header container">
-        <div className="logo-app">
-          {/* SVG do Logo - REUTILIZADO */}
-          <div aria-hidden style={{ display: 'flex', alignItems: 'center' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-              viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-              style={{ color: "#fff" }}
-            >
-              <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path>
-              <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path>
-              <path d="M7 21h10"></path>
-              <path d="M12 3v18"></path>
-              <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"></path>
-            </svg>
-          </div>
-          {/* AJUSTE AQUI: O brand-app agora tem o layout de coluna via CSS */}
-          <div className="brand-app">
-            <strong>Sentry AI</strong>
-            <span className="tag-app muted">Democratizando o acesso à jurisdição</span>
-          </div>
-        </div>
-
-        {/* Canto Superior Direito: Usuário e Modal */}
-        <div className="user-profile-nav" onClick={() => setIsModalOpen(true)} ref={userNavRef}>
-          <div className="user-avatar"><FiUser size={18} /></div>
-          <span className="user-name">{user.name}</span>
-        </div>
-      </header>
-      
-      {/* Modal do Usuário - Passando a referência para posicionamento */}
-      <UserModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        onLogout={handleLogout} 
-        navigate={navigate}
-        targetRef={userNavRef}
-      />
+      {/* O HEADER e o MODAL foram movidos para App.jsx / AppHeader.jsx */}
 
       {/* --- MAIN CONTENT (DASHBOARD ASSIMÉTRICO) --- */}
       <main className="application-main container">
@@ -267,74 +200,65 @@ export default function Application() {
 
         {/* --- Seção de Alertas em Carrossel --- */}
         <section className="dashboard-section alerts-section">
-            <h3 className="features-title" style={{ color: 'var(--text)' }}>Proteção & Alertas</h3>
-            <AlertCarousel alerts={alerts} navigate={navigate} />
+          <h3 className="features-title" style={{ color: 'var(--text)' }}>Proteção & Alertas</h3>
+          <AlertCarousel alerts={alerts} navigate={navigate} />
         </section>
 
         {/* --- Grid Assimétrico de Ferramentas (Features) --- */}
         <section className="dashboard-section features-grid-wrap">
-            <h3 className="features-title" style={{ color: 'var(--text)' }}>Acesso Rápido</h3>
-            <div className="app-grid-container">
-                
-                {/* 1. Chat (Container de destaque - LxA) */}
-                <article className="grid-item item-chat" onClick={() => navigate('/chat')}>
-                    <div className="chat-content">
-                        <div className="chat-icon-main">
-                            <svg width="60" height="60" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" class="icon-lg -m-1 group-hover/tiny-bar:hidden group-focus-visible:hidden"><path d="M11.2475 18.25C10.6975 18.25 10.175 18.1455 9.67999 17.9365C9.18499 17.7275 8.74499 17.436 8.35999 17.062C7.94199 17.205 7.50749 17.2765 7.05649 17.2765C6.31949 17.2765 5.63749 17.095 5.01049 16.732C4.38349 16.369 3.87749 15.874 3.49249 15.247C3.11849 14.62 2.93149 13.9215 2.93149 13.1515C2.93149 12.8325 2.97549 12.486 3.06349 12.112C2.62349 11.705 2.28249 11.2375 2.04049 10.7095C1.79849 10.1705 1.67749 9.6095 1.67749 9.0265C1.67749 8.4325 1.80399 7.8605 2.05699 7.3105C2.30999 6.7605 2.66199 6.2875 3.11299 5.8915C3.57499 5.4845 4.10849 5.204 4.71349 5.05C4.83449 4.423 5.08749 3.862 5.47249 3.367C5.86849 2.861 6.35249 2.465 6.92449 2.179C7.49649 1.893 8.10699 1.75 8.75599 1.75C9.30599 1.75 9.82849 1.8545 10.3235 2.0635C10.8185 2.2725 11.2585 2.564 11.6435 2.938C12.0615 2.795 12.496 2.7235 12.947 2.7235C13.684 2.7235 14.366 2.905 14.993 3.268C15.62 3.631 16.1205 4.126 16.4945 4.753C16.8795 5.38 17.072 6.0785 17.072 6.8485C17.072 7.1675 17.028 7.514 16.94 7.888C17.38 8.295 17.721 8.768 17.963 9.307C18.205 9.835 18.326 10.3905 18.326 10.9735C18.326 11.5675 18.1995 12.1395 17.9465 12.6895C17.6935 13.2395 17.336 13.718 16.874 14.125C16.423 14.521 15.895 14.796 15.29 14.95C15.169 15.577 14.9105 16.138 14.5145 16.633C14.1295 17.139 13.651 17.535 13.079 17.821C12.507 18.107 11.8965 18.25 11.2475 18.25ZM7.17199 16.1875C7.72199 16.1875 8.20049 16.072 8.60749 15.841L11.7095 14.059C11.8195 13.982 11.8745 13.8775 11.8745 13.7455V12.3265L7.88149 14.62C7.63949 14.763 7.39749 14.763 7.15549 14.62L4.03699 12.8215C4.03699 12.8545 4.03149 12.893 4.02049 12.937C4.02049 12.981 4.02049 13.047 4.02049 13.135C4.02049 13.696 4.15249 14.213 4.41649 14.686C4.69149 15.148 5.07099 15.511 5.55499 15.775C6.03899 16.05 6.57799 16.1875 7.17199 16.1875ZM7.33699 13.498C7.40299 13.531 7.46349 13.5475 7.51849 13.5475C7.57349 13.5475 7.62849 13.531 7.68349 13.498L8.92099 12.7885L4.94449 10.4785C4.70249 10.3355 4.58149 10.121 4.58149 9.835V6.2545C4.03149 6.4965 3.59149 6.8705 3.26149 7.3765C2.93149 7.8715 2.76649 8.4215 2.76649 9.0265C2.76649 9.5655 2.90399 10.0825 3.17899 10.5775C3.45399 11.0725 3.81149 11.4465 4.25149 11.6995L7.33699 13.498ZM11.2475 17.161C11.8305 17.161 12.3585 17.029 12.8315 16.765C13.3045 16.501 13.6785 16.138 13.9535 15.676C14.2285 15.214 14.366 14.697 14.366 14.125V10.561C14.366 10.429 14.311 10.33 14.201 10.264L12.947 9.538V14.1415C12.947 14.4275 12.826 14.642 12.584 14.785L9.46549 16.5835C10.0045 16.9685 10.5985 17.161 11.2475 17.161ZM11.8745 11.122V8.878L10.01 7.822L8.12899 8.878V11.122L10.01 12.178L11.8745 11.122ZM7.05649 5.8585C7.05649 5.5725 7.17749 5.358 7.41949 5.215L10.538 3.4165C9.99899 3.0315 9.40499 2.839 8.75599 2.839C8.17299 2.839 7.64499 2.971 7.17199 3.235C6.69899 3.499 6.32499 3.862 6.04999 4.324C5.78599 4.786 5.65399 5.303 5.65399 5.875V9.4225C5.65399 9.5545 5.70899 9.659 5.81899 9.736L7.05649 10.462V5.8585ZM15.4385 13.7455C15.9885 13.5035 16.423 13.1295 16.742 12.6235C17.072 12.1175 17.237 11.5675 17.237 10.9735C17.237 10.4345 17.0995 9.9175 16.8245 9.4225C16.5495 8.9275 16.192 8.5535 15.752 8.3005L12.6665 6.5185C12.6005 6.4745 12.54 6.458 12.485 6.469C12.43 6.469 12.375 6.4855 12.32 6.5185L11.0825 7.2115L15.0755 9.538C15.1965 9.604 15.2845 9.692 15.3395 9.802C15.4055 9.901 15.4385 10.022 15.4385 10.165V13.7455ZM12.122 5.3635C12.364 5.2095 12.606 5.2095 12.848 5.3635L15.983 7.195C15.983 7.118 15.983 7.019 15.983 6.898C15.983 6.37 15.851 5.8695 15.587 5.3965C15.334 4.9125 14.9655 4.5275 14.4815 4.2415C14.0085 3.9555 13.4585 3.8125 12.8315 3.8125C12.2815 3.8125 11.803 3.928 11.396 4.159L8.29399 5.941C8.18399 6.018 8.12899 6.1225 8.12899 6.2545V7.6735L12.122 5.3635Z"></path>
-                            </svg>
+          <h3 className="features-title" style={{ color: 'var(--text)' }}>Acesso Rápido</h3>
+          <div className="app-grid-container">
+            {/* 1. Chat (Container de destaque - LxA) */}
+            <article className="grid-item item-chat" onClick={() => navigate('/app/chat')}>
+              <div className="chat-content">
+                <div className="chat-icon-main">
+                  <svg width="60" height="60" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" className="icon-lg -m-1 group-hover/tiny-bar:hidden group-focus-visible:hidden"><path d="M11.2475 18.25C10.6975 18.25 10.175 18.1455 9.67999 17.9365C9.18499 17.7275 8.74499 17.436 8.35999 17.062C7.94199 17.205 7.50749 17.2765 7.05649 17.2765C6.31949 17.2765 5.63749 17.095 5.01049 16.732C4.38349 16.369 3.87749 15.874 3.49249 15.247C3.11849 14.62 2.93149 13.9215 2.93149 13.1515C2.93149 12.8325 2.97549 12.486 3.06349 12.112C2.62349 11.705 2.28249 11.2375 2.04049 10.7095C1.79849 10.1705 1.67749 9.6095 1.67749 9.0265C1.67749 8.4325 1.80399 7.8605 2.05699 7.3105C2.30999 6.7605 2.66199 6.2875 3.11299 5.8915C3.57499 5.4845 4.10849 5.204 4.71349 5.05C4.83449 4.423 5.08749 3.862 5.47249 3.367C5.86849 2.861 6.35249 2.465 6.92449 2.179C7.49649 1.893 8.10699 1.75 8.75599 1.75C9.30599 1.75 9.82849 1.8545 10.3235 2.0635C10.8185 2.2725 11.2585 2.564 11.6435 2.938C12.0615 2.795 12.496 2.7235 12.947 2.7235C13.684 2.7235 14.366 2.905 14.993 3.268C15.62 3.631 16.1205 4.126 16.4945 4.753C16.8795 5.38 17.072 6.0785 17.072 6.8485C17.072 7.1675 17.028 7.514 16.94 7.888C17.38 8.295 17.721 8.768 17.963 9.307C18.205 9.835 18.326 10.3905 18.326 10.9735C18.326 11.5675 18.1995 12.1395 17.9465 12.6895C17.6935 13.2395 17.336 13.718 16.874 14.125C16.423 14.521 15.895 14.796 15.29 14.95C15.169 15.577 14.9105 16.138 14.5145 16.633C14.1295 17.139 13.651 17.535 13.079 17.821C12.507 18.107 11.8965 18.25 11.2475 18.25ZM7.17199 16.1875C7.72199 16.1875 8.20049 16.072 8.60749 15.841L11.7095 14.059C11.8195 13.982 11.8745 13.8775 11.8745 13.7455V12.3265L7.88149 14.62C7.63949 14.763 7.39749 14.763 7.15549 14.62L4.03699 12.8215C4.03699 12.8545 4.03149 12.893 4.02049 12.937C4.02049 12.981 4.02049 13.047 4.02049 13.135C4.02049 13.696 4.15249 14.213 4.41649 14.686C4.69149 15.148 5.07099 15.511 5.55499 15.775C6.03899 16.05 6.57799 16.1875 7.17199 16.1875ZM7.33699 13.498C7.40299 13.531 7.46349 13.5475 7.51849 13.5475C7.57349 13.5475 7.62849 13.531 7.68349 13.498L8.92099 12.7885L4.94449 10.4785C4.70249 10.3355 4.58149 10.121 4.58149 9.835V6.2545C4.03149 6.4965 3.59149 6.8705 3.26149 7.3765C2.93149 7.8715 2.76649 8.4215 2.76649 9.0265C2.76649 9.5655 2.90399 10.0825 3.17899 10.5775C3.45399 11.0725 3.81149 11.4465 4.25149 11.6995L7.33699 13.498ZM11.2475 17.161C11.8305 17.161 12.3585 17.029 12.8315 16.765C13.3045 16.501 13.6785 16.138 13.9535 15.676C14.2285 15.214 14.366 14.697 14.366 14.125V10.561C14.366 10.429 14.311 10.33 14.201 10.264L12.947 9.538V14.1415C12.947 14.4275 12.826 14.642 12.584 14.785L9.46549 16.5835C10.0045 16.9685 10.5985 17.161 11.2475 17.161ZM11.8745 11.122V8.878L10.01 7.822L8.12899 8.878V11.122L10.01 12.178L11.8745 11.122ZM7.05649 5.8585C7.05649 5.5725 7.17749 5.358 7.41949 5.215L10.538 3.4165C9.99899 3.0315 9.40499 2.839 8.75599 2.839C8.17299 2.839 7.64499 2.971 7.17199 3.235C6.69899 3.499 6.32499 3.862 6.04999 4.324C5.78599 4.786 5.65399 5.303 5.65399 5.875V9.4225C5.65399 9.5545 5.70899 9.659 5.81899 9.736L7.05649 10.462V5.8585ZM15.4385 13.7455C15.9885 13.5035 16.423 13.1295 16.742 12.6235C17.072 12.1175 17.237 11.5675 17.237 10.9735C17.237 10.4345 17.0995 9.9175 16.8245 9.4225C16.5495 8.9275 16.192 8.5535 15.752 8.3005L12.6665 6.5185C12.6005 6.4745 12.54 6.458 12.485 6.469C12.43 6.469 12.375 6.4855 12.32 6.5185L11.0825 7.2115L15.0755 9.538C15.1965 9.604 15.2845 9.692 15.3395 9.802C15.4055 9.901 15.4385 10.022 15.4385 10.165V13.7455ZM12.122 5.3635C12.364 5.2095 12.606 5.2095 12.848 5.3635L15.983 7.195C15.983 7.118 15.983 7.019 15.983 6.898C15.983 6.37 15.851 5.8695 15.587 5.3965C15.334 4.9125 14.9655 4.5275 14.4815 4.2415C14.0085 3.9555 13.4585 3.8125 12.8315 3.8125C12.2815 3.8125 11.803 3.928 11.396 4.159L8.29399 5.941C8.18399 6.018 8.12899 6.1225 8.12899 6.2545V7.6735L12.122 5.3635Z"></path></svg>
+                </div>
+                <h4 style={{ color: 'var(--text)' }}>Chat Jurídico Inteligente</h4>
+                <p className="muted">**Alimentado por GPT-5**. Tire dúvidas complexas com nossa IA especializada em direito.</p>
+                <button className="btn small outline">
+                  Iniciar Chat
+                </button>
+              </div>
+            </article>
 
-                        </div>
-                        <h4 style={{ color: 'var(--text)' }}>Chat Jurídico Inteligente</h4>
-                        <p className="muted">**Alimentado por GPT-5**. Tire dúvidas complexas com nossa IA especializada em direito.</p>
-                        <button className="btn small outline">
-                            Iniciar Chat
-                        </button>
-                    </div>
-                </article>
+            {/* demais cards (mantidos) */}
+            <article className="grid-item item-rights" onClick={() => navigate('/app/rights')}>
+              <div className="item-header">
+                <FiBookOpen size={24} />
+              </div>
+              <h4 style={{ color: 'var(--text)' }}>Explorar Direitos</h4>
+              <p className="muted">Acesse guias e artigos sobre CLT, Direitos Constitucionais e do Consumidor.</p>
+              <button className="btn tiny outline">Ver Guias</button>
+            </article>
 
-                {/* 2. Explorar Direitos (Container estreito - LxM) */}
-                <article className="grid-item item-rights" onClick={() => navigate('/rights-explorer')}>
-                    <div className="item-header">
-                        <FiBookOpen size={24} />
-                    </div>
-                    <h4 style={{ color: 'var(--text)' }}>Explorar Direitos</h4>
-                    <p className="muted">Acesse guias e artigos sobre CLT, Direitos Constitucionais e do Consumidor.</p>
-                    {/* Botão padronizado com 'outline' */}
-                    <button className="btn tiny outline">Ver Guias</button> 
-                </article>
+            <article className="grid-item item-dashboard" onClick={() => navigate('/app/dashboard')}>
+              <div className="item-header">
+                <FiLayout size={24} />
+              </div>
+              <h4 style={{ color: 'var(--text)' }}>Dashboard Principal</h4>
+              <p className="muted">Visualize um resumo das suas consultas, histórico e estatísticas de proteção legal.</p>
+              <button className="btn tiny outline">Acessar Dashboard</button>
+            </article>
 
-                {/* 3. Dashboard Completo (Container largo - MxM) */}
-                <article className="grid-item item-dashboard" onClick={() => navigate('/dashboard')}>
-                    <div className="item-header">
-                        <FiLayout size={24} />
-                    </div>
-                    <h4 style={{ color: 'var(--text)' }}>Dashboard Principal</h4>
-                    <p className="muted">Visualize um resumo das suas consultas, histórico e estatísticas de proteção legal.</p>
-                    <button className="btn tiny outline">Acessar Dashboard</button>
-                </article>
-                
-                {/* 4. Configurações/Perfil (Container pequeno/quadrado) */}
-                <article className="grid-item item-settings" onClick={() => navigate('/settings')}>
-                    <div className="item-header">
-                        <FiSettings size={24} />
-                    </div>
-                    <h4 style={{ color: 'var(--text)' }}>Configurações</h4>
-                    <p className="muted">Ajuste privacidade, notificações e detalhes da conta.</p>
-                    {/* Botão padronizado com 'outline' */}
-                    <button className="btn tiny outline">Acessar</button>
-                </article>
+            <article className="grid-item item-settings" onClick={() => navigate('/app/settings')}>
+              <div className="item-header">
+                <FiSettings size={24} />
+              </div>
+              <h4 style={{ color: 'var(--text)' }}>Configurações</h4>
+              <p className="muted">Ajuste privacidade, notificações e detalhes da conta.</p>
+              <button className="btn tiny outline">Acessar</button>
+            </article>
 
-                {/* 5. Análise de Contratos (Container largo - MxM) */}
-                <article className="grid-item item-analysis" onClick={() => navigate('/analysis')}>
-                    <div className="item-header">
-                        <FiZap size={24} />
-                    </div>
-                    <h4 style={{ color: 'var(--text)' }}>Análise Rápida de Contrato</h4>
-                    <p className="muted">Use a IA para identificar cláusulas abusivas ou incomuns em novos contratos de trabalho.</p>
-                    <button className="btn tiny outline">Analisar Agora</button>
-                </article>
-
-            </div>
+            <article className="grid-item item-analysis" onClick={() => navigate('/app/contract-analysis')}>
+              <div className="item-header">
+                <FiZap size={24} />
+              </div>
+              <h4 style={{ color: 'var(--text)' }}>Análise Rápida de Contrato</h4>
+              <p className="muted">Use a IA para identificar cláusulas abusivas ou incomuns em novos contratos de trabalho.</p>
+              <button className="btn tiny outline">Analisar Agora</button>
+            </article>
+          </div>
         </section>
       </main>
 

@@ -1,0 +1,260 @@
+/* src/styles/settings.css */
+
+/* --- Variáveis de Layout (Assumindo que estão definidas em Application.css/global.css) --- */
+/*
+:root {
+  --text: #f0f0f0;
+  --muted: #a0a0a0;
+  --background: #000000;
+  --card: #151618;
+  --input: #1f2023;
+  --border: rgba(255, 255, 255, 0.08);
+  --accent: #4A90E2;
+  --radius: 12px;
+}
+*/
+
+/* --- Base & Estrutura --- */
+.settings-root {
+  width: 100%;
+  min-height: 100vh;
+  background: var(--background);
+  padding-top: 40px;
+}
+
+.settings-main {
+  margin-top: 3rem;
+  padding-bottom: 60px; /* Espaço para o footer */
+}
+
+.settings-header {
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1rem;
+}
+
+.settings-title {
+  font-size: 2.5rem;
+  color: var(--text);
+  margin-bottom: .25rem;
+}
+
+/* --- Layout Principal (Duas Colunas) --- */
+.settings-layout {
+  display: grid;
+  /* Desktop: 1 coluna de navegação (250px) e 1 coluna de conteúdo (restante) */
+  grid-template-columns: 250px 1fr; 
+  gap: 40px;
+}
+
+/* --- Coluna de Navegação (Menu Lateral) --- */
+.settings-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: sticky; /* Mantém o menu visível ao rolar */
+  top: 100px; /* Ajuste para descer um pouco abaixo do header fixo */
+  height: fit-content;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 15px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all .2s ease-out;
+  text-align: left;
+}
+
+.nav-item .nav-icon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.nav-item .nav-label {
+    flex-grow: 1; /* Ocupa o espaço central */
+}
+
+.nav-item .nav-arrow {
+    opacity: 0.5;
+    transition: opacity .2s;
+}
+
+.nav-item:hover {
+  background: var(--border);
+  color: var(--text);
+}
+
+.nav-item.active {
+  background: var(--accent); /* Cor de destaque */
+  color: #fff; /* Texto branco */
+  font-weight: 600;
+  box-shadow: 0 4px 10px rgba(74, 144, 226, 0.2);
+}
+
+.nav-item.active .nav-icon,
+.nav-item.active .nav-label {
+  color: #fff;
+}
+
+.nav-item.active .nav-arrow {
+    opacity: 1;
+    transform: translateX(2px);
+}
+
+/* Estilo para item de 'Zona de Perigo' na navegação */
+.nav-item.danger {
+    color: #ff5555;
+}
+.nav-item.danger:hover {
+    background: rgba(255, 85, 85, 0.1);
+}
+.nav-item.danger.active {
+    background: #ff5555;
+    color: #fff;
+}
+
+
+/* --- Coluna de Conteúdo --- */
+.settings-content {
+  padding: 0;
+}
+
+/* Título da seção visível apenas no conteúdo (Desktop) e como fallback/referência */
+.content-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+
+/* --- Cartões e Formulários (Aprimoramento) --- */
+.settings-card {
+  background: var(--card);
+  padding: 1.5rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Aumentado o gap para mais espaço */
+  margin-bottom: 20px;
+}
+
+.settings-card label {
+  font-weight: 600;
+  color: var(--text);
+  margin-top: 5px; /* Pequena margem acima do label */
+  margin-bottom: -5px; /* Puxa o campo para mais perto do label */
+}
+
+.settings-card input,
+.settings-card select,
+.settings-card textarea {
+  width: 100%;
+  background: var(--input);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: .8rem 1rem; /* Aumentado o padding */
+  border-radius: 8px; /* Ligeiramente menor que o card */
+  transition: border-color .2s, box-shadow .2s;
+}
+
+.settings-card input:focus,
+.settings-card select:focus,
+.settings-card textarea:focus {
+    border-color: var(--accent);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.3);
+}
+
+.settings-card textarea {
+    resize: vertical;
+}
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* --- Zona de Perigo (Mantido e Reforçado) --- */
+.danger-zone {
+  border: 1px solid #ff3b3b; /* Borda sólida mais visível */
+  background: #ff3b3b18;
+}
+
+.danger-zone h4 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ff4444; /* Cor mais vibrante */
+}
+
+.btn.danger {
+  background: #ff4444;
+  color: #fff;
+  transition: background .2s;
+}
+
+.btn.danger:hover {
+    background: #cc3333;
+}
+
+
+/* --- Responsividade (Mobile) --- */
+@media (max-width: 768px) {
+  .settings-header {
+      text-align: center;
+      padding-bottom: 0;
+      border-bottom: none;
+  }
+    
+  .settings-title {
+    font-size: 2rem;
+  }
+
+  /* Mobile: Layout de coluna única (desabilita o grid) */
+  .settings-layout {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  /* Mobile: O menu lateral se torna um menu de abas verticais */
+  .settings-nav {
+    position: static;
+    height: auto;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-item {
+    padding: 15px; /* Aumenta a área de toque */
+  }
+
+  /* Mobile: O conteúdo de cada seção aparece abaixo da navegação.
+     O título do conteúdo precisa aparecer, pois o menu lateral não está mais "ao lado".
+     No React, você renderiza a seção, mas o título do conteúdo será o cabeçalho.
+  */
+  .settings-content {
+      /* Adiciona um separador visual entre a navegação e o conteúdo ativo */
+      padding-top: 10px;
+  }
+
+  /* Esconde a seta na navegação por ser redundante em modo vertical de rolagem */
+  .nav-item .nav-arrow {
+      display: none;
+  }
+}
