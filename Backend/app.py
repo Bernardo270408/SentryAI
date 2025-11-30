@@ -28,6 +28,8 @@ def create_app():
     from router.message_ai_router import message_ai_bp
     from router.chat_router import chat_bp
     from router.rating_router import rating_bp
+    from router.contract_router import contract_bp
+    from router.dashboard_router import dashboard_bp
     
     # Register blueprints
     app.register_blueprint(auth_bp)
@@ -36,7 +38,8 @@ def create_app():
     app.register_blueprint(message_ai_bp)
     app.register_blueprint(chat_bp)
     app.register_blueprint(rating_bp)
-
+    app.register_blueprint(contract_bp)
+    app.register_blueprint(dashboard_bp)
 
     return app
 

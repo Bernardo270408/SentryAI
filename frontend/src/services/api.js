@@ -1,11 +1,15 @@
 const BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
-async function request(path, method = "GET", body = null, auth = true) {
+// 1. Função request ATUALIZADA (suporta FormData para upload de arquivos)
+async function request(path, method = "GET", body = null, auth = true, isFormData = false) {
   const headers = { Accept: "application/json" };
 
-  if (body) headers["Content-Type"] = "application/json";
+  // Se não for FormData, define JSON. 
+  // Se for FormData, o browser define o Content-Type (multipart) automaticamente.
+  if (body && !isFormData) {
+    headers["Content-Type"] = "application/json";
+  }
 
-  // Token via localStorage
   const token = localStorage.getItem("token");
   if (auth && token) headers["Authorization"] = `Bearer ${token}`;
 
@@ -14,7 +18,7 @@ async function request(path, method = "GET", body = null, auth = true) {
   const response = await fetch(url, {
     method,
     headers,
-    body: body ? JSON.stringify(body) : undefined,
+    body: isFormData ? body : (body ? JSON.stringify(body) : undefined),
   });
 
   const text = await response.text();
@@ -34,14 +38,12 @@ async function request(path, method = "GET", body = null, auth = true) {
 }
 
 /* ======================================================
-   STREAMING: Fetch com ReadableStream (Compatível com POST + Auth)
+   STREAMING: Fetch com ReadableStream (Restaurado)
    ====================================================== */
-
 async function streamChatMessage({ chatId, content, onChunk, onEnd, onError }) {
   const token = localStorage.getItem("token");
   
-  // MODELO PADRÃO ATUALIZADO PARA GEMINI 2.0 FLASH (Mais rápido e maior cota)
-  // Se preferir o 2.5 flash, pode usar: "gemini-2.5-flash"
+  // Define o modelo padrão (usando o 2.5 flash conforme você queria)
   const model = localStorage.getItem("model") || "gemini-2.5-flash-preview-09-2025"; 
 
   const url = `${BASE}/ai-messages/send-stream`;
@@ -51,11 +53,11 @@ async function streamChatMessage({ chatId, content, onChunk, onEnd, onError }) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`, // Envia o Token corretamente
+        "Authorization": `Bearer ${token}`,
         "Accept": "text/event-stream",
       },
       body: JSON.stringify({
-        chat_id: chatId,  // Backend espera snake_case
+        chat_id: chatId,
         content: content, 
         model: model      
       }),
@@ -93,7 +95,6 @@ async function streamChatMessage({ chatId, content, onChunk, onEnd, onError }) {
 
           try {
             const data = JSON.parse(dataStr);
-            // Backend envia { token: "texto" } ou { error: "..." }
             if (data.token) {
               onChunk && onChunk(data.token);
             } else if (data.error) {
@@ -106,7 +107,6 @@ async function streamChatMessage({ chatId, content, onChunk, onEnd, onError }) {
       }
     }
     
-    // Finalizar se sair do loop normalmente
     onEnd && onEnd();
 
   } catch (err) {
@@ -116,42 +116,35 @@ async function streamChatMessage({ chatId, content, onChunk, onEnd, onError }) {
 }
 
 // ======================================================
-// EXPORTS DE ALTO NÍVEL
+// EXPORTS (Incluindo os novos métodos de contrato)
 // ======================================================
 
 export default {
   request,
 
   // ---------- AUTH ----------
-  login: (email, password) =>
-    request("/login/", "POST", { email, password }, false),
-
-  register: (username, email, password) =>
-    request("/register/", "POST", { username, email, password }, false),
+  login: (email, password) => request("/login/", "POST", { email, password }, false),
+  register: (username, email, password) => request("/register/", "POST", { username, email, password }, false),
 
   // ---------- CHATS ----------
-  createChat: (name) =>
-    request("/chats/", "POST", { name }),
-
-  getChat: (id) =>
-    request(`/chats/${id}`, "GET"),
-
-  getUserChats: (userId) =>
-    request(`/chats/user/${userId}`, "GET"),
-
-  deleteChat: (id) =>
-    request(`/chats/${id}`, "DELETE"),
+  createChat: (name) => request("/chats/", "POST", { name }),
+  getChat: (id) => request(`/chats/${id}`, "GET"),
+  getUserChats: (userId) => request(`/chats/user/${userId}`, "GET"),
+  deleteChat: (id) => request(`/chats/${id}`, "DELETE"),
 
   // ---------- MESSAGES ----------
-  sendMessage: (chatId, content) =>
-    request("/messages/", "POST", { chat_id: chatId, content }),
-
-  getMessages: (chatId) =>
-    request(`/messages/${chatId}`, "GET"),
+  sendMessage: (chatId, content) => request("/messages/", "POST", { chat_id: chatId, content }),
+  getMessages: (chatId) => request(`/messages/${chatId}`, "GET"),
 
   // ---------- RATING ----------
-  getRating: (chatId) =>
-    request(`/chats/${chatId}/rating`, "GET"),
+  getRating: (chatId) => request(`/chats/${chatId}/rating`, "GET"),
+
+  // ---------- CONTRACT ANALYSIS (NOVO) ----------
+  // Passamos isFormData = true aqui
+  analyzeContract: (formData) => request("/contract/analyze", "POST", formData, true, true),
+  
+  chatContract: (data) => request("/contract/chat", "POST", data),
+  getDashboardStats: () => request("/dashboard/stats", "GET"),
 
   // ---------- STREAMING ----------
   streamChatMessage,

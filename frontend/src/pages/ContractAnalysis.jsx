@@ -1,68 +1,79 @@
-// src/pages/ContractAnalysis.jsx
 import React, { useState, useRef } from "react";
-import {
-  FiZap,
-  FiUploadCloud,
-  FiPlay,
-  FiArrowUp,
-  FiPaperclip,
-  FiSend,
-  FiArrowUpCircle,
-} from "react-icons/fi";
+import { FiZap, FiPlay, FiArrowUp, FiPaperclip, FiArrowUpCircle } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import FooterContent from "../components/FooterComponent";
 import "../styles/contractAnalysis.css";
 import api from "../services/api";
 
-/* --------------------------------------------------
-   HEURISTIC ANALYSIS – fallback quando API não existe
--------------------------------------------------- */
+/* COMPONENTE VISUAL DA BARRA DE RISCO */
+function RiskMeter({ score }) {
+  // Define nível
+  let level = "safe";
+  if (score > 30) level = "warning";
+  if (score > 60) level = "danger";
+
+  // Cria 10 segmentos (cada um vale 10 pontos)
+  const segments = Array.from({ length: 20 }, (_, i) => {
+    // Se o score for 45, active até o segmento 9 (45/5 = 9)
+    const isActive = i < (score / 5); 
+    return <div key={i} className={`risk-segment ${isActive ? "active" : ""}`} />;
+  });
+
+  return (
+    <div className="risk-meter-container">
+      <div className="risk-header">
+        <span>Nível de Risco</span>
+        <span>{score}/100</span>
+      </div>
+      <div className={`risk-bar ${level}`}>
+        {segments}
+      </div>
+    </div>
+  );
+}
+
+/* FUNÇÃO DE ANÁLISE HEURÍSTICA (FALLBACK) */
 function heuristicAnalyze(text) {
   const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
   const keywords = [
-    { k: ["multa"], tag: "Penalidade" },
-    { k: ["rescis"], tag: "Rescisão" },
+    { k: ["multa", "penalidade"], tag: "Penalidade" },
+    { k: ["rescis", "distrato"], tag: "Rescisão" },
     { k: ["prazo", "vigência"], tag: "Prazos" },
-    { k: ["indeniza"], tag: "Indenização" },
-    { k: ["horas extras", "jornada"], tag: "Jornada" },
-    { k: ["confidencial"], tag: "Confidencialidade" },
-    { k: ["exclusiv"], tag: "Exclusividade" },
-    { k: ["foro"], tag: "Foro" },
-    { k: ["reajuste"], tag: "Reajuste" },
+    { k: ["indeniza", "danos"], tag: "Indenização" },
+    { k: ["exclusiv", "não concorrência"], tag: "Exclusividade" },
   ];
 
   const highlights = [];
+  let riskPoints = 0;
+
   lines.forEach((ln, i) => {
     const low = ln.toLowerCase();
     keywords.forEach((kw) => {
       if (kw.k.some(w => low.includes(w))) {
+        riskPoints += 15; // Pontua risco
         highlights.push({
           id: `${i}-${kw.tag}`,
           lineNumber: i + 1,
-          snippet: ln.slice(0, 250) + (ln.length > 250 ? "…" : ""),
-          tag: kw.tag,
-          reason: `Contém termo relacionado a "${kw.tag}".`
+          snippet: ln.slice(0, 150) + "...",
+          tag: kw.tag
         });
       }
     });
   });
 
-  const riskScore = Math.min(
-    100,
-    Math.round((highlights.length / Math.max(1, lines.length)) * 240)
-  );
-  const riskLabel = riskScore > 40 ? (riskScore > 70 ? "Alto" : "Médio") : "Baixo";
+  const riskScore = Math.min(100, riskPoints);
+  let riskLabel = "Baixo";
+  if (riskScore > 30) riskLabel = "Médio";
+  if (riskScore > 60) riskLabel = "Alto";
 
   return {
     highlights,
-    summary: lines.slice(0, 5).join(" ").slice(0, 700),
+    summary: lines.slice(0, 5).join(" ").slice(0, 400) + "...",
     risk: { score: riskScore, label: riskLabel },
   };
 }
 
-/* --------------------------------------------------
-                  COMPONENTE PRINCIPAL
--------------------------------------------------- */
+/* MAIN COMPONENT */
 export default function ContractAnalysis() {
   const navigate = useNavigate();
   const [file, setFile] = useState(null);
@@ -71,163 +82,105 @@ export default function ContractAnalysis() {
   const [analysis, setAnalysis] = useState(null);
   const [messages, setMessages] = useState([]);
   const fileRef = useRef(null);
-
-  /* -------- Drag & Drop state -------- */
   const [isDragging, setIsDragging] = useState(false);
 
+  // --- Lógica de Drag/Drop e Arquivo ---
   function handleDrop(e) {
     e.preventDefault();
     setIsDragging(false);
-
     const f = e.dataTransfer.files?.[0];
     if (f) processFile(f);
   }
-
-  function handleDrag(e) {
-    e.preventDefault();
-    setIsDragging(true);
-  }
-
-  function handleDragLeave(e) {
-    e.preventDefault();
-    setIsDragging(false);
-  }
-
-  async function processFile(f) {
+  function processFile(f) {
     setFile(f);
     setAnalysis(null);
-
-    if (f.type.startsWith("text/") || /\.(txt|md|csv)$/i.test(f.name)) {
+    if (f.type.startsWith("text/") || /\.(txt|md|csv|json)$/i.test(f.name)) {
       const reader = new FileReader();
       reader.onload = e => setTextPreview(String(e.target.result));
       reader.readAsText(f);
     } else {
-      setTextPreview(`Arquivo: ${f.name}\nPrévia indisponível.`);
+      setTextPreview(`Arquivo: ${f.name} carregado.\n(Prévia visual indisponível para binários, mas será enviada para análise).`);
     }
   }
 
-  async function handleFile(ev) {
-    const f = ev.target.files?.[0];
-    if (f) processFile(f);
-  }
-
-  /* -------- EXECUTAR ANÁLISE -------- */
+  // --- AÇÃO DE ANALISAR ---
   async function handleAnalyze() {
-    if (!file && !textPreview.trim()) {
-      return alert("Envie um arquivo ou cole algum texto.");
-    }
-
+    if (!file && !textPreview.trim()) return alert("Envie um arquivo ou cole texto.");
     setStatus("processing");
 
-    // Se existir API real
-    if (api?.analyzeContract) {
-      try {
+    try {
+      if (api?.analyzeContract) {
         const form = new FormData();
         if (file) form.append("file", file);
-        if (!file) form.append("text", textPreview);
+        else form.append("text", textPreview);
 
         const res = await api.analyzeContract(form);
         setAnalysis(res);
-        setStatus("done");
-        return;
-      } catch {}
+      } else {
+        // Fallback se API offline
+        setTimeout(() => setAnalysis(heuristicAnalyze(textPreview)), 1500);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Erro na análise. Usando modo offline.");
+      setAnalysis(heuristicAnalyze(textPreview));
+    } finally {
+      setStatus("done");
     }
-
-    // fallback
-    const heur = heuristicAnalyze(textPreview || "");
-    setAnalysis(heur);
-    setStatus("done");
   }
 
-  /* -------- CHAT -------- */
+  // --- CHAT SOBRE O CONTRATO ---
   async function sendChat(msg) {
     if (!msg.trim()) return;
-
-    setMessages(m => [...m, { id: Date.now(), role: "user", text: msg }]);
-
-    if (api?.chatContract) {
-      try {
-        const res = await api.chatContract({
-          message: msg,
-          context: analysis?.summary || ""
-        });
-
-        setMessages(prev => [
-          ...prev,
-          {
-            id: Date.now() + 1,
-            role: "assistant",
-            text: res?.reply || "Sem resposta."
-          }
-        ]);
-        return;
-      } catch {}
-    }
-
-    // fallback
-    setMessages(prev => [
-      ...prev,
-      {
-        id: Date.now() + 2,
-        role: "assistant",
-        text: "Análise local realizada. Consulte o nível de risco."
+    setMessages(prev => [...prev, { id: Date.now(), role: "user", text: msg }]);
+    
+    try {
+      if (api?.chatContract && analysis) {
+        const res = await api.chatContract({ message: msg, context: analysis.summary });
+        setMessages(prev => [...prev, { id: Date.now()+1, role: "assistant", text: res.reply }]);
+      } else {
+        setMessages(prev => [...prev, { id: Date.now()+1, role: "assistant", text: "IA indisponível no momento." }]);
       }
-    ]);
+    } catch {
+      setMessages(prev => [...prev, { id: Date.now()+1, role: "assistant", text: "Erro ao conectar com a IA." }]);
+    }
   }
 
-  /* -------- GERAR JSON -------- */
-  function downloadReport() {
-    if (!analysis) return;
+  // Determina a classe de cor de fundo baseada no risco
+  const getRiskClass = () => {
+    if (!analysis) return "";
+    const s = analysis.risk.score;
+    if (s > 60) return "risk-bg-danger";
+    if (s > 30) return "risk-bg-warning";
+    return "risk-bg-safe";
+  };
 
-    const blob = new Blob([JSON.stringify(analysis, null, 2)], {
-      type: "application/json",
-    });
-
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "contract-analysis.json";
-    a.click();
-  }
-
-  /* --------------------------------------------------
-                    RENDERIZAÇÃO
-  -------------------------------------------------- */
   return (
     <div className="ca-wrapper">
-      
-      {/* HEADER */}
       <header className="ca-header">
         <div className="ca-header-left">
           <FiZap size={22} />
           <span>Análise de Contrato</span>
         </div>
-
       </header>
 
       <main className="ca-main">
-        {/* ----------------- COLUNA ESQUERDA ----------------- */}
+        {/* COLUNA ESQUERDA (INPUT) */}
         <section className="ca-col">
-
-          {/* BLOCO UPLOAD */}
           <div className="ca-card">
-            <h3>1. Enviar documento</h3>
-
+            <h3>1. Documento</h3>
             <div
-              className={`ca-dropzone ${isDragging ? "dragging" : ""}`}
-              onDragOver={handleDrag}
-              onDragLeave={handleDragLeave}
+              className={`ca-upload ${isDragging ? "dragover" : ""}`}
+              onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+              onDragLeave={() => setIsDragging(false)}
               onDrop={handleDrop}
               onClick={() => fileRef.current?.click()}
             >
-              <FiArrowUpCircle size={38} className="ca-upload-icon" />
-              <p>{file ? file.name : "Arraste aqui ou clique para enviar"}</p>
-
-              <input
-                type="file"
-                ref={fileRef}
-                onChange={handleFile}
-                hidden
-              />
+              <div>
+                <FiArrowUpCircle size={32} style={{ marginBottom: 8, opacity: 0.7 }} />
+                <p>{file ? file.name : "Arraste ou clique"}</p>
+              </div>
+              <input type="file" ref={fileRef} onChange={(e) => processFile(e.target.files[0])} hidden />
             </div>
 
             <button
@@ -235,123 +188,82 @@ export default function ContractAnalysis() {
               onClick={handleAnalyze}
               disabled={status === "processing"}
             >
-              <FiPlay />
-              {status === "processing" ? "Analisando..." : "Analisar documento"}
+              <FiPlay /> {status === "processing" ? "Analisando IA..." : "Analisar Risco"}
             </button>
           </div>
 
-          {/* PREVIEW */}
           <div className="ca-card">
             <h3>Pré-visualização</h3>
             <textarea
               className="ca-textarea"
               value={textPreview}
               onChange={e => setTextPreview(e.target.value)}
-              placeholder="Cole aqui o texto do contrato..."
+              placeholder="Cole o texto do contrato aqui..."
             />
           </div>
         </section>
 
-        {/* ----------------- COLUNA DIREITA ----------------- */}
+        {/* COLUNA DIREITA (RESULTADO) */}
         <section className="ca-col">
+          {/* CARD DE RESULTADO COM CLASSE DINÂMICA */}
+          <div className={`ca-card ${getRiskClass()}`}>
+            <h3>Resultado da Análise</h3>
 
-          {/* RESULTADOS */}
-          <div className="ca-card">
-            <h3>Resultado</h3>
-
-            {status === "idle" && <p className="muted small">Nenhuma análise realizada.</p>}
-            {status === "processing" && <p className="muted small">Processando…</p>}
+            {status === "idle" && <p className="muted small">Aguardando documento...</p>}
+            {status === "processing" && <p className="muted small">A IA está lendo o contrato...</p>}
 
             {status === "done" && analysis && (
-              <>
-                <p className="small muted">{analysis.summary}</p>
+              <div className="fade-in">
+                {/* COMPONENTE DA BARRINHA */}
+                <RiskMeter score={analysis.risk.score} />
 
-                <div className="ca-risk">
-                  <span>Nível de risco:</span>
-                  <div className={`ca-risk-tag ${analysis.risk.label.toLowerCase()}`}>
-                    {analysis.risk.label} • {analysis.risk.score}
-                  </div>
-                </div>
+                <p className="small" style={{ lineHeight: 1.6 }}>{analysis.summary}</p>
 
-                <h4>Destaques</h4>
+                <h4 style={{ marginTop: 20, marginBottom: 10 }}>Pontos de Atenção</h4>
                 <ul className="ca-highlight-list">
-                  {analysis.highlights.map(h => (
-                    <li key={h.id} className="ca-highlight-item">
+                  {analysis.highlights.map((h, i) => (
+                    <li key={i} className="ca-highlight-item">
                       <div className="tag">{h.tag}</div>
-                      <div className="snippet">{h.snippet}</div>
-                      <div className="line muted small">Linha {h.lineNumber}</div>
+                      <div className="snippet">"{h.snippet}"</div>
+                      <div className="line muted small">Ref: Linha {h.lineNumber || "?"}</div>
                     </li>
                   ))}
                 </ul>
-
-                <button className="ca-btn outline" onClick={downloadReport}>
-                  Baixar relatório JSON
-                </button>
-              </>
+              </div>
             )}
           </div>
 
           {/* CHAT */}
           <div className="ca-card">
-            <h3>Chat sobre o documento</h3>
-
+            <h3>Dúvidas sobre o contrato</h3>
             <div className="ca-chat-box">
-              {messages.map(msg => (
-                <div
-                  key={msg.id}
-                  className={`ca-msg ${msg.role === "user" ? "user" : "assistant"}`}
-                >
-                  {msg.text}
-                </div>
+              {messages.map(m => (
+                <div key={m.id} className={`ca-msg ${m.role}`}>{m.text}</div>
               ))}
             </div>
-
-            <ChatInput disabled={!analysis} onSend={sendChat} />
+            <ChatInput onSend={sendChat} disabled={!analysis} />
           </div>
-
         </section>
       </main>
-
       <FooterContent />
     </div>
   );
 }
 
-/* --------------------------------------------------
-                INPUT DO CHAT
--------------------------------------------------- */
 function ChatInput({ onSend, disabled }) {
-  const [msg, setMsg] = useState("");
-
+  const [val, setVal] = useState("");
   return (
-    <form
-      className="ca-chat-input"
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (!msg.trim()) return;
-        onSend(msg);
-        setMsg("");
-      }}
-    >
-
-      {/* Ícone de anexar arquivo – só visual */}
+    <form className="ca-chat-input" onSubmit={(e) => { e.preventDefault(); onSend(val); setVal(""); }}>
       <FiPaperclip className="ca-chat-clip" />
-
-      <input
-        className="ca-chat-field"
+      <input 
+        className="ca-chat-field" 
+        value={val} 
+        onChange={e => setVal(e.target.value)} 
+        placeholder={disabled ? "Analise o contrato primeiro" : "Pergunte sobre multas, prazos..."} 
         disabled={disabled}
-        placeholder={disabled ? "Realize a análise primeiro" : "Digite sua dúvida..."}
-        value={msg}
-        onChange={e => setMsg(e.target.value)}
       />
-
-      {/* Ícone de setinha para cima */}
-      <button
-        className={`ca-chat-send ${msg.trim() && !disabled ? "active" : ""}`}
-        type="submit"
-        disabled={!msg.trim() || disabled}
-      >
-        <FiArrowUp size={18} />
+      <button type="submit" className="ca-chat-send active" disabled={!val.trim() || disabled}>
+        <FiArrowUp />
       </button>
     </form>
   );

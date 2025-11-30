@@ -387,3 +387,77 @@
   stroke: #fff !important;
   opacity: 1 !important;
 }
+
+/* ... (Mantenha as variáveis root existentes) ... */
+
+/* ADICIONAR NO FINAL DO ARQUIVO */
+
+/* ===================================================
+   NOVO: RISK METER (BARRINHA SEGMENTADA)
+=================================================== */
+.risk-meter-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 16px 0 24px 0;
+}
+
+.risk-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.risk-bar {
+  display: flex;
+  gap: 4px; /* Espaço entre os tracinhos */
+  height: 12px;
+  width: 100%;
+}
+
+.risk-segment {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.1); /* Cor inativa */
+  border-radius: 2px;
+  transition: background 0.4s ease;
+}
+
+/* Cores Ativas baseadas no nível de risco */
+.risk-bar.safe .risk-segment.active {
+  background: #2ecc71; /* Verde */
+  box-shadow: 0 0 8px rgba(46, 204, 113, 0.6);
+}
+
+.risk-bar.warning .risk-segment.active {
+  background: #f1c40f; /* Amarelo */
+  box-shadow: 0 0 8px rgba(241, 196, 15, 0.6);
+}
+
+.risk-bar.danger .risk-segment.active {
+  background: #e74c3c; /* Vermelho */
+  box-shadow: 0 0 10px rgba(231, 76, 60, 0.8);
+}
+
+/* Background do Painel Inteiro mudando com o risco */
+.ca-card.risk-bg-safe {
+  background: linear-gradient(160deg, rgba(46, 204, 113, 0.05) 0%, rgba(7, 8, 10, 0.95) 100%);
+  border-left: 4px solid #2ecc71;
+}
+
+.ca-card.risk-bg-warning {
+  background: linear-gradient(160deg, rgba(241, 196, 15, 0.08) 0%, rgba(7, 8, 10, 0.95) 100%);
+  border-left: 4px solid #f1c40f;
+}
+
+.ca-card.risk-bg-danger {
+  background: linear-gradient(160deg, rgba(231, 76, 60, 0.15) 0%, rgba(7, 8, 10, 0.95) 100%);
+  border-left: 4px solid #e74c3c;
+  animation: pulse-danger 2s infinite alternate;
+}
+
+@keyframes pulse-danger {
+  from { box-shadow: 0 0 20px rgba(231, 76, 60, 0.1); }
+  to { box-shadow: 0 0 35px rgba(231, 76, 60, 0.25); }
+}
