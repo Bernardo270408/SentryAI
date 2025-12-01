@@ -315,3 +315,14 @@ Dicas:
 * Argumentos omitidos usarão valores default.
 * Parâmetros extras serão ignorados (não causam erro).
 * Desenvolvedores podem enviar todos os defaults sem risco.
+
+---
+
+## Licença
+
+Copyright (c) 2025 Bernardo "222" Duarte Marcelino
+Copyright (c) 2025 Yagor Vitor Silva dos Santos
+
+Este projeto é distribuído sob a licença MIT [1].
+
+---
