@@ -62,6 +62,18 @@ Você pode voltar para o readme por [este link](../readme.md).
 
 ---
 
+### Contract
+| Coluna     | Tipo     | PK | FK | Not Null | Default       | Descrição                       |
+|------------|----------|----|----|----------|----------------|--------------------------------|
+| id         | Integer  | X  |    | X        | auto_inc       | Identificador do contrato      |
+| user_id    | Integer  |    | X  | X        |                | Usuário dono do contrato       |
+| text       | Text     |    |    | X        |                | Texto do contrato              |
+| json       | JSON     |    |    | X        |                | Dados adicionais em JSON       |
+| created_at | DateTime |    |    | X        | db.func.now()  | Data de criação                |
+| updated_at | DateTime |    |    |          | db.func.now()  || Data da última atualização    |
+
+---
+
 ### Relacionamentos
 
 | Tabela Origem   | Coluna Origem     | Tabela Destino | Coluna Destino | Tipo de Relacionamento |
@@ -70,5 +82,6 @@ Você pode voltar para o readme por [este link](../readme.md).
 | message_user    | user_id           | user           | id             | N:1                    |
 | message_user    | chat_id           | chat           | id             | N:1                    |
 | ai_message      | chat_id           | chat           | id             | N:1                    |
-| ai_message      | user_message_id   | message_user   | id             | N:1 (opcional)         |
-| rating          | chat_id           | chat           | id             | 1:1 (opcional)         |
+| ai_message      | user_message_id   | message_user   | id             | N:1                    |
+| rating          | chat_id           | chat           | id             | 1:1                    |
+| contract        | user_id           | user           | id             | N:1                    |

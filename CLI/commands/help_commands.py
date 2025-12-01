@@ -11,7 +11,7 @@ Examples:
 Authentication:
     sentry auth -login email='test@mail' password='1234'
     > Token generated
-    > Token will automatically apply as default in operations
+    > Token set as default
     > Do you want to use this user_id as default to the next operations? (y/n): n
     > Login successful
 
@@ -26,15 +26,13 @@ User message creation:
     > Do you want to call the AI to respond? (y/n): y
     > AI message created successfully
     > Model 'deepseek-r1:1.5b' said:
-    > "The sky appears blue to human observers because of the way Earth's atmosphere scatters sunlight. When sunlight enters the atmosphere, it is made up of different colors, each with its own wavelength. Blue light has a shorter wavelength and is scattered in all directions by the gases and particles in the atmosphere. This scattering causes the sky to appear blue when we look up during the day."
+    > "The sky appears blue because..."
 
 Tips:
     - You can provide other params such as user_id=x or token=x.
-    - A default value is generally used if no explicit param is given.
-    - Sending extra data will not cause errors (it will simply be ignored).
-    - All default params are sent exactly as typed.
-    - Developers: You can safely send all defaults without breaking anything.
-
+    - Default values are used if no explicit param is provided.
+    - Extra parameters are ignored silently.
+    - Developers: sending all defaults will not break anything.
 """,
 
 "-auth":
@@ -44,26 +42,25 @@ auth
                 Requires: email, password
     -logout     Removes the JWT token from defaults.
                 Takes nothing.
-    -gettoken   Prints the current token from defaults.
+    -gettoken   Prints the current token stored in defaults.
                 Takes nothing.
-
 """,
 
 "-chat":
 """
 chat
-    -create     Creates a chat object on DB and sets default chat_id.
+    -create     Creates a chat and optionally sets it as default.
                 Requires: name
                 Optional: user_id, token
-    -get        Gets an existing chat by id.
+    -get        Gets a chat by ID.
                 Requires: chat_id, token
-    -getbyuser  Gets all chats from a specific user.
+    -getbyuser  Gets all chats from a user.
                 Requires: user_id, token
-    -getall     Gets all chats.
+    -getall     Lists all chats.
                 Requires: token
     -update     Updates an existing chat.
                 Requires: chat_id, token
-    -delete     Deletes an existing chat.
+    -delete     Removes a chat.
                 Requires: chat_id, token
     -open       Sets a chat_id as default.
                 Requires: chat_id
@@ -74,16 +71,16 @@ chat
 "-user":
 """
 user
-    -create     Creates a user on DB.
+    -create     Creates a new user.
                 Requires: name, email, password
                 Optional: extra_data
-    -get        Gets an existing user by id.
+    -get        Gets a user by ID.
                 Requires: user_id
-    -getall     Gets all users.
+    -getall     Lists all users.
                 Takes nothing.
-    -update     Updates an existing user.
+    -update     Updates a user.
                 Requires: user_id, token
-    -delete     Deletes an existing user.
+    -delete     Deletes a user.
                 Requires: user_id, token
     -open       Sets a user_id as default.
                 Requires: user_id
@@ -94,100 +91,159 @@ user
 "-message":
 """
 message
-    -create     Creates a user message on DB.
+    -create     Creates a user message.
                 Requires: user_id, chat_id, content, token
-    -get        Gets a user message by id.
+    -get        Gets a message by ID.
                 Requires: user_message_id, token
-    -getall     Gets all messages.
+    -getall     Lists all messages.
                 Requires: token
-    -getbyuser  Gets all messages from a user.
+    -getbyuser  Lists all messages from a user.
                 Requires: user_id, token
-    -getbychat  Gets all messages from a chat.
+    -getbychat  Lists all messages from a chat.
                 Requires: chat_id, token
-    -update     Updates a user message.
+    -update     Updates a message.
                 Requires: user_message_id, token
-    -delete     Deletes a user message.
+    -delete     Deletes a message.
                 Requires: user_message_id, token
     -open       Sets a user_message_id as default.
                 Requires: user_message_id
     -quit       Unsets the default user_message_id.
                 Takes nothing.
-
 """,
+
 "-message_ai":
 """
 message_ai
-    -create             Generates an AI response and saves it on DB.
+    -create             Generates an AI response and saves it.
                         Requires: user_id, chat_id, model, token
-    -get                Gets an AI message by id.
+    -get                Gets an AI message by ID.
                         Requires: ai_message_id, token
-    -getall             Gets all AI messages.
+    -getall             Lists all AI messages.
                         Requires: token
-    -getbychat          Gets all AI messages from a chat.
+    -getbychat          Lists all AI messages from a chat.
                         Requires: chat_id, token
-    -getbymodel         Gets all AI messages from a model.
+    -getbymodel         Lists all AI messages generated by a model.
                         Requires: model_name, token
-    -getbychatandmodel  Gets AI messages by chat_id and model.
+    -getbychatandmodel  Lists AI messages by chat_id and model.
                         Requires: chat_id, model_name, token
     -update             Updates an AI message.
                         Requires: ai_message_id, token
     -delete             Deletes an AI message.
                         Requires: ai_message_id, token
-    -open               Sets an AI message_id as default.
+
+    -rate               Rates an AI message.
+                        Requires: ai_message_id, rating, token
+    -getrating          Gets the rating of an AI message.
+                        Requires: ai_message_id, token
+    -getrated           Lists all AI messages that have ratings.
+                        Requires: token
+    -feedback           Adds textual feedback to an AI message.
+                        Requires: ai_message_id, feedback, token
+    -getfeedback        Gets feedbacks of an AI message.
+                        Requires: ai_message_id, token
+
+    -open               Sets an ai_message_id as default.
                         Requires: ai_message_id
     -quit               Unsets the default ai_message_id.
                         Takes nothing.
-
 """,
 
-"-quit":
+"-rating":
 """
-quit
-    Exits the program.
-    ...
-    Uhhm...
-    What else do you want from a quit command?
+rating
+    -create     Creates a chat rating.
+                Requires: user_id, chat_id, score, token
+    -get        Gets a rating by ID.
+                Requires: rating_id, token
+    -getall     Lists all ratings.
+                Requires: token
+    -getbyuser  Lists ratings from a user.
+                Requires: user_id, token
+    -getbychat  Lists ratings from a chat.
+                Requires: chat_id, token
+    -update     Updates a rating.
+                Requires: rating_id, token
+    -delete     Deletes a rating.
+                Requires: rating_id, token
+    -open       Sets a rating_id as default.
+                Requires: rating_id
+    -quit       Unsets the default rating_id.
+                Takes nothing.
 """,
+
+"-contract":
+"""
+contract
+    -create     Analyzes a contract (alias for -analyze).
+                Requires: contract_text, user_id, token
+    -analyze    Same as -create (analyzes a contract).
+                Requires: contract_text, user_id, token
+    -get        Gets a contract by ID.
+                Requires: contract_id, token
+    -getall     Lists all contracts.
+                Requires: token
+    -update     Updates a contract.
+                Requires: contract_id, token
+    -delete     Deletes a contract.
+                Requires: contract_id, token
+""",
+
 "-default":
 """
 default
     -get        Gets a default value by key.
                 Requires: key
-    -getall     Gets all default values.
+    -getall     Lists all default values.
                 Takes nothing.
-    -set        Sets a value as default.
+    -set        Sets a default value.
                 Requires: key, value
-    -setall     Sets all values as default (mostly useless).
+    -setall     Sets multiple defaults at once.
                 Requires: value
-    -unset      Unsets a default value.
+    -unset      Removes a default value.
                 Requires: key
-    -unsetall   Clears all defaults.
+    -unsetall   Clears all default values.
                 Takes nothing.
 
+Recognized default keys:
+    auto-create-AI-message   Automatically create AI responses for new user messages. [bool]
+    user_id                  Default user ID. [int]
+    chat_id                  Default chat ID. [int]
+    user_message_id          Default user message ID. [int]
+    ai_message_id            Default AI message ID. [int]
+    token                    Default JWT token. [string]
+    model                    Default model for AI message creation. [string]
 
-Regular keys for defaults:
-    auto-create-AI-message   If true, every user message created
-                             will automatically generate an AI message
-                             in the same chat. [bool]
-    user_id                  Default user_id for operations. [int]
-    chat_id                  Default chat_id for operations. [int]
-    user_message_id          Default user_message_id for operations. [int]
-    ai_message_id            Default ai_message_id for operations. [int]
-    token                    Default token for operations. [string]
-    model                    Default model used for AI message creation. [string]
-
-
-Note:
-    You can set any key, but only the above are used by the program.
+Notes:
+    You may set any key, but only the above are used internally.
     Keys are case-sensitive.
+""",
 
+"-dashboard":
+"""
+Exibits dashboard information on terminal in JSON.
+Requires token and user_id.
+
+Information exibited:
+kpis:
+    active_cases: Number of active chats
+    docs_analyzed: Number of documents analyzed
+    risks_avoided: Number of risks avoided
+    next_deadline: Next important deadline
+chart_data: Array containing data from the last 7 days with number of consultations and analyses
+history: Latest actions performed
+insight: Tip or insight based on the user's last interaction
+
+""",
+"-quit":
+"""
+Finishes the execution of the CLI.
+uhh.. what did you expect it to do?
 """,
 "-help":
 """
 help
     -[command]  Shows help for a specific command.
-    -all        Shows help for all commands.
-
+    -all        Shows help for every command.
 """
 }
 

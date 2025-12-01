@@ -132,6 +132,21 @@ Gerencia as avaliações de chats.
 
 ---
 
+### `contract`
+Gerencia operações relacionadas a contratos. Note que o comando `analyze` é um alias para `create`, e que ambos realizam a mesma função de analisar um contrato. 
+| Subcomando | Ação                                 | Campos Obrigatórios                      |
+| ---------- | ------------------------------------ | ---------------------------------------- |
+| `-create`  | Analiza um contrato                  | `contract_text`, `user_id`, `token`      |
+| `-analyze` | "                                    | "                                        |
+| `-get`     | Retorna um contrato específico       | `contract_id`, `token`                   |
+| `-getall`  | Retorna todos os contratos do sistema| `token`                                  |
+| `-update`  | Atualiza um contrato existente       | `contract_id`, `token`                   |
+| `-delete`  | Remove um contrato do sistema        | `contract_id`, `token`                   |
+| `-open`    | Define um `contract_id` como padrão  | `contract_id`                            |
+| `-quit`    | Remove o `contract_id` padrão atual  | Nenhum                                   |
+
+---
+
 ### `default`
 
 Gerencia valores padrão utilizados nas operações da CLI.
@@ -151,27 +166,35 @@ Gerencia valores padrão utilizados nas operações da CLI.
 * `chat_id`: ID do chat padrão
 * `user_message_id`: ID da mensagem de usuário padrão
 * `ai_message_id`: ID da resposta da IA padrão
+* `rating_id`: ID da avaliação padrão
+* `contract_id`: ID do contrato padrão
 * `token`: Token JWT do usuário autenticado
 * `model`: Nome do modelo padrão a ser utilizado nas respostas de IA
 * `domain` : Domínio da URL onde está hospedada a API
 * `port` : Porta utilizada pela API
-* `auto-create-AI-message`: Se `true`, mensagens de usuário geram automaticamente respostas da IA
 
 ---
 
+### `dashboard`
+Exibe as informações do dashboard no terminal em JSON
+
+**Informações exibidas:**
+- `kpis`:
+    - `active_cases`: Quantidade de chats ativos
+    - `docs_analyzed`: Número de documentos analisados
+    - `risks_avoided`: Número de riscos evitados
+    - `next_deadline`: Próximo prazo importante
+- `chart_data`: Array contendo dados dos últimos 7 dias com número de consultas e análises
+- `history`: Últimas ações realizadas
+- `insight`: Dica ou insight baseado na última interação do usuário
+
 ### `quit`
-
 Finaliza a execução da CLI.
-
-```bash
-sentry quit
-```
 uhh.. o que você esperava que fizesse?
 
 ---
 
 ### `help`
-
 Exibe ajuda contextual da CLI.
 
 | Subcomando   | Ação                                         |
