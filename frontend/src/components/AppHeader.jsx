@@ -144,6 +144,15 @@ export default function AppHeader({ user, onLogout }) {
           </button>
 
           <button
+            onClick={() => goTo("/app/dashboard")}
+            className="dropdown-option"
+            type="button"
+          >
+            <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="2 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="18" width="18" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+            Dashboard
+          </button>
+
+          <button
             onClick={() => goTo("/app/settings")}
             className="dropdown-option"
             type="button"
