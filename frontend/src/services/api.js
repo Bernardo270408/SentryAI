@@ -140,6 +140,7 @@ export default {
   analyzeContract: (formData) => request("/contract/analyze", "POST", formData, true, true),
   chatContract: (data) => request("/contract/chat", "POST", data),
   getDashboardStats: () => request("/dashboard/stats", "GET"),
+  updateUser: (userId, data) => request(`/users/${userId}`, "PUT", data),
 
   // ---------- STREAMING ----------
   streamChatMessage,

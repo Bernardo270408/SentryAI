@@ -136,7 +136,7 @@ export default function AppHeader({ user, onLogout }) {
         >
           <button
             ref={firstBtnRef}
-            onClick={() => goTo("/profile")}
+            onClick={() => goTo("/app/profile")}
             className="dropdown-option"
             type="button"
           >

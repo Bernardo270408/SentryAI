@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import Aplication from "./pages/Aplication";
 import Dashboard from "./pages/Dashboard";
 import ChatPage from "./pages/ChatPage";
+import Profile from "./pages/Profile";
 import RightsExplorer from "./pages/RightsExplorer";
 import ContractAnalysis from "./pages/ContractAnalysis";
 import Settings from "./pages/Settings";
@@ -39,6 +40,7 @@ createRoot(document.getElementById("root")).render(
             <Route path="chat" element={<ChatPage />} />
             <Route path="rights" element={<RightsExplorer />} />
             <Route path="contract-analysis" element={<ContractAnalysis />} />
+            <Route path="profile" element={<Profile />} />
             <Route path="settings" element={<Settings />} />
         </Route>
 

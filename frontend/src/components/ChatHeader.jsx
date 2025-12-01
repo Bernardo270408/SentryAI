@@ -54,7 +54,7 @@ export default function ChatHeader({ user, onLogout }) {
 
         {/* Dropdown */}
         <div className={`user-dropdown-panel ${isOpen ? 'open' : ''}`}>
-          <button onClick={() => goTo("/profile")} className="dropdown-option">
+          <button onClick={() => goTo("/app/profile")} className="dropdown-option">
             <FiUser size={14} /> Perfil
           </button>
 
