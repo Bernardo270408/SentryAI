@@ -13,6 +13,11 @@ from odf.text import P
 from odf import teletype
 from PyPDF2 import PdfReader
 
+"""
+Formatos suportados:
+- TXT, MD, CSV, PDF, RTF, DOC, DOCX, ODT, PPTX, XLSX, HTML, XML, JSON, YAML, YML
+"""
+
 def extract_text_from_file(file_stream, filename: str) -> str:
     """Extrai texto de praticamente qualquer formato relevante para contratos."""
 

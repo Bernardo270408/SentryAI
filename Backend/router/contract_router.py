@@ -45,9 +45,9 @@ def analyze():
 
     try:    
         analysis_json = analyze_contract_text(content_to_analyze)
-        contract = ContractDAO.create_contract(user_id, analysis_json)
+        contract = ContractDAO.create_contract(user_id, analysis_json, content_to_analyze)
 
-        return jsonify(contract), 200
+        return jsonify(contract.to_dict()), 200
 
     except Exception as e:
         logger.exception("Erro na análise de contrato")
@@ -97,14 +97,12 @@ def get_contracts_by_user(user_id):
     return jsonify([c.to_dict() for c in contracts])
 
 @contract_bp.route('/<int:contract_id>', methods=['PUT'])
-@token_required
+@token_required # e admin only
 def update_contract(contract_id):
     data = request.json or {}
-    user_id = data.get('user_id')
-
     current_user = request.user
 
-    if current_user.id != user_id and not current_user.is_admin:
+    if not current_user.is_admin:
         return jsonify({'error': 'Acesso negado'}), 403
     
     contract = ContractDAO.update_contract(contract_id, data)

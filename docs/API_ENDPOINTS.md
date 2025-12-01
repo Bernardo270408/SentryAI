@@ -498,22 +498,134 @@ Rotas para análise de documentos e interação com a IA sobre o contexto.
     ```js
     // Exemplo com texto
     {
-        "text": "Conteúdo do contrato para análise..."
+        "user_id": 1,                                   // Obrigatório
+        "text": "Conteúdo do contrato para análise..."  // Opcional se arquivo for enviado
     }
-    // Exemplo com arquivo (multipart/form-data)
-    // file: [conteúdo do arquivo]
-    // text: [texto opcional para contexto]
     ```
+    Caso envie um arquivo, os formatos suportados são:
+    `.txt`, `.md`, `.csv`, `.pdf`, `.rtf`, `.doc`, `.docx`, `.odt`, `.pptx`, `.xlsx`, `.html`, `.xml`, `.json`, `.yaml` e `.yml`
+
     - Resposta Esperada (JSON estruturado pela IA):
     ```js
     {
-        "analise_geral": "...",
-        "clausulas_criticas": [
-            {"titulo": "...", "risco": "...", "sugestao": "..."}
-        ],
-        "resumo_executivo": "..."
+        "id":1,
+        "user_id":1,
+        "json": {
+            "summary": "Resumo de 2 parágrafos.",
+            "risk": { "score": 0, "label": "Baixo" },
+            "highlights": [ { "tag": "Tipo", "snippet": "Trecho", "lineNumber": 1 } ]
+        },
+        "created_at": "2024-01-01T00:00:00",
+        "updated_at": "2024-01-02T00:00:00"
     }
     ```
+
+- `GET /contract/` — Lista todas as análises de contratos. (autenticado)
+    - Resposta Esperada:
+    ```js
+    [
+        {
+            "id":1,
+            "user_id":1,
+            "json": {
+                "summary": "Resumo de 2 parágrafos.",
+                "risk": { "score": 0, "label": "Baixo" },
+                "highlights": [ { "tag": "Tipo", "snippet": "Trecho", "lineNumber": 1 } ]
+            },
+            "created_at": "2024-01-01T00:00:00",
+            "updated_at": "2024-01-02T00:00:00"
+        },
+        {
+            "id":2,
+            "user_id":2,
+            "json": {
+                "summary": "Resumo de 3 parágrafos.",
+                "risk": { "score": 2, "label": "Médio" },
+                "highlights": [ { "tag": "Tipo", "snippet": "Trecho", "lineNumber": 5 } ]
+            },
+            "created_at": "2024-01-03T00:00:00",
+            "updated_at": "2024-01-04T00:00:00"
+        }
+    ]
+    ```
+
+- `GET /contract/<contract_id>` — Busca análise de contrato por ID. (autenticado)
+    - Resposta Esperada:
+    ```js
+    {
+        "id":1,
+        "user_id":1,
+        "text": "Conteúdo do contrato para análise...",
+        "json": {
+            "summary": "Resumo de 2 parágrafos.",
+            "risk": { "score": 0, "label": "Baixo" },
+            "highlights": [ { "tag": "Tipo", "snippet": "Trecho", "lineNumber": 1 } ]
+        },
+        "created_at": "2024-01-01T00:00:00",
+        "updated_at": "2024-01-02T00:00:00"
+    }
+    ```
+
+- `GET /contract/user/<user_id>` — Análises de um usuário. (autenticado)
+    - Resposta Esperada:
+    ```js
+    [
+        {
+            "id":1,
+            "user_id":1,
+            "text": "Conteúdo do contrato para análise...",
+            "json": {
+                "summary": "Resumo de 2 parágrafos.",
+                "risk": { "score": 0, "label": "Baixo" },
+                "highlights": [ { "tag": "Tipo", "snippet": "Trecho", "lineNumber": 1 } ]
+            },
+            "created_at": "2024-01-01T00:00:00",
+            "updated_at": "2024-01-02T00:00:00"
+        },
+        {
+            "id":2,
+            "user_id":1,
+            "text": "Conteúdo do contrato para análise...",
+            "json": {
+                "summary": "Resumo de 3 parágrafos.",
+                "risk": { "score": 2, "label": "Médio" },
+                "highlights": [ { "tag": "Tipo", "snippet": "Trecho", "lineNumber": 5 } ]
+            },
+            "created_at": "2024-01-03T00:00:00",
+            "updated_at": "2024-01-04T00:00:00"
+        }
+    ]
+    ```
+
+- `PUT /contract/<contract_id>` — Atualiza análise de contrato. (autenticado)
+    Perigosa. acessível apenas para administradores.
+    - Corpo da Requisição:
+    ```js
+    {
+        "json": {
+            "summary": "Resumo atualizado.",
+            "text": "Conteúdo do contrato atualizado...",
+            "risk": { "score": 1, "label": "Baixo" },
+            "highlights": [ { "tag": "Tipo", "snippet": "Trecho atualizado", "lineNumber": 2 } ]
+        }
+    }
+    ```
+    - Resposta Esperada:
+    ```js
+    {
+        "id":1,
+        "user_id":1,
+        "json": {
+            "summary": "Resumo atualizado.",
+            "risk": { "score": 1, "label": "Baixo" },
+            "highlights": [ { "tag": "Tipo", "snippet": "Trecho atualizado", "lineNumber": 2 } ]
+        },
+        "text": "Conteúdo do contrato atualizado...",
+        "created_at": "2024-01-01T00:00:00",
+        "updated_at": "2024-01-05T00:00:00"
+    }
+    ```
+
 
 - `POST /contract/chat` — Permite conversar com a IA sobre o contexto da análise de contrato. (autenticado)
     - Corpo da Requisição:

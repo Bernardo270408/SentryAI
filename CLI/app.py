@@ -1,6 +1,6 @@
 import shlex
 import defaults
-from commands import user_commands, auth_commands, defaults_commands,sentry_commands, chat_commands, message_commands, message_ai_commands, help_commands, rating_commands
+from commands import user_commands, auth_commands, defaults_commands,sentry_commands, chat_commands, message_commands, message_ai_commands, help_commands, rating_commands, contract_commands
 import os
 import sys
 import socket
@@ -42,6 +42,11 @@ def process_action(action):
                 bash = handle_message_ai(action)
             case "rating" | "ratings":
                 bash = handle_rating(action)
+            case "contract" | "contracts":
+                bash = handle_contract(action)
+            case "dashboard" | "dash" | "overview" | "stats":
+                from commands.sentry_commands import dashboard
+                bash = dashboard(**action["args"])
             case "check":
                 from commands.sentry_commands import check
                 check()
@@ -149,6 +154,18 @@ def handle_rating(action):
         case "-quit" | "close": return rating_commands.quit(**action["args"])
         case _: return warn(f"Unknown subcommand for ratings: {action['subcommand']}")
 
+
+def handle_contract(action):
+    match action["subcommand"]:
+        case "-create": return contract_commands.create(**action["args"])
+        case "-get": return contract_commands.get(**action["args"])
+        case "-getall": return contract_commands.getall(**action["args"])
+        case "-getbyuser": return contract_commands.getbyuser(**action["args"])
+        case "-update": return contract_commands.update(**action["args"])
+        case "-delete": return contract_commands.delete(**action["args"])
+        case "-open": return contract_commands.open(**action["args"])
+        case "-quit" | "close": return contract_commands.close(**action["args"])
+        case _: return warn(f"Unknown subcommand for contracts: {action['subcommand']}")
 
 def main():
     RUNNING = True

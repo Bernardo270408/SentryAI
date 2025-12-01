@@ -7,3 +7,4 @@ from commands import message_ai_commands
 from commands import defaults_commands
 from commands import help_commands
 from commands import rating_commands
+from commands import contract_commands

@@ -1,10 +1,13 @@
 from models.contract import Contract
 from extensions import db
+from datetime import datetime
+
 
 class ContractDAO:
     @staticmethod
-    def create_contract(user_id, json_data):
-        contract = Contract(user_id=user_id, json=json_data)
+    def create_contract(user_id, json_data, text):
+        now = datetime.now(datetime.timezone.utc)
+        contract = Contract(user_id=user_id, json=json_data, text=text, created_at=now, updated_at=now)
         db.session.add(contract)
         db.session.commit()
         return contract
@@ -28,6 +31,8 @@ class ContractDAO:
             return None
         data.pop("id", None)
         contract.update_from_dict(data)
+        contract.updated_at = datetime.now(datetime.timezone.utc)
+        db.session.commit()
         return contract
 
     @staticmethod
