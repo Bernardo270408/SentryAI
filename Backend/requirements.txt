@@ -11,6 +11,8 @@ requests
 email-validator
 google-generativeai
 cryptography
+google-auth
+google-auth-oauthlib
 
 #file_readers
 python-docx

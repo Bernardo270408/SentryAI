@@ -4,6 +4,11 @@ from config import Config
 from extensions import db
 from flask_migrate import Migrate
 from models import User, Chat, UserMessage, AIMessage
+from dotenv import load_dotenv
+import os
+
+# Carrega variáveis do .env (MUITO IMPORTANTE)
+load_dotenv()
 
 migrate = Migrate()
 

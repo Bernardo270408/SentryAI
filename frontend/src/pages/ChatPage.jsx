@@ -328,10 +328,6 @@ export default function ChatPage() {
                                 <div className="empty-logo-wrap"><GeminiIcon /></div>
                                 <h2>Como posso ajudar hoje?</h2>
                                 <p>Sou especializado em legislação brasileira. Pergunte sobre CLT, contratos ou direitos.</p>
-                                <div style={{display:'flex', gap:10, flexWrap:'wrap', justifyContent:'center'}}>
-                                    <button className="btn-chip" onClick={() => setText("Quais meus direitos na demissão?")}>Direitos na demissão</button>
-                                    <button className="btn-chip" onClick={() => setText("Analise este contrato para mim")}>Analisar contrato</button>
-                                </div>
                             </div>
                         )}
                         
