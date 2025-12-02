@@ -4,16 +4,15 @@ from extensions import db
 
 
 class Rating(db.Model):
-    __tablename__ = 'ratings'
+    __tablename__ = "ratings"
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    score = Column(Integer, nullable=False) # 1-5
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    score = Column(Integer, nullable=False)  # 1-5
     feedback = Column(String(255), nullable=True)
 
     user = relationship("User", back_populates="ratings")
     chat = relationship("Chat", back_populates="rating", uselist=False)
-
 
     def to_dict(self):
         return {
@@ -21,15 +20,17 @@ class Rating(db.Model):
             "user_id": self.user_id,
             "chat_id": self.chat.id if self.chat else None,
             "score": self.score,
-            "feedback": self.feedback  # Adicionado feedback
+            "feedback": self.feedback,
         }
-        
+
     def __repr__(self):
-        return f"<Rating User {self.user_id} - Chat {self.chat_id} - Score {self.score}>"
-    
+        return (
+            f"<Rating User {self.user_id} - Chat {self.chat_id} - Score {self.score}>"
+        )
+
     def update_from_dict(self, data):
         for key, value in data.items():
             if hasattr(self, key):
                 setattr(self, key, value)
-                
+
         db.session.commit()

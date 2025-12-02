@@ -7,25 +7,25 @@ from models import User, Chat, UserMessage, AIMessage
 from dotenv import load_dotenv
 import os
 
-# Carrega variáveis do .env (MUITO IMPORTANTE)
 load_dotenv()
 
 migrate = Migrate()
 
+
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
-    
+
     db.init_app(app)
-    migrate.init_app(app, db)  
-    
+    migrate.init_app(app, db)
+
     CORS(app, supports_credentials=True)
 
     # Test Route
-    @app.route('/', methods=['GET'])
+    @app.route("/", methods=["GET"])
     def index():
         return jsonify({"message": "API is running"}), 200
-    
+
     # Import routers
     from router.auth_router import auth_bp
     from router.user_router import user_bp
@@ -35,7 +35,7 @@ def create_app():
     from router.rating_router import rating_bp
     from router.contract_router import contract_bp
     from router.dashboard_router import dashboard_bp
-    
+
     # Register blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(user_bp)
@@ -48,6 +48,7 @@ def create_app():
 
     return app
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     app = create_app()
     app.run(debug=True)

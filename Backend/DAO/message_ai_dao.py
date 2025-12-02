@@ -7,13 +7,7 @@ class AIMessageDAO:
 
     @staticmethod
     def create_message(chat_id, content, created_at=None, model=None):
-        message = AIMessage(
-            chat_id=chat_id,
-            content=content,
-            model=model
-        )
-
-        # Se o streaming passou um created_at específico
+        message = AIMessage(chat_id=chat_id, content=content, model=model)
         if created_at:
             message.created_at = created_at
 
@@ -27,24 +21,27 @@ class AIMessageDAO:
 
     @staticmethod
     def get_messages_by_chat(chat_id):
-        return AIMessage.query.filter_by(chat_id=chat_id).order_by(
-            asc(AIMessage.created_at)
-        ).all()
+        return (
+            AIMessage.query.filter_by(chat_id=chat_id)
+            .order_by(asc(AIMessage.created_at))
+            .all()
+        )
 
     @staticmethod
     def get_messages_by_model(model_name):
-        return AIMessage.query.filter_by(model=model_name).order_by(
-            asc(AIMessage.created_at)
-        ).all()
+        return (
+            AIMessage.query.filter_by(model=model_name)
+            .order_by(asc(AIMessage.created_at))
+            .all()
+        )
 
     @staticmethod
     def get_messages_by_chat_and_model(chat_id, model_name):
-        return AIMessage.query.filter_by(
-            chat_id=chat_id,
-            model=model_name
-        ).order_by(
-            asc(AIMessage.created_at)
-        ).all()
+        return (
+            AIMessage.query.filter_by(chat_id=chat_id, model=model_name)
+            .order_by(asc(AIMessage.created_at))
+            .all()
+        )
 
     @staticmethod
     def get_all_messages():

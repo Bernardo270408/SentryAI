@@ -1,13 +1,15 @@
 from models.contract import Contract
 from extensions import db
-from datetime import datetime, timezone  # Importação corrigida: adicionado 'timezone'
+from datetime import datetime, timezone
+
 
 class ContractDAO:
     @staticmethod
     def create_contract(user_id, json_data, text):
-        # Uso corrigido: 'timezone.utc' em vez de 'datetime.timezone.utc'
-        now = datetime.now(timezone.utc) 
-        contract = Contract(user_id=user_id, json=json_data, text=text, created_at=now, updated_at=now)
+        now = datetime.now(timezone.utc)
+        contract = Contract(
+            user_id=user_id, json=json_data, text=text, created_at=now, updated_at=now
+        )
         db.session.add(contract)
         db.session.commit()
         return contract
@@ -31,7 +33,6 @@ class ContractDAO:
             return None
         data.pop("id", None)
         contract.update_from_dict(data)
-        # Uso corrigido aqui também
         contract.updated_at = datetime.now(timezone.utc)
         db.session.commit()
         return contract

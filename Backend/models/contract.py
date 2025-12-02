@@ -5,13 +5,13 @@ from extensions import db
 
 
 class Contract(db.Model):
-    __tablename__ = 'contracts'
+    __tablename__ = "contracts"
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
-    text = Column(Text, nullable=False) # entrada
-    json = Column(JSON, nullable=False) # saida
+    text = Column(Text, nullable=False)  # entrada
+    json = Column(JSON, nullable=False)  # saida
 
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=True)
@@ -25,12 +25,12 @@ class Contract(db.Model):
             "json": self.json,
             "text": self.text,
             "created_at": self.created_at,
-            "updated_at": self.updated_at
+            "updated_at": self.updated_at,
         }
-        
+
     def __repr__(self):
         return f"<Contract {self.id} - User {self.user_id} - Created at {self.created_at} - Updated at {self.updated_at}>"
-    
+
     def update_from_dict(self, data):
         for key, value in data.items():
             if hasattr(self, key):

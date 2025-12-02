@@ -3,8 +3,8 @@ import os
 
 DEFAULTS_PATH = "data/defaults.json"
 
-defaults = {
-}
+defaults = {}
+
 
 def save_defaults():
     """Salva o dicionário defaults no arquivo JSON."""
@@ -15,6 +15,7 @@ def save_defaults():
     except Exception as e:
         print(f"Erro ao salvar defaults: {e}")
 
+
 def load_defaults():
     """Carrega defaults do arquivo JSON, sobrescrevendo os valores padrão."""
     global defaults
@@ -23,7 +24,7 @@ def load_defaults():
             with open(DEFAULTS_PATH, "r") as f:
                 loaded = json.load(f)
                 if isinstance(loaded, dict):
-                    defaults.update(loaded) 
+                    defaults.update(loaded)
                 else:
                     print("Arquivo de defaults inválido, usando valores padrões.")
         except json.JSONDecodeError:

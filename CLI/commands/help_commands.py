@@ -1,6 +1,5 @@
 help_texts = {
-"-intro":
-"""
+    "-intro": """
 SentryAI Command Line Interface
 
 Usage:
@@ -34,9 +33,7 @@ Tips:
     - Extra parameters are ignored silently.
     - Developers: sending all defaults will not break anything.
 """,
-
-"-auth":
-"""
+    "-auth": """
 auth
     -login          Logs in, generates a token and sets it as default.
                     Requires: email (needs to be verified after. An code wil be sent), password
@@ -49,9 +46,7 @@ auth
     -gettoken       Prints the current token stored in defaults.
                     Takes nothing.
 """,
-
-"-chat":
-"""
+    "-chat": """
 chat
     -create     Creates a chat and optionally sets it as default.
                 Requires: name
@@ -71,9 +66,7 @@ chat
     -quit       Unsets the default chat_id.
                 Takes nothing.
 """,
-
-"-user":
-"""
+    "-user": """
 user
     -create     Creates a new user.
                 Requires: name, email, password
@@ -91,9 +84,7 @@ user
     -quit       Unsets the default user_id.
                 Takes nothing.
 """,
-
-"-message":
-"""
+    "-message": """
 message
     -create     Creates a user message.
                 Requires: user_id, chat_id, content, token
@@ -114,9 +105,7 @@ message
     -quit       Unsets the default user_message_id.
                 Takes nothing.
 """,
-
-"-message_ai":
-"""
+    "-message_ai": """
 message_ai
     -create             Generates an AI response and saves it.
                         Requires: user_id, chat_id, model, token
@@ -151,9 +140,7 @@ message_ai
     -quit               Unsets the default ai_message_id.
                         Takes nothing.
 """,
-
-"-rating":
-"""
+    "-rating": """
 rating
     -create     Creates a chat rating.
                 Requires: user_id, chat_id, score, token
@@ -174,9 +161,7 @@ rating
     -quit       Unsets the default rating_id.
                 Takes nothing.
 """,
-
-"-contract":
-"""
+    "-contract": """
 contract
     -create     Analyzes a contract (alias for -analyze).
                 Requires: contract_text, user_id, token
@@ -191,9 +176,7 @@ contract
     -delete     Deletes a contract.
                 Requires: contract_id, token
 """,
-
-"-default":
-"""
+    "-default": """
 default
     -get        Gets a default value by key.
                 Requires: key
@@ -221,9 +204,7 @@ Notes:
     You may set any key, but only the above are used internally.
     Keys are case-sensitive.
 """,
-
-"-dashboard":
-"""
+    "-dashboard": """
 Exibits dashboard information on terminal in JSON.
 Requires token and user_id.
 
@@ -238,18 +219,17 @@ history: Latest actions performed
 insight: Tip or insight based on the user's last interaction
 
 """,
-"-quit":
-"""
+    "-quit": """
 Finishes the execution of the CLI.
 uhh.. what did you expect it to do?
 """,
-"-help":
-"""
+    "-help": """
 help
     -[command]  Shows help for a specific command.
     -all        Shows help for every command.
-"""
+""",
 }
+
 
 def get_help(argument: str = None, **kwargs) -> str:
     match argument:

@@ -1,20 +1,14 @@
 import requests
 import defaults
 from commands import defaults_commands, message_ai_commands
-#Those are the chat-related commands for the CLI tool.
 
-def create(chat_id, content,user_id,token, domain='localhost', port=5000, **kwargs):
+
+def create(chat_id, content, user_id, token, domain="localhost", port=5000, **kwargs):
     url = f"http://{domain}:{port}/messages/"
 
-    headers = {
-        "Authorization": f"Bearer {token}"
-    }
+    headers = {"Authorization": f"Bearer {token}"}
 
-    payload = {
-        "user_id":user_id,
-        "chat_id": chat_id,
-        "content":content
-    }
+    payload = {"user_id": user_id, "chat_id": chat_id, "content": content}
     payload.update(kwargs)
 
     try:
@@ -22,7 +16,7 @@ def create(chat_id, content,user_id,token, domain='localhost', port=5000, **kwar
         response.raise_for_status()
 
         ask = input("Do you want AI to generate a response? (y/n): ")
-        
+
         if "model" in defaults.defaults:
             model = defaults_commands.get("model")
         else:
@@ -31,126 +25,150 @@ def create(chat_id, content,user_id,token, domain='localhost', port=5000, **kwar
         if ask.lower() == "y":
             try:
                 message = message_ai_commands.create(
-                    chat_id=chat_id, 
-                    user_id=user_id, 
+                    chat_id=chat_id,
+                    user_id=user_id,
                     port=port,
-                    token=token, 
+                    token=token,
                     model=model,
-                    **kwargs)
+                    **kwargs,
+                )
                 return message
             except Exception as e:
-                print("\033[31m> ",f"ERROR: {e}\033[0m")
-                return("\033[33m>To retry, type 'sentry message -create [args]'\033[0m")
+                print("\033[31m> ", f"ERROR: {e}\033[0m")
+                return "\033[33m>To retry, type 'sentry message -create [args]'\033[0m"
 
         return response.json()
-        
-    
+
     except requests.RequestException as e:
-        print("\033[31m> ERROR: ",e,"\033[0m")
-        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
+        print("\033[31m> ERROR: ", e, "\033[0m")
+        print(
+            "\033[33m> WARNING:",
+            response.json().get("error", "Unknown error"),
+            "\033[0m",
+        )
         return None
-    
-def get(message_id,token, domain='localhost', port=5000,**kwargs):
+
+
+def get(message_id, token, domain="localhost", port=5000, **kwargs):
     url = f"http://{domain}:{port}/messages/{message_id}"
 
-    headers = {
-        "Authorization": f"Bearer {token}"
-    }
+    headers = {"Authorization": f"Bearer {token}"}
 
     try:
-        response=requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers)
         response.raise_for_status()
         return response.json()
-    
+
     except requests.RequestException as e:
-        print("\033[31m> ERROR: ",e,"\033[0m")
-        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
+        print("\033[31m> ERROR: ", e, "\033[0m")
+        print(
+            "\033[33m> WARNING:",
+            response.json().get("error", "Unknown error"),
+            "\033[0m",
+        )
         return None
 
-def getall(token,port=5000, domain='localhost',**kwargs):
+
+def getall(token, port=5000, domain="localhost", **kwargs):
     url = f"http://{domain}:{port}/messages/"
 
-    headers = {
-        "Authorization": f"Bearer {token}"
-    }
+    headers = {"Authorization": f"Bearer {token}"}
 
     try:
-        response=requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers)
         response.raise_for_status()
         return response.json()
-    
+
     except requests.RequestException as e:
-        print("\033[31m> ERROR: ",e,"\033[0m")
-        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
+        print("\033[31m> ERROR: ", e, "\033[0m")
+        print(
+            "\033[33m> WARNING:",
+            response.json().get("error", "Unknown error"),
+            "\033[0m",
+        )
         return None
-    
-def getbyuser(user_id,token, domain='localhost', port=5000,**kwargs):
+
+
+def getbyuser(user_id, token, domain="localhost", port=5000, **kwargs):
     url = f"http://{domain}:{port}/messages/user/{user_id}"
 
-    headers = {
-        "Authorization": f"Bearer {token}"
-    }
+    headers = {"Authorization": f"Bearer {token}"}
 
     print("> ", url)
 
     try:
-        response=requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers)
         response.raise_for_status()
         return response.json()
-    
+
     except requests.RequestException as e:
-        print("\033[31m> ERROR: ",e,"\033[0m")
-        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
+        print("\033[31m> ERROR: ", e, "\033[0m")
+        print(
+            "\033[33m> WARNING:",
+            response.json().get("error", "Unknown error"),
+            "\033[0m",
+        )
         return None
 
-def getbychat(chat_id,token, domain='localhost', port=5000,**kwargs):
+
+def getbychat(chat_id, token, domain="localhost", port=5000, **kwargs):
     url = f"http://{domain}:{port}/messages/chat/{chat_id}"
 
-    headers = {
-        "Authorization": f"Bearer {token}"
-    }
+    headers = {"Authorization": f"Bearer {token}"}
 
     try:
-        response=requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers)
         response.raise_for_status()
         return response.json()
-    
+
     except requests.RequestException as e:
-        print("\033[31m> ERROR: ",e,"\033[0m")
-        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
+        print("\033[31m> ERROR: ", e, "\033[0m")
+        print(
+            "\033[33m> WARNING:",
+            response.json().get("error", "Unknown error"),
+            "\033[0m",
+        )
         return None
 
-def update(message_id, token, domain='localhost', port=5000, **kwargs):
+
+def update(message_id, token, domain="localhost", port=5000, **kwargs):
     url = f"http://{domain}:{port}/messages/{message_id}"
     payload = kwargs
-    headers = {
-        "Authorization": f"Bearer {token}"
-    }
+    headers = {"Authorization": f"Bearer {token}"}
     try:
         response = requests.put(url, json=payload, headers=headers)
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
-        print("\033[31m> ERROR: ",e,"\033[0m")
-        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
+        print("\033[31m> ERROR: ", e, "\033[0m")
+        print(
+            "\033[33m> WARNING:",
+            response.json().get("error", "Unknown error"),
+            "\033[0m",
+        )
         return None
 
-def delete(message_id, token, domain='localhost', port=5000, **kwargs):
+
+def delete(message_id, token, domain="localhost", port=5000, **kwargs):
     url = f"http://{domain}:{port}/messages/{message_id}"
-    headers = {
-        "Authorization": f"Bearer {token}"
-    }
+    headers = {"Authorization": f"Bearer {token}"}
     try:
         response = requests.delete(url, headers=headers)
         response.raise_for_status()
         return response.json()
     except requests.RequestException as e:
-        print("\033[31m> ERROR: ",e,"\033[0m")
-        print("\033[33m> WARNING:",response.json().get('error', 'Unknown error'),"\033[0m")
+        print("\033[31m> ERROR: ", e, "\033[0m")
+        print(
+            "\033[33m> WARNING:",
+            response.json().get("error", "Unknown error"),
+            "\033[0m",
+        )
         return None
+
 
 def open(message_id, **kwargs):
     return defaults_commands.set_key(key="message_id", value=message_id)
+
 
 def quit(**kwargs):
     return defaults_commands.unset(key="message_id")

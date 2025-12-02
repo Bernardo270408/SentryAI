@@ -18,10 +18,11 @@ Formatos suportados:
 - TXT, MD, CSV, PDF, RTF, DOC, DOCX, ODT, PPTX, XLSX, HTML, XML, JSON, YAML, YML
 """
 
+
 def extract_text_from_file(file_stream, filename: str) -> str:
     """Extrai texto de praticamente qualquer formato relevante para contratos."""
 
-    ext = os.path.splitext(filename)[1].lower().replace('.', '')
+    ext = os.path.splitext(filename)[1].lower().replace(".", "")
 
     if ext == "txt" or ext == "md":
         return file_stream.read().decode("utf-8", errors="ignore")
@@ -61,7 +62,6 @@ def extract_text_from_file(file_stream, filename: str) -> str:
 
     raise ValueError(f"Formato não suportado: {ext}")
 
-# ------------ HANDLERS -------------
 
 def _extract_pdf(fs):
     reader = PdfReader(fs)
@@ -84,9 +84,8 @@ def _extract_rtf(fs):
     try:
         import striprtf
     except ImportError:
-        # Se a biblioteca não estiver instalada, retorna erro ou string vazia
         return "Erro: A biblioteca 'striprtf' é necessária para extrair RTF."
-        
+
     return striprtf.rtf_to_text(fs.read().decode("utf-8", errors="ignore"))
 
 
@@ -116,8 +115,7 @@ def _extract_xlsx(fs):
     textos = []
     for sheet in wb.worksheets:
         for row in sheet.iter_rows(values_only=True):
-            # Filtra None e converte para string
-            row_txt = [str(cell) for cell in row if cell is not None] 
+            row_txt = [str(cell) for cell in row if cell is not None]
             if row_txt:
                 textos.append(" | ".join(row_txt))
     return "\n".join(textos)
@@ -125,9 +123,9 @@ def _extract_xlsx(fs):
 
 def _extract_html(fs):
     from bs4 import BeautifulSoup
+
     soup = BeautifulSoup(fs.read(), "html.parser")
-    # Usa '\n' como separador para melhor legibilidade
-    return soup.get_text(separator="\n") 
+    return soup.get_text(separator="\n")
 
 
 def _extract_xml(fs):

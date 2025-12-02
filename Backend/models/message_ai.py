@@ -2,8 +2,9 @@ from sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey
 from sqlalchemy.orm import relationship
 from extensions import db
 
+
 class AIMessage(db.Model):
-    __tablename__ = 'ai_messages'
+    __tablename__ = "ai_messages"
 
     id = Column(Integer, primary_key=True)
 
@@ -23,9 +24,9 @@ class AIMessage(db.Model):
             "content": self.content,
             "model": self.model,
             "created_at": self.created_at.isoformat() if self.created_at else None,
-            "updated_at": self.updated_at.isoformat() if self.updated_at else None
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
-    
+
     def update_from_dict(self, data):
         allowed_fields = {"content", "model"}  # não permitirá trocar chat_id
 

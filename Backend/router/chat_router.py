@@ -14,12 +14,14 @@ def create_chat():
     name = data.get("name")
 
     if name and len(name) > 100:
-        return jsonify({"error": "O campo 'name' deve ter no máximo 100 caracteres."}), 400
-    
+        return (
+            jsonify({"error": "O campo 'name' deve ter no máximo 100 caracteres."}),
+            400,
+        )
+
     if not name or not name.strip():
         name = "Nova Conversa"
 
-    # Cria o chat vinculando diretamente ao usuário logado
     chat = ChatDAO.create_chat(user_id=current_user.id, name=name)
     return jsonify(chat.to_dict()), 201
 
@@ -76,11 +78,13 @@ def update_chat(chat_id):
 
     if chat.user_id != current_user.id and not current_user.is_admin:
         return jsonify({"error": "Permission denied"}), 403
-    
+
     name = data.get("name")
     if name and len(name) > 100:
-        return jsonify({"error": "O campo 'name' deve ter no máximo 100 caracteres."}), 400
-
+        return (
+            jsonify({"error": "O campo 'name' deve ter no máximo 100 caracteres."}),
+            400,
+        )
 
     allowed_fields = {"name"}
     data = {k: v for k, v in data.items() if k in allowed_fields}
@@ -107,6 +111,7 @@ def delete_chat(chat_id):
 
     return jsonify({"message": "Chat deletado com sucesso."})
 
+
 @chat_bp.route("/<int:chat_id>/rating", methods=["GET"])
 @token_required
 def get_rating_by_chat(chat_id):
@@ -124,4 +129,3 @@ def get_rating_by_chat(chat_id):
         return jsonify({"error": "Rating não encontrado para este chat."}), 404
 
     return jsonify(rating.to_dict()), 200
-
