@@ -1,0 +1,196 @@
+/* src/styles/documentation.css */
+@import './global.css';
+
+/* Container Principal */
+.documentation-root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #0d1117; /* Fundo estilo GitHub Dark */
+  color: #c9d1d9;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Header Fixo com efeito de vidro */
+.doc-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 30px;
+  background: rgba(13, 17, 23, 0.85);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.doc-logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.5px;
+  transition: opacity 0.2s;
+}
+
+.doc-logo:hover {
+  opacity: 0.8;
+}
+
+/* Área de Ações do Header */
+.header-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.btn-github-styled {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #238636; /* Verde GitHub Actions */
+  color: #fff;
+  border: 1px solid rgba(240, 246, 252, 0.1);
+  text-decoration: none;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.btn-github-styled:hover {
+  background-color: #2ea043;
+  transform: translateY(-1px);
+}
+
+.btn-back-styled {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: transparent;
+  color: #8b949e;
+  border: 1px solid #30363d;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-back-styled:hover {
+  background-color: #21262d;
+  color: #c9d1d9;
+  border-color: #8b949e;
+}
+
+/* Conteúdo Principal (Markdown) */
+.doc-content {
+  flex: 1;
+  width: 100%;
+  max-width: 860px; /* Largura ideal para leitura */
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+/* Estilização do Markdown */
+.markdown-body h1 {
+  font-size: 2.5rem;
+  border-bottom: 1px solid #21262d;
+  padding-bottom: 0.3em;
+  margin-bottom: 1.5rem;
+  color: #fff;
+}
+
+.markdown-body h2 {
+  font-size: 1.8rem;
+  border-bottom: 1px solid #21262d;
+  padding-bottom: 0.3em;
+  margin-top: 3rem;
+  margin-bottom: 1rem;
+  color: #fff;
+}
+
+.markdown-body h3 {
+  font-size: 1.4rem;
+  margin-top: 2rem;
+  color: #e6edf3;
+}
+
+.markdown-body p, .markdown-body li {
+  line-height: 1.7;
+  font-size: 1.05rem;
+  margin-bottom: 1rem;
+}
+
+.markdown-body ul {
+  padding-left: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.markdown-body li {
+  margin-bottom: 0.5rem;
+}
+
+/* Links no texto */
+.markdown-body a {
+  color: #58a6ff;
+  text-decoration: none;
+}
+
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+
+/* Blocos de Código (Inline e Bloco) */
+.markdown-body code {
+  background-color: rgba(110, 118, 129, 0.4);
+  padding: 0.2em 0.4em;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 85%;
+}
+
+.markdown-body pre {
+  background-color: #161b22;
+  padding: 16px;
+  border-radius: 8px;
+  overflow: auto;
+  border: 1px solid #30363d;
+  margin-bottom: 1.5rem;
+}
+
+.markdown-body pre code {
+  background-color: transparent;
+  padding: 0;
+  color: #e6edf3;
+  font-size: 0.9rem;
+}
+
+/* Citações / Notas */
+.markdown-body blockquote {
+  margin: 0 0 1.5rem;
+  padding: 0 1em;
+  color: #8b949e;
+  border-left: 0.25em solid #30363d;
+  background: rgba(255,255,255,0.02);
+  padding: 15px;
+  border-radius: 0 6px 6px 0;
+}
+
+/* Scrollbar personalizada */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #0d1117;
+}
+::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #58a6ff;
+}

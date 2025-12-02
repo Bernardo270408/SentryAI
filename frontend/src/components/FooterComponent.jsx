@@ -1,3 +1,6 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { FaGithub, FaTwitter, FaLinkedin } from 'react-icons/fa'; // Importando ícones
 import '../styles/footer.css';
 
 const FooterContent = () => (
@@ -8,7 +11,8 @@ const FooterContent = () => (
           <span className="badge">React</span>
           <span className="badge">Flask</span>
           <span className="badge">MySQL</span>
-          <span className="badge">Gemini 2.5 Flash</span>
+          <span className="badge">GPT-5</span>
+          <span className="badge">Gemini 2.5 Pro</span>
         </div>
         <p className="muted small">Arquitetura moderna para desempenho, privacidade e escalabilidade.</p>
       </section>
@@ -41,26 +45,45 @@ const FooterContent = () => (
             <div>
               <h5>Recursos</h5>
               <ul>
-                <li className="muted">IA Jurídica</li>
-                <li className="muted">Explorar Direitos</li>
-                <li className="muted">Base de Conhecimento</li>
-                <li className="muted">Documentação</li>
+                <li>IA Jurídica</li>
+                <li>Explorar Direitos</li>
+                <li><Link to="/knowledge-base" className="muted footer-link">Base de Conhecimento</Link></li>
+                <li><Link to="/docs" className="muted footer-link">Documentação</Link></li>
               </ul>
             </div>
             <div>
               <h5>Legal</h5>
               <ul>
-                <li className="muted">Termos de Uso</li>
-                <li className="muted">Política de Privacidade</li>
-                <li className="muted">Disclaimer</li>
+                <li><Link to="/terms" className="muted footer-link">Termos de Uso</Link></li>
+                <li><Link to="/privacy" className="muted footer-link">Política de Privacidade</Link></li>
+                <li><Link to="/disclaimer" className="muted footer-link">Disclaimer</Link></li>
               </ul>
             </div>
             <div>
               <h5>Conecte-se</h5>
-              <div className="socials" role="list">
-                <a aria-label="GitHub" href="#" role="listitem" className="muted">GH</a>
-                <a aria-label="Twitter" href="#" role="listitem" className="muted">TW</a>
-                <a aria-label="LinkedIn" href="#" role="listitem" className="muted">IN</a>
+              <div className="socials" role="list" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                
+                {/* Link do GitHub Atualizado */}
+                <a 
+                    href="https://github.com/Bernardo270408/SentryAI" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    aria-label="GitHub" 
+                    className="muted footer-link social-link-item"
+                >
+                    <FaGithub size={18} /> 
+                    <span>GitHub</span>
+                </a>
+
+                {/* Placeholders com ícones para manter o padrão */}
+                <a aria-label="Twitter" href="#" role="listitem" className="muted footer-link social-link-item">
+                    <FaTwitter size={18} />
+                    <span>Twitter</span>
+                </a>
+                <a aria-label="LinkedIn" href="#" role="listitem" className="muted footer-link social-link-item">
+                    <FaLinkedin size={18} />
+                    <span>LinkedIn</span>
+                </a>
               </div>
             </div>
           </div>

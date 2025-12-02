@@ -1,5 +1,5 @@
-import React, { useState, useRef } from "react";
-import { FiZap, FiPlay, FiArrowUp, FiPaperclip, FiArrowUpCircle } from "react-icons/fi";
+import React, { useState, useRef, useEffect } from "react";
+import { FiZap, FiPlay, FiArrowUp, FiPaperclip, FiArrowUpCircle, FiClock, FiFileText } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import FooterContent from "../components/FooterComponent";
@@ -30,47 +30,6 @@ function RiskMeter({ score }) {
   );
 }
 
-/* FUNÇÃO DE ANÁLISE HEURÍSTICA (FALLBACK) */
-function heuristicAnalyze(text) {
-  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-  const keywords = [
-    { k: ["multa", "penalidade"], tag: "Penalidade" },
-    { k: ["rescis", "distrato"], tag: "Rescisão" },
-    { k: ["prazo", "vigência"], tag: "Prazos" },
-    { k: ["indeniza", "danos"], tag: "Indenização" },
-    { k: ["exclusiv", "não concorrência"], tag: "Exclusividade" },
-  ];
-
-  const highlights = [];
-  let riskPoints = 0;
-
-  lines.forEach((ln, i) => {
-    const low = ln.toLowerCase();
-    keywords.forEach((kw) => {
-      if (kw.k.some(w => low.includes(w))) {
-        riskPoints += 15;
-        highlights.push({
-          id: `${i}-${kw.tag}`,
-          lineNumber: i + 1,
-          snippet: ln.slice(0, 150) + "...",
-          tag: kw.tag
-        });
-      }
-    });
-  });
-
-  const riskScore = Math.min(100, riskPoints);
-  let riskLabel = "Baixo";
-  if (riskScore > 30) riskLabel = "Médio";
-  if (riskScore > 60) riskLabel = "Alto";
-
-  return {
-    highlights,
-    summary: lines.slice(0, 5).join(" ").slice(0, 400) + "...",
-    risk: { score: riskScore, label: riskLabel },
-  };
-}
-
 /* MAIN COMPONENT */
 export default function ContractAnalysis() {
   const navigate = useNavigate();
@@ -79,8 +38,30 @@ export default function ContractAnalysis() {
   const [status, setStatus] = useState("idle");
   const [analysis, setAnalysis] = useState(null);
   const [messages, setMessages] = useState([]);
+  const [history, setHistory] = useState([]); // Estado para o histórico
+  
   const fileRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
+  
+  // Obter usuário logado
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  // Carrega histórico ao montar
+  useEffect(() => {
+    loadHistory();
+  }, []);
+
+  async function loadHistory() {
+    if (!user?.id) return;
+    try {
+      const res = await api.getUserContracts(user.id);
+      // Ordena do mais recente para o mais antigo
+      const sorted = (res || []).sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+      setHistory(sorted);
+    } catch (error) {
+      console.error("Erro ao carregar histórico:", error);
+    }
+  }
 
   function handleDrop(e) {
     e.preventDefault();
@@ -88,6 +69,7 @@ export default function ContractAnalysis() {
     const f = e.dataTransfer.files?.[0];
     if (f) processFile(f);
   }
+
   function processFile(f) {
     setFile(f);
     setAnalysis(null);
@@ -102,26 +84,47 @@ export default function ContractAnalysis() {
 
   async function handleAnalyze() {
     if (!file && !textPreview.trim()) return alert("Envie um arquivo ou cole texto.");
+    if (!user?.id) return alert("Faça login para analisar.");
+
     setStatus("processing");
 
     try {
-      if (api?.analyzeContract) {
-        const form = new FormData();
-        if (file) form.append("file", file);
-        else form.append("text", textPreview);
+      const form = new FormData();
+      form.append("user_id", user.id); // Importante: Enviar ID do usuário
+      
+      if (file) form.append("file", file);
+      else form.append("text", textPreview);
 
-        const res = await api.analyzeContract(form);
-        setAnalysis(res);
+      // O backend já salva automaticamente ao analisar
+      const res = await api.analyzeContract(form);
+      
+      // O backend retorna um objeto Contract que contem o campo 'json' com a análise
+      if (res && res.json) {
+          setAnalysis(res.json);
       } else {
-        setTimeout(() => setAnalysis(heuristicAnalyze(textPreview)), 1500);
+          // Fallback caso a estrutura mude
+          setAnalysis(res); 
       }
+      
+      // Atualiza a lista de histórico
+      loadHistory();
+
     } catch (err) {
       console.error(err);
-      alert("Erro na análise. Usando modo offline.");
-      setAnalysis(heuristicAnalyze(textPreview));
+      alert("Erro na análise: " + (err.body?.error || err.message));
     } finally {
       setStatus("done");
     }
+  }
+
+  // Carregar um contrato do histórico
+  function loadFromHistory(contract) {
+      if (contract.json) {
+          setAnalysis(contract.json);
+          setTextPreview(contract.text || "Conteúdo do arquivo não disponível para visualização textual.");
+          setMessages([]); // Limpa chat anterior
+          setStatus("done");
+      }
   }
 
   async function sendChat(msg) {
@@ -130,7 +133,11 @@ export default function ContractAnalysis() {
     
     try {
       if (api?.chatContract && analysis) {
-        const res = await api.chatContract({ message: msg, context: analysis.summary });
+        const res = await api.chatContract({ 
+            message: msg, 
+            context: analysis.summary,
+            user_id: user.id 
+        });
         setMessages(prev => [...prev, { id: Date.now()+1, role: "assistant", text: res.reply }]);
       } else {
         setMessages(prev => [...prev, { id: Date.now()+1, role: "assistant", text: "IA indisponível no momento." }]);
@@ -142,17 +149,15 @@ export default function ContractAnalysis() {
 
   const getRiskClass = () => {
     if (!analysis) return "";
-    const s = analysis.risk.score;
+    const s = analysis.risk?.score || 0;
     if (s > 60) return "risk-bg-danger";
     if (s > 30) return "risk-bg-warning";
     return "risk-bg-safe";
   };
 
   return (
-    // ESTRUTURA ALTERADA: contract-page-root envolve tudo
     <div className="contract-page-root">
       
-      {/* Wrapper limita apenas o conteúdo principal */}
       <div className="ca-wrapper">
         <header className="ca-header">
           <div className="ca-header-left">
@@ -165,7 +170,7 @@ export default function ContractAnalysis() {
           {/* COLUNA ESQUERDA */}
           <section className="ca-col">
             <div className="ca-card">
-              <h3>1. Documento</h3>
+              <h3>1. Novo Documento</h3>
               <div
                 className={`ca-upload ${isDragging ? "dragover" : ""}`}
                 onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
@@ -185,9 +190,34 @@ export default function ContractAnalysis() {
                 onClick={handleAnalyze}
                 disabled={status === "processing"}
               >
-                <FiPlay /> {status === "processing" ? "Analisando IA..." : "Analisar Risco"}
+                <FiPlay /> {status === "processing" ? "Analisando IA..." : "Analisar e Salvar"}
               </button>
             </div>
+
+            {/* LISTA DE HISTÓRICO ADICIONADA */}
+            {history.length > 0 && (
+                <div className="ca-card">
+                    <h3><FiClock style={{marginRight: 8}}/> Histórico Recente</h3>
+                    <div className="ca-highlight-list" style={{maxHeight: '200px', overflowY: 'auto'}}>
+                        {history.map(contract => (
+                            <div 
+                                key={contract.id} 
+                                className="ca-highlight-item" 
+                                style={{cursor: 'pointer', padding: '10px'}}
+                                onClick={() => loadFromHistory(contract)}
+                            >
+                                <div style={{display:'flex', alignItems:'center', gap: 8}}>
+                                    <FiFileText size={14} color="var(--accent)"/>
+                                    <span className="snippet" style={{margin:0, fontSize: '13px'}}>
+                                        {new Date(contract.created_at).toLocaleDateString()} - 
+                                        {contract.json?.risk?.label || "Análise"}
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             <div className="ca-card">
               <h3>Pré-visualização</h3>
@@ -205,16 +235,16 @@ export default function ContractAnalysis() {
             <div className={`ca-card ${getRiskClass()}`}>
               <h3>Resultado da Análise</h3>
 
-              {status === "idle" && <p className="muted small">Aguardando documento...</p>}
+              {status === "idle" && !analysis && <p className="muted small">Aguardando documento ou selecione do histórico...</p>}
               {status === "processing" && <p className="muted small">A IA está lendo o contrato...</p>}
 
-              {status === "done" && analysis && (
+              {(status === "done" || analysis) && analysis && (
                 <div className="fade-in">
-                  <RiskMeter score={analysis.risk.score} />
+                  <RiskMeter score={analysis.risk?.score || 0} />
                   <p className="small" style={{ lineHeight: 1.6 }}>{analysis.summary}</p>
                   <h4 style={{ marginTop: 20, marginBottom: 10 }}>Pontos de Atenção</h4>
                   <ul className="ca-highlight-list">
-                    {analysis.highlights.map((h, i) => (
+                    {analysis.highlights?.map((h, i) => (
                       <li key={i} className="ca-highlight-item">
                         <div className="tag">{h.tag}</div>
                         <div className="snippet">"{h.snippet}"</div>
@@ -241,7 +271,6 @@ export default function ContractAnalysis() {
         </main>
       </div>
 
-      {/* Footer fora do wrapper limitado */}
       <FooterContent />
     </div>
   );
@@ -256,7 +285,7 @@ function ChatInput({ onSend, disabled }) {
         className="ca-chat-field" 
         value={val} 
         onChange={e => setVal(e.target.value)} 
-        placeholder={disabled ? "Analise o contrato primeiro" : "Pergunte sobre multas, prazos..."} 
+        placeholder={disabled ? "Analise um contrato primeiro" : "Pergunte sobre multas, prazos..."} 
         disabled={disabled}
       />
       <button type="submit" className="ca-chat-send active" disabled={!val.trim() || disabled}>

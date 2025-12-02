@@ -40,7 +40,8 @@ async function request(path, method = "GET", body = null, auth = true, isFormDat
    ====================================================== */
 async function streamChatMessage({ chatId, content, onChunk, onEnd, onError }) {
   const token = localStorage.getItem("token");
-  const model = localStorage.getItem("model") || "gemini-2.5-flash-preview-09-2025"; 
+// apenas no dia do projeto integrador  const model = "gemini-2.5-pro";
+  const model = "gemini-2.5-flash";
 
   const url = `${BASE}/ai-messages/send-stream`;
 
@@ -117,7 +118,7 @@ export default {
   request,
 
   // ---------- AUTH ----------
-  login: (email, password) => request("/login/", "POST", { email, password }, false),
+  login: (email, password) => request("/login", "POST", { email, password }, false),
   register: (username, email, password) => request("/users/", "POST", { name: username, email, password }, false),
 
   // ---------- CHATS ----------
@@ -126,10 +127,8 @@ export default {
   getUserChats: (userId) => request(`/chats/user/${userId}`, "GET"),
   deleteChat: (id) => request(`/chats/${id}`, "DELETE"),
 
-  // ---------- MESSAGES (CORRIGIDO) ----------
+  // ---------- MESSAGES ----------
   sendMessage: (chatId, content) => request("/messages/", "POST", { chat_id: chatId, content }),
-  
-  // Novas funções para buscar histórico completo
   getUserMessages: (chatId) => request(`/messages/chat/${chatId}`, "GET"),
   getAIMessages: (chatId) => request(`/ai-messages/chat/${chatId}`, "GET"),
 
@@ -139,6 +138,9 @@ export default {
   // ---------- CONTRACT ANALYSIS ----------
   analyzeContract: (formData) => request("/contract/analyze", "POST", formData, true, true),
   chatContract: (data) => request("/contract/chat", "POST", data),
+  getUserContracts: (userId) => request(`/contract/user/${userId}`, "GET"),
+  
+  // ---------- DASHBOARD & USER ----------
   getDashboardStats: () => request("/dashboard/stats", "GET"),
   updateUser: (userId, data) => request(`/users/${userId}`, "PUT", data),
 

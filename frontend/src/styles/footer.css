@@ -1,0 +1,21 @@
+/* ... seus outros estilos do footer ... */
+
+.footer-link {
+  text-decoration: none;
+  transition: all 0.2s ease;
+  display: inline-block;
+  padding: 2px 0;
+  color: var(--muted); /* Garante cor inicial */
+}
+
+.footer-link:hover {
+  color: #fff !important;
+  transform: translateX(2px); /* Efeito sutil de movimento ao passar o mouse */
+}
+
+/* Nova classe para alinhar ícone e texto */
+.social-link-item {
+  display: flex !important; /* Força flexbox */
+  align-items: center;
+  gap: 8px; /* Espaço entre ícone e texto */
+}

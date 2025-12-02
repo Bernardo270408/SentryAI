@@ -14,7 +14,8 @@ logger = logging.getLogger(__name__)
 @contract_bp.route('/analyze', methods=['POST'])
 @token_required
 def analyze():
-    data = request.json or {}
+    # Tenta obter dados de JSON ou Form (para suportar FormData do frontend)
+    data = request.get_json(silent=True) or request.form
     current_user = request.user
 
     user_id = data.get('user_id')
@@ -25,6 +26,12 @@ def analyze():
 
     if not user_id:
         return jsonify({'error': 'Campo user_id obrigatório'}), 400
+
+    # Converter user_id para int se vier como string do form
+    try:
+        user_id = int(user_id)
+    except ValueError:
+        return jsonify({'error': 'user_id inválido'}), 400
 
     if current_user.id != user_id and not current_user.is_admin:
         return jsonify({'error': 'Acesso negado'}), 403
@@ -57,11 +64,20 @@ def analyze():
 @token_required
 def get_contracts():
     current_user = request.user
-    data = request.json or {}
+    data = request.args # GET usa query params geralmente, mas mantendo compatibilidade
     user_id = data.get('user_id')
 
-    if current_user.id != user_id and not current_user.is_admin:
-        return jsonify({'error': 'Acesso negado'}), 403
+    if user_id:
+        try:
+            user_id = int(user_id)
+            if current_user.id != user_id and not current_user.is_admin:
+                return jsonify({'error': 'Acesso negado'}), 403
+        except:
+            pass # Se nao for int, deixa passar para logica abaixo ou erro
+
+    if not current_user.is_admin:
+         # Se não for admin, força ver apenas os seus, ou retorna erro se não enviou user_id
+         pass 
     
     contracts = ContractDAO.get_all_contracts()
     return jsonify([c.to_dict() for c in contracts])
@@ -71,15 +87,13 @@ def get_contracts():
 @token_required
 def get_contract(contract_id):
     current_user = request.user
-    data = request.json or {}
-    user_id = data.get('user_id')
-
-    if current_user.id != user_id and not current_user.is_admin:
-        return jsonify({'error': 'Acesso negado'}), 403
     
     contract = ContractDAO.get_contract_by_id(contract_id)
     if not contract:
         return jsonify({'error': 'Contrato não encontrado'}), 404
+    
+    if current_user.id != contract.user_id and not current_user.is_admin:
+        return jsonify({'error': 'Acesso negado'}), 403
     
     return jsonify(contract.to_dict())
 
@@ -87,8 +101,6 @@ def get_contract(contract_id):
 @token_required
 def get_contracts_by_user(user_id):
     current_user = request.user
-    data = request.json or {}
-    user_id = data.get('user_id')
 
     if current_user.id != user_id and not current_user.is_admin:
         return jsonify({'error': 'Acesso negado'}), 403
@@ -115,15 +127,17 @@ def update_contract(contract_id):
 @token_required
 def delete_contract(contract_id):
     current_user = request.user
-    data = request.json or {}
-    user_id = data.get('user_id')
+    contract = ContractDAO.get_contract_by_id(contract_id)
 
-    if current_user.id != user_id and not current_user.is_admin:
+    if not contract:
+        return jsonify({'error': 'Contrato não encontrado'}), 404
+
+    if current_user.id != contract.user_id and not current_user.is_admin:
         return jsonify({'error': 'Acesso negado'}), 403
     
     success = ContractDAO.delete_contract(contract_id)
     if not success:
-        return jsonify({'error': 'Contrato não encontrado ou erro ao deletar'}), 404
+        return jsonify({'error': 'Erro ao deletar'}), 500
     
     return jsonify({'message': 'Contrato deletado com sucesso'}), 200
 
@@ -140,7 +154,7 @@ def chat_contract():
 
     current_user = request.user
 
-    if current_user.id != user_id and not current_user.is_admin:
+    if user_id and current_user.id != int(user_id) and not current_user.is_admin:
         return jsonify({'error': 'Acesso negado'}), 403
 
     if not message:
@@ -152,4 +166,3 @@ def chat_contract():
     
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    

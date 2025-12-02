@@ -13,6 +13,11 @@ import Profile from "./pages/Profile";
 import RightsExplorer from "./pages/RightsExplorer";
 import ContractAnalysis from "./pages/ContractAnalysis";
 import Settings from "./pages/Settings";
+import KnowledgeBase from "./pages/KnowledgeBase";
+import Documentation from "./pages/Documentation";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
+import Disclaimer from "./pages/Disclaimer";
 import "./styles/global.css";
 
 // Acessando a variável de ambiente (Vite)
@@ -30,7 +35,13 @@ createRoot(document.getElementById("root")).render(
       <BrowserRouter>
         <Routes>
 
+          {/* Rotas Públicas */}
           <Route path="/" element={<Home />} />
+          <Route path="/knowledge-base" element={<KnowledgeBase />} />
+          <Route path="/docs" element={<Documentation />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/disclaimer" element={<Disclaimer />} />
 
           <Route
             path="/app"

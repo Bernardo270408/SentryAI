@@ -195,7 +195,7 @@ def generate_dashboard_insight(user_name: str, last_interaction: str) -> str:
     if os.getenv("GEMINI_API_KEY"):
         try:
             genai.configure(api_key=api_key)
-            model = genai.GenerativeModel("gemini-2.5-flash-preview-09-2025")
+            model = genai.GenerativeModel("gemini-2.0-flash")
             prompt = f"Com base na pergunta: '{last_interaction}', gere uma frase curta de conselho jurídico."
             response = model.generate_content(prompt)
             return response.text.strip()
@@ -206,7 +206,7 @@ def analyze_user_doubts(messages_list: List[str]) -> List[str]:
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key or not messages_list: return ["Sem dados."]
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-2.5-flash-preview-09-2025", generation_config={"response_mime_type": "application/json"})
+    model = genai.GenerativeModel("gemini-2.0-flash", generation_config={"response_mime_type": "application/json"})
     recent = "\n".join(messages_list[-20:])
     prompt = f"Analise as perguntas: {recent}. Retorne JSON {{ 'doubts': ['Dúvida 1', 'Dúvida 2'] }}."
     try:
@@ -222,7 +222,7 @@ def generate_chat_title(message_content: str) -> str:
         return "Nova Conversa"
 
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-2.5-flash-preview-09-2025")
+    model = genai.GenerativeModel("gemini-2.0-flash")
     
     prompt = f"""
     Analise a seguinte mensagem inicial de um usuário em um chat jurídico:
