@@ -40,8 +40,9 @@ async function request(path, method = "GET", body = null, auth = true, isFormDat
    ====================================================== */
 async function streamChatMessage({ chatId, content, onChunk, onEnd, onError }) {
   const token = localStorage.getItem("token");
-// apenas no dia do projeto integrador  const model = "gemini-2.5-pro";
-  const model = "gemini-2.5-flash";
+// apenas no dia do projeto integrador  
+  const model = "gemini-2.5-pro";
+  // const model = "gemini-2.5-flash";
 
   const url = `${BASE}/ai-messages/send-stream`;
 

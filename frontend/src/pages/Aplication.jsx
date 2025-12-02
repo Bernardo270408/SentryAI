@@ -1,10 +1,9 @@
-// src/pages/Aplication.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 // Ícones usados nesta página
 import { FiBookOpen, FiZap, FiLayout, FiAlertTriangle, FiArrowRight, FiSettings } from 'react-icons/fi';
 import FooterContent from '../components/FooterComponent'
-import '../styles/application.css';
+import '../styles/Application.css';
 
 // Componente de Carrossel para Alertas (Mantido e exportado)
 export const AlertCarousel = ({ alerts, navigate }) => {

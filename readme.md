@@ -1,6 +1,15 @@
 # SentryAI
 
-SentryAI é uma aplicação em desenvolvimento voltada ao gerenciamento de modelos de IA, específicamente ao caráter jurídico brasileiro, cuja principal funcionalidade é a possibilidade de realizar um chat com uma IA especializada na lei brasileira.
+<p align="center" display="inline-block">
+  <img src="https://img.shields.io/badge/MySQL-005C84?style=for-the-badge&logo=mysql&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white"/>
+  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB"/>
+  <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=Vite&logoColor=white"/>
+  <img src="https://img.shields.io/badge/google%20gemini-8E75B2?style=for-the-badge&logo=google%20gemini&logoColor=white"/>
+  <img src="https://img.shields.io/badge/OpenAI-4A4A55?style=for-the-badge&logo=openai"/>
+</p>
+
+SentryAI é uma aplicação voltada ao gerenciamento de modelos de IA, específicamente ao caráter jurídico brasileiro, cuja principal funcionalidade é a possibilidade de realizar um chat com uma IA especializada na lei brasileira.
 
 ## Índice
 

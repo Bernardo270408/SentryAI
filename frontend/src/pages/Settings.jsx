@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import '../styles/settings.css';
-import { FooterContent } from "./Aplication";
+import FooterContent from "../components/FooterComponent";
 import { FiMoon, FiSun, FiMail, FiUser, FiShield, FiTrash2, FiGlobe, FiMessageCircle, FiChevronRight } from "react-icons/fi";
 
 // Definição das seções de navegação
