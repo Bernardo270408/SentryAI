@@ -23,7 +23,13 @@ def create(
         print("\033[92m>", "> User created sucessfully\033[0m")
 
         login = input("Do you want to login with this user now? (y/n): ")
+
         if login.lower() == "y":
+            code = input("Please type the verification code we sent to your email: ")
+            verification = auth_commands.verifyemail(email=email,code=code)
+
+            print(verification)
+            
             return auth_commands.login(email, password, domain, port, **kwargs)
 
     except requests.RequestException as e:

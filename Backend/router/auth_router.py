@@ -71,7 +71,7 @@ def verify_email():
             200,
         )
 
-    if user.verification_code != code:
+    if str(user.verification_code) != str(code):
         return jsonify({"error": "Código incorreto"}), 400
 
     if (

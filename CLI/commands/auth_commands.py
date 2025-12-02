@@ -98,7 +98,7 @@ def verifyemail(email, code, domain="localhost", port=5000, **kwargs):
     payload.update(kwargs)
 
     try:
-        response = requests.get(url)
+        response = requests.post(url, json=payload)
         response.raise_for_status()
 
         return response.json()
