@@ -20,7 +20,7 @@ Dicas:
 
 
 ## Autenticação
-- `POST /login` — Autentica usuário, retorna token JWT
+- `POST /login` — Autentica usuário, retorna token JWT. Se o email não estiver verificado, retorna erro com `need_verification: true`.
   - Corpo da Requisição:
     ```js
     {
@@ -37,32 +37,78 @@ Dicas:
         "name": "username1", 
         "email": "email1@example.com",
         "extra_data": "Informações extras"
+        }
+    }
+    ```
+    
+- `POST /google-login` — Autentica ou cadastra usuário via Google, retorna token JWT.
+  - Corpo da Requisição:
+    ```js
+    {
+    "credential": "token-id-do-google" // Obrigatório
+    }
+    ```
+  - Resposta Esperada:
+    ```js
+    {
+    "token" : "token-jwt",
+    "user" : {
+        "id": 1, 
+        "name": "username1", 
+        "email": "email1@example.com",
+        "extra_data": "Informações extras",
+        "is_verified": true
+        }
+    }
+    ```
+- `POST /verify-email` — Confirma o email do usuário com um código de 6 dígitos.
+  - Corpo da Requisição:
+    ```js
+    {
+    "email": "example@email.com",   // Obrigatório
+    "code": "123456"                // Obrigatório
+    }
+    ```
+  - Resposta Esperada:
+    ```js
+    {
+    "message": "Conta verificada com sucesso!",
+    "token" : "token-jwt",
+    "user" : {
+        "id": 1, 
+        "name": "username1", 
+        "email": "email1@example.com",
+        "extra_data": "Informações extras",
+        "is_verified": true
     }
     }
     ```
     
-
 ## Usuários
 Rotas relacionadas ao CRUD do usuário.
-- `POST /users/` — Cria usuário
+- `POST /users/` — Cria usuário. **Requer verificação de email** (veja `/verify-email`).
     - Corpo da Requisição
     ```js
     {
         "name":"username",              // Obrigatório
         "email":"email",                // Obrigatório
-        "password":"password",          // Obrigatório
+        "password":"password",          // Obrigatório (nesta rota)
         "extra_data":"Meu nome é [...]" // Opcional
     }
     ```
     - Resposta Esperada
     ```js
     {
-        "user" : {
+        "message": "Usuário criado. Verifique seu e-mail para ativar a conta.",
+        "email": "email1@example.com",
+        "need_verification": true,
+        "user": {
             "id": 1, 
             "name": "username1", 
             "email": "email1@example.com",
-            "extra_data": "Informações extras"
-        }
+            "extra_data": "Informações extras",
+            "is_verified": false
+        },
     }
     ```
 - `GET /users/` — Lista todos os usuários
@@ -73,13 +119,15 @@ Rotas relacionadas ao CRUD do usuário.
             "id": 1, 
             "name": "username1", 
             "email": "email1@example.com",
-            "extra_data": "Informações extras"
+            "extra_data": "Informações extras",
+            "is_verified": true
         },
         {
             "id": 2, 
             "name": "username2", 
             "email": "email2@example.com",
-            "extra_data": "Outro dado extra"
+            "extra_data": "Outro dado extra",
+            "is_verified": false
         }
     ]
     ```
@@ -91,7 +139,8 @@ Rotas relacionadas ao CRUD do usuário.
         "id": 1, 
         "name": "username1", 
         "email": "email1@example.com",
-        "extra_data": "Informações extras"
+        "extra_data": "Informações extras",
+            "is_verified": true
     }
     ```
 
@@ -103,7 +152,8 @@ Rotas relacionadas ao CRUD do usuário.
         "name":"username",
         "email":"email",
         "password":"password",
-        "extra_data":"Meu nome é [...]"
+        "extra_data":"Meu nome é [...]",
+        "is_verified": true
     }
     ```
     - Resposta Esperada
@@ -112,7 +162,8 @@ Rotas relacionadas ao CRUD do usuário.
         "id": 1, 
         "name": "username1", 
         "email": "email1@example.com",
-        "extra_data": "Informações extras"
+        "extra_data": "Informações extras",
+        "is_verified": true
     }
     ```
 - `DELETE /users/<id>` — Remove usuário (autenticado)
@@ -632,7 +683,8 @@ Rotas para análise de documentos e interação com a IA sobre o contexto.
     ```js
     {
         "message": "Qual o risco da cláusula 5?",
-        "context": "Resumo da análise anterior (opcional, mas recomendado)"
+        "context": "Resumo da análise anterior (opcional, mas recomendado)",
+        "user_id": 1 // Obrigatório para validação de permissão
     }
     ```
     - Resposta Esperada:

@@ -1,7 +1,31 @@
-## Comandos Da CLI
+# A Inteface de Linha de Comando (CLI) do SentryAI
 
-### Estrutura Básica
-A CLI foi pensada apenas como uma substituta para o ainda não presente front-end, mas reformulada recentemente para realmente ser utilizável e alternativa à interface visual. Esta é a estrutura geral de um comando
+## Descrição
+A CLI  do SentryAi foi inicialmente pensada apenas como uma substituta para o ainda não presente front-end, mas completamente reformulada para ser utilizável, e atualmente é a principal alternativa ao frontend oficial, sendo recomendada para usuários avançados.
+
+> **Nota:** Este documento foi elaborado principalmente como um manual da CLI, mas assume que o usuário já esteja familiarizado com interfaces de comando.
+
+> Para voltar ao readme, acesse [este link](../readme.md).
+
+## Índice
+- [Descrição](#descrição)
+- [Estrutura Básica](#estrutura-básica-do-comando)
+- [Comandos e suas funções](#os-comandos-e-suas-funções)
+    - [Autenticação](#auth)
+    - [Chat](#chat)
+    - [Usuário](#user)
+    - [Mensagem de Usuário](#message_user)
+    - [Mensagem de IA](#message_ai)
+    - [Avaliação](#rating)
+    - [Contrato](#contract)
+    - [Defaults](#default)
+    - [Dashboard](#dashboard)
+    - [Fechar](#quit)
+    - [Ajuda](#help)
+    - [Rodar](#run)
+
+## Estrutura Básica do Comando
+Esta é a estrutura geral de um comando
 
 ```bash
 sentry [comando] -[subcomando] [argumentos]=[argumentos]
@@ -15,8 +39,6 @@ sentry auth -login email='test@mail' password='1234'
 
 retorna o token, o seta como padrão e pergunta se o ID do usuário em questão deverá ser utilizado como padrão para próximas iterações
 
-Para voltar ao readme, acesse [este link](../readme.md)
-
 Dicas:
 
 * Para executar qualquer comando, é necessário que a CLI esteja rodando
@@ -24,24 +46,32 @@ Dicas:
 * Parâmetros extras serão ignorados (não causam erro).
 * Desenvolvedores podem enviar todos os defaults sem risco.
 
-### Comandos e suas funções
-Aqui estão listados todos os comandos da CLI, o que requerem e o que retornam. Caso seja necessária uma consulta rápida, recomenda-se a execução do comando `sentry help -all`.
+## Os Comandos e suas funções
+Aqui estão listados todos os comandos da CLI, o que requerem e o que retornam. Caso seja necessária uma consulta rápida, recomenda-se a execução do comando `sentry help -all` ou dedicado a um comando específico.
 
 ### `auth`
 
-Gerencia a autenticação de usuários.
+Gerencia a autenticação de usuários, validação de emails e status logado e deslogado.
 
-| Subcomando  | Ação                                                                                                         | Campos Obrigatórios |
-| ----------- | ------------------------------------------------------------------------------------------------------------ | ------------------- |
-| `-login`    | Loga, gera um token JWT e seta como default. Pergunta se o `user_id` deve ser utilizado como default também. | `email`, `password` |
-| `-logout`   | Remove o token atual dos valores default.                                                                    | Nenhum              |
-| `-gettoken` | Imprime o token atual salvo nos defaults.                                                                    | Nenhum              |
+Nomes alternativos: `authentication`
+
+
+| Subcomando    | Ação                                                                                                          | Campos Obrigatórios |
+| -----------   | ------------------------------------------------------------------------------------------------------------  | ------------------- |
+| `-login`      | Loga, gera um token JWT e seta como default. Pergunta se o `user_id` deve ser utilizado como default também.  | `email`, `password` |
+| `-googlelogin`| Loga com uma conta google. Se a conta não existir, é criada, e então segue o processo de login padrão         | `credential`        |
+| `-verifyemail`| Verifica o email da conta, permitindo o uso dela.                                                             | `email`, `code`     |
+| `-logout`     | Remove o token atual dos valores default.                                                                     | Nenhum              |
+| `-gettoken`   | Imprime o token atual salvo nos defaults.                                                                     | Nenhum              |
 
 ---
 
 ### `chat`
 
 Gerencia os chats utilizados para registrar conversas com o modelo de IA.
+
+Nomes alternativos: `chats`
+
 
 | Subcomando   | Ação                                | Campos Obrigatórios |
 | ------------ | ----------------------------------- | ------------------- |
@@ -60,21 +90,27 @@ Gerencia os chats utilizados para registrar conversas com o modelo de IA.
 
 Gerencia os usuários cadastrados no sistema.
 
-| Subcomando | Ação                              | Campos Obrigatórios         |
-| ---------- | --------------------------------- | --------------------------- |
-| `-create`  | Cria um novo usuário.             | `name`, `email`, `password` |
-| `-get`     | Busca um usuário por ID.          | `user_id`                   |
-| `-getall`  | Lista todos os usuários.          | Nenhum                      |
-| `-update`  | Atualiza um usuário existente.    | `user_id`, `token`          |
-| `-delete`  | Remove um usuário.                | `user_id`, `token`          |
-| `-open`    | Define um `user_id` como default. | `user_id`                   |
-| `-quit`    | Remove o `user_id` default atual. | Nenhum                      |
+Nomes alternativos: `users`
+
+
+| Subcomando | Ação                                             | Campos Obrigatórios         |
+| ---------- | ------------------------------------------------ | --------------------------- |
+| `-create`  | Cria um novo usuário. Email deve ser verificado. | `name`, `email`, `password` |
+| `-get`     | Busca um usuário por ID.                         | `user_id`                   |
+| `-getall`  | Lista todos os usuários.                         | Nenhum                      |
+| `-update`  | Atualiza um usuário existente.                   | `user_id`, `token`          |
+| `-delete`  | Remove um usuário.                               | `user_id`, `token`          |
+| `-open`    | Define um `user_id` como default.                | `user_id`                   |
+| `-quit`    | Remove o `user_id` default atual.                | Nenhum                      |
 
 ---
 
-### `message`
+### `message_user`
 
 Gerencia mensagens enviadas por usuários.
+
+Nomes alternativos: `message`, `messages`, `message_user`, `messageuser`, `user_message`, `usermessage`, `user-message`, `message-user`
+
 
 | Subcomando   | Ação                                      | Campos Obrigatórios                      |
 | ------------ | ----------------------------------------- | ---------------------------------------- |
@@ -93,6 +129,8 @@ Gerencia mensagens enviadas por usuários.
 ### `message_ai`
 
 Gerencia mensagens de IA geradas a partir de interações com o usuário.
+
+Nomes alternativos: `message_ai`, `messageai`, `ai_message`, `aimessage`, `ia-message`, `message-ai`
 
 | Subcomando           | Ação                                                   | Campos Obrigatórios                    |
 | -------------------- | ------------------------------------------------------ | -------------------------------------- |
@@ -118,6 +156,9 @@ Gerencia mensagens de IA geradas a partir de interações com o usuário.
 
 Gerencia as avaliações de chats.
 
+Nomes alternativos: `ratings`
+
+
 | Subcomando   | Ação                                      | Campos Obrigatórios         |
 | ------------ | ----------------------------------------- | --------------------------- |
 | `-create`    | Cria uma nova avaliação.                  | `user_id`, `chat_id`, `score`, `token` |
@@ -133,7 +174,11 @@ Gerencia as avaliações de chats.
 ---
 
 ### `contract`
+
 Gerencia operações relacionadas a contratos. Note que o comando `analyze` é um alias para `create`, e que ambos realizam a mesma função de analisar um contrato. 
+
+Nomes alternativos: `contracts`
+
 | Subcomando | Ação                                 | Campos Obrigatórios                      |
 | ---------- | ------------------------------------ | ---------------------------------------- |
 | `-create`  | Analiza um contrato                  | `contract_text`, `user_id`, `token`      |
@@ -150,6 +195,9 @@ Gerencia operações relacionadas a contratos. Note que o comando `analyze` é u
 ### `default`
 
 Gerencia valores padrão utilizados nas operações da CLI.
+
+Nomes alternativos: `defaults`
+
 
 | Subcomando  | Ação                                                                 | Campos Obrigatórios |
 | ----------- | -------------------------------------------------------------------- | ------------------- |
@@ -176,8 +224,10 @@ Gerencia valores padrão utilizados nas operações da CLI.
 ---
 
 ### `dashboard`
+
 Exibe as informações do dashboard no terminal em JSON
 
+Nomes alternativos: `dash`, `overview`, `stats`
 **Informações exibidas:**
 - `kpis`:
     - `active_cases`: Quantidade de chats ativos
@@ -190,14 +240,28 @@ Exibe as informações do dashboard no terminal em JSON
 
 ### `quit`
 Finaliza a execução da CLI.
+
 uhh.. o que você esperava que fizesse?
+
+Nomes alternativos: `exit`, `quit`, `q`
+
 
 ---
 
 ### `help`
+
 Exibe ajuda contextual da CLI.
+
+Nomes alternativos: `h`, `?`, `help`
+
 
 | Subcomando   | Ação                                         |
 | ------------ | -------------------------------------------- |
 | `-all`       | Mostra a ajuda completa de todos os comandos |
 | `-[comando]` | Mostra ajuda para o comando específico       |
+´
+
+### `run`
+Inicializa a CLI.
+Sem parâmetros ou funções extras.
+

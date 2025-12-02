@@ -38,12 +38,16 @@ Tips:
 "-auth":
 """
 auth
-    -login      Logs in, generates a token and sets it as default.
-                Requires: email, password
-    -logout     Removes the JWT token from defaults.
-                Takes nothing.
-    -gettoken   Prints the current token stored in defaults.
-                Takes nothing.
+    -login          Logs in, generates a token and sets it as default.
+                    Requires: email (needs to be verified after. An code wil be sent), password
+    -googlelogin    Logs in with a google account, or create it if not exists.
+                    Requires: google token ID
+    -verifyemail    Verifies a registred email
+                    Requires: email, code recieved at the email
+    -logout         Removes the JWT token from defaults.
+                    Takes nothing.
+    -gettoken       Prints the current token stored in defaults.
+                    Takes nothing.
 """,
 
 "-chat":

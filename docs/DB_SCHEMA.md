@@ -3,19 +3,42 @@
 Este documento detalha todas as tabelas do banco de dados atual, utilizando-se de MySQL, e seus relacionamentos.
 Você pode voltar para o readme por [este link](../readme.md).
 
-### User
+
+## Descrição
+O Banco de Dados do SentryAI é baseado em MySQL, e gerenciado pelo SQLAlchemy com Pyhton. 
+
+Existem 6 Tabelas Principais na Base de dados, sendo elas `users`,`chats`,`user_messages`,`ai_messages`,`ratings` e `contracts`. Um modelo extenso foi elaborado para garantir a compreensão do funcionamento desse modelo relacional.
+
+## Índice
+- [Descrição](#descrição)
+- [Usuário](#usuário)
+- [Chats](#chats)
+- [Mensagens de Usuário](#mensagens-de-usuário)
+- [Mensagens de IA](#mensagens-de-ia)
+- [Avaliações](#avaliações)
+- [Contratos Analizados](#contratos-analizados)
+- [Relacionamentos](#relacionamentos)
+
+
+## Usuário
+Tablename `users`. Armazena usuários da plataforma.
 | Coluna       | Tipo     | PK | FK | Not Null | Default      | Descrição                        |
 |--------------|----------|----|----|----------|--------------|----------------------------------|
 | id           | Integer  | X  |    | X        | auto_inc     | Identificador único do usuário   |
 | name         | String   |    |    | X        |              | Nome do usuário                  |
 | email        | String   |    |    | X        |              | Email do usuário                 |
-| password     | String   |    |    | X        |              | Senha (hasheada)                 |
+| password     | String   |    |    |          |              | Senha (hasheada, pode ser nula para login social) |
 | extra_data   | Text     |    |    |          |              | Dados extras                     |
 | is_admin     | Boolean  |    |    |          | False        | Usuário administrador            |
+| google_id    | String   |    |    |          | Null         | ID do usuário no Google          |
+| is_verified  | Boolean  |    |    |          | False        | Status de verificação de email   |
+| verification_code | String   |    |    |          | Null         | Código de verificação de email   |
+| verification_code_expires_at | DateTime |    |    |          | Null         | Expiração do código de verificação |
 
 ---
 
-### Chat
+## Chats
+Tablename `chats`. Armazena os chats dos usuários.
 | Coluna     | Tipo     | PK | FK | Not Null | Default                | Descrição                      |
 |------------|----------|----|----|----------|------------------------|--------------------------------|
 | id         | Integer  | X  |    | X        | auto_inc               | Identificador do chat          |
@@ -26,7 +49,9 @@ Você pode voltar para o readme por [este link](../readme.md).
 
 ---
 
-### MessageUser
+## Mensagens de Usuário
+Tablename `user_messages`. Armazena mensagens enviadas por usuários
+
 | Coluna     | Tipo     | PK | FK | Not Null | Default                | Descrição                      |
 |------------|----------|----|----|----------|------------------------|--------------------------------|
 | id         | Integer  | X  |    | X        | auto_inc               | Identificador da mensagem      |
@@ -38,7 +63,9 @@ Você pode voltar para o readme por [este link](../readme.md).
 
 ---
 
-### AIMessage
+## Mensagens de IA
+Tablename `ai_messages`. Armazena mensagens enviadas pela IA.
+
 | Coluna           | Tipo     | PK | FK | Not Null | Default       | Descrição                             |
 |------------------|----------|----|----|----------|--------------|----------------------------------------|
 | id               | Integer  | X  |    | X        | auto_inc     | Identificador da mensagem de IA        |
@@ -51,30 +78,34 @@ Você pode voltar para o readme por [este link](../readme.md).
 
 ---
 
-### Rating
-| Coluna     | Tipo     | PK | FK | Not Null | Default | Descrição                      |
-|------------|----------|----|----|----------|---------|--------------------------------|
-| id         | Integer  | X  |    | X        | auto_inc| Identificador da avaliação     |
-| user_id    | Integer  |    | X  | X        |         | Usuário que avaliou            |
-| chat_id    | Integer  |    | X  | X        |         | Chat avaliado                  |
-| score      | Integer  |    |    | X        |         | Nota da avaliação (1-5)        |
-| feedback   | String   |    |    |          |         | Comentário adicional (opcional)|
+## Avaliações
+Tablename `ratings`. Armazena avaliações e feedbacks dados pelo usuário aos seus chats.
+| Coluna     | Tipo     | PK | FK | Not Null | Default  | Descrição                      |
+|------------|----------|----|----|----------|--------- |--------------------------------|
+| id         | Integer  | X  |    | X        | auto_inc | Identificador da avaliação     |
+| user_id    | Integer  |    | X  | X        |          | Usuário que avaliou            |
+| chat_id    | Integer  |    | X  | X        |          | Chat avaliado                  |
+| score      | Integer  |    |    | X        |          | Nota da avaliação (1-5)        |
+| feedback   | String   |    |    |          |          | Comentário adicional (opcional)|
 
 ---
 
-### Contract
+## Contratos Analizados
+Tablename `contracts`. Armazena análizes de contratos (enviados pelo usuário) feitas pela IA em JSON.
 | Coluna     | Tipo     | PK | FK | Not Null | Default       | Descrição                       |
 |------------|----------|----|----|----------|----------------|--------------------------------|
 | id         | Integer  | X  |    | X        | auto_inc       | Identificador do contrato      |
 | user_id    | Integer  |    | X  | X        |                | Usuário dono do contrato       |
-| text       | Text     |    |    | X        |                | Texto do contrato              |
-| json       | JSON     |    |    | X        |                | Dados adicionais em JSON       |
+| text       | Text     |    |    | X        |                | Texto do contrato enviado      |
+| json       | JSON     |    |    | X        |                | Análize feita pela IA          |
 | created_at | DateTime |    |    | X        | db.func.now()  | Data de criação                |
-| updated_at | DateTime |    |    |          | db.func.now()  || Data da última atualização    |
+| updated_at | DateTime |    |    |          | db.func.now()  | Data da última atualização     |
 
 ---
 
-### Relacionamentos
+## Relacionamentos
+
+Como cada uma das tabelas se relacionam entre si.
 
 | Tabela Origem   | Coluna Origem     | Tabela Destino | Coluna Destino | Tipo de Relacionamento |
 |-----------------|-------------------|----------------|----------------|----------------------- |

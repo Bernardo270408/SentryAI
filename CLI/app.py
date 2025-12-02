@@ -28,15 +28,15 @@ def process_action(action):
     bash = ""
     try:
         match action["command"]:
-            case "user":
+            case "user" | "users":
                 bash = handle_user(action)
-            case "auth":
+            case "auth" | "authentication":
                 bash = handle_auth(action)
             case "default" | "defaults":
                 bash = handle_defaults(action)
             case "chat" | "chats":
                 bash = handle_chat(action)
-            case "message" | "messages":
+            case "message" | "messages" | "message_user" | "messageuser" | "user_message" | "usermessage" | "user-message" | "message-user":
                 bash = handle_message(action)
             case "message_ai" | "messageai" | "ai_message" | "aimessage" | "ai-message" | "message-ai":
                 bash = handle_message_ai(action)
@@ -84,6 +84,8 @@ def handle_user(action):
 def handle_auth(action):
     match action["subcommand"]:
         case "-login": return auth_commands.login(**action["args"])
+        case "-googlelogin": return auth_commands.googlelogin(**action["args"])
+        case "-verifyemail": return auth_commands.verifyemail(**action["args"])
         case "-logout": return auth_commands.logout(**action["args"])
         case "-gettoken": return auth_commands.gettoken(**action["args"])
         case _: return warn(f"Unknown subcommand for auth: {action['subcommand']}")

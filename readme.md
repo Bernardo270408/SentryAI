@@ -25,8 +25,9 @@ O SentryAI, como dito antes, é uma aplicação em desenvolvimento, que visa col
 ## Tecnologias Utilizadas
 > **Nota:** Nas últimas atualizações, nós, a equipe de desenvolvimento, decidimos por substituír o **Ollama** pela API da **OpenAI** e do **Gemini 2.5**, ficando a critério do usuário qual utilizar. A mudança se deve ao alto custo em hardware demandado por LLMs locais. Isso não significa que o projeto se perdeu, uma vêz que o caráter inicial sempre foi experimentação na área das Inteligências Artificiais.
 
-- **OpenAI** - Serviço de IA
-- **Gemini** - Serviço de IA
+- **ChatGPT** - Serviço de IA da OpenAI
+- **Gemini** - Serviço de IA da Google
+- **Google Auth** - API da Google para autenticação
 - **Flask** - Framework web para Python.
 - **React + Vite** - Frameworks para o Front-End.
 - **SQLAlchemy** - ORM para interação com o banco de dados.
@@ -73,11 +74,20 @@ pip install -r requirements.txt
 
 **3.** Configure as variáveis de Ambiente
 Renomeie o arquivo `.env.example` para `.env` e configure as variáveis de ambiente:
-```python
-  SECRET_KEY="sua_chave_secreta_aqui"
-  DATABASE_URL="mysql+pymysql://{usuário}:{senha}@localhost:3306/sentryai"
-  GEMINI_API_KEY="sua-chave-gemini-aqui"
-  OPENAI_TOKEN="seu-token"
+```env
+#app
+SECRET_KEY="sua_chave_secreta_aqui"
+DATABASE_URL="mysql+pymysql://root:senha@localhost:3306/sentryai"
+
+#ai service
+OPENAI_TOKEN="seu-token"
+GEMINI_API_KEY="sua_api_key_aqui"
+
+#smtp
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=seu_email@gmail.com
+SMTP_PASSWORD=sua_senha_de_app_gmail
 ```
 **4.** Configure o Banco de Dados
 
@@ -283,7 +293,9 @@ Dicas:
 
 
 ## Modelo do Banco de Dados
-O Banco de Dados é baseado em MySQL, podendo entretanto ser alterado com facilidade
+O Banco de Dados do SentryAI é baseado em MySQL, e gerenciado pelo SQLAlchemy com Pyhton. 
+
+Existem 6 Tabelas Principais na Base de dados, sendo elas `users`,`chats`,`user_messages`,`ai_messages`,`ratings` e `contracts`. Um modelo extenso foi elaborado para garantir a compreensão do funcionamento desse modelo relacional.
 
 > Nota: O modelo do banco de dados acabou tornando-se uma sessão extensa. Foi necessário movê-lo para uma sessão à parte, que pode ser lida [neste link](docs/DB_SCHEMA.md).
 
@@ -291,15 +303,15 @@ O Banco de Dados é baseado em MySQL, podendo entretanto ser alterado com facili
 ---
 
 ## Comandos Da CLI
+A CLI foi pensada no início como uma simples substituta ao frontend, que ainda não existia. Porém, foi reformulada para realmente ser utilizável e alternativa à interface visual. 
 
-### Estrutura Básica
-A CLI foi pensada apenas como uma substituta para o ainda não presente front-end, mas reformulada recentemente para realmente ser utilizável e alternativa à interface visual. Esta é a estrutura geral de um comando
+### Estrutura do Comando
 
 ```bash
-sentry [comando] -[subcomando] [argumentos]=[argumentos]
+sentry [comando] -[subcomando] [chave]=[valor] [chave]=[valor] ...
 ```
 
-Segue um exemplo de autenticação:
+exemplo de autenticação:
 
 ```bash
 sentry auth -login email='test@mail' password='1234'

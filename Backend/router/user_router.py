@@ -59,10 +59,13 @@ def create_user():
     if not sent:
         msg += ' (Aviso: Falha ao enviar e-mail. Verifique o log do servidor para o código em modo DEV).'
 
+    
+
     return jsonify({
         'message': msg,
         'email': email,
-        'need_verification': True
+        'need_verification': True,
+        'user': user.to_dict()
     }), 201
 
 @user_bp.route('/email/<email>', methods=['GET'])
