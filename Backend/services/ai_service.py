@@ -5,8 +5,12 @@ import json
 import requests
 import logging
 import os
+import re
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
+
+MODELS_WHITELIST = []
 
 # Configurações de geração do Gemini
 GEMINI_CONFIG = {
@@ -42,7 +46,7 @@ def _format_history_for_gemini(history: List[Dict]) -> List[Dict]:
 
 def get_context(user_name: str) -> str:
     try:
-        path = os.path.join(os.path.dirname(__file__), "data.json")
+        path = os.path.join(os.path.dirname(__file__), "data/sentryai.json")
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
         instrucoes = "\n".join([f"- {i}" for i in data.get("Instruções", [])])
@@ -68,7 +72,7 @@ def get_context(user_name: str) -> str:
         """
         return system_prompt
     except Exception as e:
-        logger.exception("Falha ao carregar contexto do data.json")
+        logger.exception("Falha ao carregar contexto do sentryai.json")
         return "Você é um assistente jurídico útil."
 
 
@@ -265,3 +269,45 @@ def generate_chat_title(message_content: str) -> str:
     except Exception as e:
         logger.error(f"Erro ao gerar título: {e}")
         return "Nova Conversa"
+
+
+# --- COLETA DE INFORMAÇÕES SOBRE OS MODELOS ---
+
+def get_available_models(api_key: str = "", openai_token: str = "") -> List[str]:
+    available_models: List[str] = []
+
+    # Google Gemini (inalterado)
+    if api_key:
+        client = genai.Client(api_key=api_key)
+        gemini_models = client.models.list()
+
+        for model in gemini_models:
+            if "generateContent" in model.supported_generation_methods:
+                available_models.append(model.name)
+
+    # OpenAI
+    if openai_token:
+        openai_client = OpenAI(api_key=openai_token)
+        openai_models = openai_client.models.list()
+        
+        
+        # Dando uma limpada na lista enorme da OpenAI e pegando só o que me interessa
+        llm_prefixes = ("gpt-", "chatgpt-", "o1-", "o3-")
+        excluded_terms = ("embedding", "moderation", "tts", "audio", "image", "whisper", "preview")
+
+        openai_models = []
+        for model in openai_models.data:
+            m = model.id
+
+            if not m.startswith(llm_prefixes):
+                continue
+
+            if any(term in m for term in excluded_terms):
+                continue
+
+            openai_models.append(m)
+
+        available_models.extend(openai_models)
+
+    return available_models
+

@@ -8,6 +8,7 @@ from services.ai_service import (
     generate_response,
     generate_response_stream,
     generate_chat_title,
+    get_available_models
 )
 
 from dotenv import load_dotenv
@@ -351,3 +352,9 @@ def delete_ai_message(message_id):
     if not success:
         return jsonify({"error": "Delete failed"}), 400
     return jsonify({"message": "AI Message deleted"})
+
+@message_ai_bp.route("/available_models", methods=["GET"])
+def available_models():
+    available_models = get_available_models(api_key=GEMINI_API_KEY, openai_token=OPENAI_TOKEN)
+    
+    return jsonify({"models":available_models})
