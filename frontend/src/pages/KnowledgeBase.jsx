@@ -47,7 +47,6 @@ export default function KnowledgeBase() {
     <div className="static-page-root">
       <header className="landing-header container">
         <div className="logo" style={{cursor:'pointer'}} onClick={() => navigate('/')}>
-           {/* SVG Logo here if needed */}
            <strong>SentryAI</strong>
         </div>
         <button className="btn ghost" onClick={() => navigate(-1)}><FiArrowLeft/> Voltar</button>

@@ -13,7 +13,7 @@ export default function App() {
     navigate("/");
   }
 
-  // Verifica se é a página de chat
+  // Verificando se é a página de chat
   const isChatPage = location.pathname.includes("/chat");
 
   return (

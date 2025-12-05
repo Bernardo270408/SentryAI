@@ -63,7 +63,7 @@ const FooterContent = () => (
               <h5>Conecte-se</h5>
               <div className="socials" role="list" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 
-                {/* Link do GitHub Atualizado */}
+                {/* Link do GitHub */}
                 <a 
                     href="https://github.com/Bernardo270408/SentryAI" 
                     target="_blank" 

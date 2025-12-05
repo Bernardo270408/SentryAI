@@ -13,7 +13,6 @@ export default function Profile() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   
-  // Estado do Usuário
   const [user, setUser] = useState({
     id: null,
     name: "",
@@ -92,7 +91,6 @@ export default function Profile() {
     <div className="landing-root profile-root">
       <main className="container profile-main">
         
-        {/* HEADER CARD DO PERFIL */}
         <header className="profile-header-card">
           <div className="profile-avatar-large">
             {user.name.charAt(0).toUpperCase()}
@@ -110,7 +108,6 @@ export default function Profile() {
 
         <div className="profile-grid">
           
-          {/* COLUNA ESQUERDA: FORMULÁRIO DE EDIÇÃO */}
           <section className="profile-col-main">
             <div className="profile-card">
               <div className="card-header">
@@ -128,7 +125,7 @@ export default function Profile() {
                   />
                 </div>
 
-                {/* Email é readonly por segurança básica neste exemplo */}
+                {/* Email é readonly por segurança básica */}
                 <div className="form-group">
                   <label>E-mail</label>
                   <input 
@@ -165,7 +162,6 @@ export default function Profile() {
             </div>
           </section>
 
-          {/* COLUNA DIREITA: ESTATÍSTICAS E AÇÕES */}
           <section className="profile-col-side">
             <div className="profile-card stats-card">
               <h3><FiActivity /> Sua Atividade</h3>

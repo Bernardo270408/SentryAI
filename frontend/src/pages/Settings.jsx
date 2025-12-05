@@ -40,7 +40,7 @@ export default function Settings() {
     localStorage.setItem("lang", language);
   }, [language]);
 
-  // --- Handlers (Mantidos Simples) ---
+  // --- Handlers (Simples) ---
   const handleUpdateName = () => {
     const updated = { ...user, name: newName };
     setUser(updated);
@@ -164,8 +164,6 @@ export default function Settings() {
     }
   };
 
-
-  // --- Estrutura Principal ---
   return (
     <div className="settings-root">
 

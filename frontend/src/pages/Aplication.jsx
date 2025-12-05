@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-// Ícones usados nesta página
+// Ícones
 import { FiBookOpen, FiZap, FiLayout, FiAlertTriangle, FiArrowRight, FiSettings } from 'react-icons/fi';
 import FooterContent from '../components/FooterComponent'
 import '../styles/Application.css';
 
-// Componente de Carrossel para Alertas (Mantido e exportado)
+// Componente de Carrossel para Alertas
 export const AlertCarousel = ({ alerts, navigate }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const carouselRef = useRef(null);
@@ -14,7 +14,7 @@ export const AlertCarousel = ({ alerts, navigate }) => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % alerts.length);
-    }, 5000); // Rola a cada 5 segundos
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [alerts.length]);
@@ -66,7 +66,6 @@ export const AlertCarousel = ({ alerts, navigate }) => {
   );
 };
 
-// Componente Principal da Aplicação (Apenas o conteúdo da rota /app)
 export default function Aplication() {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user')) || { name: 'Usuário', initial: 'U' };
@@ -116,9 +115,8 @@ export default function Aplication() {
 
   return (
     <div className="landing-root">
-      {/* O HEADER e o MODAL foram movidos para App.jsx / AppHeader.jsx */}
 
-      {/* --- MAIN CONTENT (DASHBOARD ASSIMÉTRICO) --- */}
+      {/* --- MAIN CONTENT (DASHBOARD) --- */}
       <main className="application-main container">
         <h2 className="main-title" style={{ color: 'var(--text)' }}>Bem-vindo, {user.name.split(' ')[0]}!</h2>
         <p className="lead-app muted">Seu painel de controle jurídico. Fique por dentro de seus direitos e alertas.</p>
@@ -147,7 +145,7 @@ export default function Aplication() {
               </div>
             </article>
 
-            {/* demais cards (mantidos) */}
+            {/* demais cards */}
             <article className="grid-item item-rights" onClick={() => navigate('/app/rights')}>
               <div className="item-header">
                 <FiBookOpen size={24} />
@@ -186,8 +184,7 @@ export default function Aplication() {
           </div>
         </section>
       </main>
-
-      {/* --- FOOTER (Reutilizado) --- */}
+      
       <FooterContent />
     </div>
   );

@@ -4,8 +4,7 @@ import ReactMarkdown from "react-markdown";
 import { useNavigate } from "react-router-dom";
 import { FiArrowLeft } from "react-icons/fi";
 import { FaGithub } from "react-icons/fa";
-import "../styles/documentation.css"; // Importa o novo CSS separado
-
+import "../styles/documentation.css";
 const markdownContent = `
 # SentryAI
 
@@ -340,7 +339,7 @@ export default function Documentation() {
   const navigate = useNavigate();
   return (
     <div className="documentation-root">
-      {/* Header com efeito Glass */}
+      {/* Header */}
       <header className="doc-header">
         <div 
             className="doc-logo" 

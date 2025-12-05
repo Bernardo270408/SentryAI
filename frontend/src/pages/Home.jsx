@@ -56,7 +56,6 @@ export default function Home() {
         </nav>
       </header>
 
-      {/* --- HERO SECTION --- */}
       <main className="hero-section">
         <div className="hero-inner container">
           <div className="hero-left">
@@ -73,8 +72,6 @@ export default function Home() {
           </div>
         </div>
       </main>
-
-      {/* --- NOVAS SEÇÕES ADICIONADAS AQUI --- */}
       
       <section className="features container">
         <h3 style={{ color: 'var(--text)' }}>Como podemos te ajudar</h3>
@@ -175,9 +172,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* --- FIM DAS NOVAS SEÇÕES --- */}
-
-      {/* --- PREVIEW SECTION --- */}
       <section className="preview-section container" ref={previewRef}>
         <div className="preview-left">
           <h3 style={{ color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '8px' }}>

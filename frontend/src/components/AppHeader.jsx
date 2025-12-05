@@ -1,4 +1,3 @@
-// src/components/AppHeader.jsx
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { FiUser, FiSettings, FiLogOut } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";

@@ -48,7 +48,7 @@ export default function ChatPage() {
     const textareaRef = useRef(null);
     const assistantMessageRef = useRef(null); 
     
-    // REF PARA CORRIGIR O BUG: Impede que o useEffect limpe as mensagens ao criar um chat novo
+    // REF PARA CORRIGIR O BUG: que estava impedindo que o useEffect limpasse as mensagens ao criar um novo chat
     const ignoreFetchRef = useRef(false);
 
     const handleLogout = () => {
@@ -83,7 +83,7 @@ export default function ChatPage() {
 
     // 2. Carregar Mensagens ao trocar Chat
     useEffect(() => {
-        // Se acabamos de criar o chat manualmente, NÃO busque do servidor ainda (evita limpar a tela)
+        // Se acabamos de criar o chat manualmente, NÃO buscamos do servidor ainda
         if (ignoreFetchRef.current) {
             ignoreFetchRef.current = false;
             return;

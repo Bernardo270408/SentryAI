@@ -30,7 +30,6 @@ function RiskMeter({ score }) {
   );
 }
 
-/* MAIN COMPONENT */
 export default function ContractAnalysis() {
   const navigate = useNavigate();
   const [file, setFile] = useState(null);
@@ -38,12 +37,11 @@ export default function ContractAnalysis() {
   const [status, setStatus] = useState("idle");
   const [analysis, setAnalysis] = useState(null);
   const [messages, setMessages] = useState([]);
-  const [history, setHistory] = useState([]); // Estado para o histórico
+  const [history, setHistory] = useState([]);
   
   const fileRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
-  
-  // Obter usuário logado
+
   const user = JSON.parse(localStorage.getItem("user"));
 
   // Carrega histórico ao montar
@@ -90,7 +88,7 @@ export default function ContractAnalysis() {
 
     try {
       const form = new FormData();
-      form.append("user_id", user.id); // Importante: Enviar ID do usuário
+      form.append("user_id", user.id);
       
       if (file) form.append("file", file);
       else form.append("text", textPreview);
@@ -106,7 +104,6 @@ export default function ContractAnalysis() {
           setAnalysis(res); 
       }
       
-      // Atualiza a lista de histórico
       loadHistory();
 
     } catch (err) {
@@ -194,7 +191,7 @@ export default function ContractAnalysis() {
               </button>
             </div>
 
-            {/* LISTA DE HISTÓRICO ADICIONADA */}
+            {/* LISTA DE HISTÓRICO */}
             {history.length > 0 && (
                 <div className="ca-card">
                     <h3><FiClock style={{marginRight: 8}}/> Histórico Recente</h3>

@@ -35,12 +35,10 @@ async function request(path, method = "GET", body = null, auth = true, isFormDat
   return data;
 }
 
-/* ======================================================
-   STREAMING: Fetch com ReadableStream
-   ====================================================== */
+//    STREAMING: Fetch com ReadableStream
+
 async function streamChatMessage({ chatId, content, onChunk, onEnd, onError }) {
   const token = localStorage.getItem("token");
-// apenas no dia do projeto integrador  
   const model = "gemini-2.5-pro";
   // const model = "gemini-2.5-flash";
 
@@ -111,9 +109,7 @@ async function streamChatMessage({ chatId, content, onChunk, onEnd, onError }) {
   }
 }
 
-// ======================================================
 // EXPORTS
-// ======================================================
 
 export default {
   request,

@@ -267,7 +267,6 @@ function Accordion({ label, children, defaultOpen = false }) {
   );
 }
 
-/* Main component */
 export default function RightsExplorer() {
   const navigate = useNavigate();
   const [tab, setTab] = useState("guia");

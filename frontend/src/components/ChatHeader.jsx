@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { FiUser, FiSettings, FiLogOut } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-// O CSS deste componente estará em chatpage.css para não conflitar
 
 export default function ChatHeader({ user, onLogout }) {
   const [isOpen, setIsOpen] = useState(false);

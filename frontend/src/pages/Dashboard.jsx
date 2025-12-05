@@ -175,7 +175,7 @@ export default function Dashboard() {
                         </div>
                     </div>
                     
-                    {/* Gráfico de Pizza - CORRIGIDO (Legenda Horizontal) */}
+                    {/* Gráfico de Pizza - (Legenda Horizontal) */}
                     <div className="chart-container pie-chart">
                         <div className="chart-header"><h4>Áreas de Interesse</h4></div>
                         <div style={{ width: '100%', height: 380 }}> 
