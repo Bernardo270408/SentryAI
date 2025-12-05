@@ -20,7 +20,7 @@
 * [Funcionalidades principais](#funcionalidades-principais)
 * [Status & Compatibilidade](#status--compatibilidade)
 * [Quickstart (local)](#quickstart-local)
-* [Dependências recomendadas (pinos)](#dependências-recomendadas-pinos)
+* [Dependências (Backend)](#dependências-backend)
 * [Variáveis de ambiente](#variáveis-de-ambiente)
 * [Estrutura do repositório](#estrutura-do-repositório)
 * [Arquitetura & Fluxo](#arquitetura--fluxo)
@@ -39,13 +39,13 @@ SentryAI integra modelos generativos (Google GenAI / Gemini e OpenAI) com uma AP
 
 ## Funcionalidades principais
 
-* Chat jurídico com contexto por conversa (streaming quando disponível).
+* Chat jurídico com contexto por conversa (streaming suportado).
 * Análise automática de contratos: extração de cláusulas, sumarização e score de risco (0–100).
-* Upload multi-formato (PDF, DOCX, ODT, TXT) e extração robusta de texto.
+* Upload multi-formato (PDF, DOCX, ODT, TXT, PPTX, XLSX) e extração robusta de texto.
 * Dashboard com KPIs, gráficos de uso e histórico de análises.
 * Autenticação híbrida: e-mail/senha + OTP por e-mail e OAuth Google.
-* CLI para administração, testes e integrações.
-* Estrutura modular backend (Blueprints / Services / DAO / Migrations).
+* CLI (Command Line Interface) robusta para administração, testes e integrações.
+* Estrutura modular backend (Router / Services / DAO / Models).
 
 ---
 
@@ -54,7 +54,7 @@ SentryAI integra modelos generativos (Google GenAI / Gemini e OpenAI) com uma AP
 * Recomendado: **Python 3.11+**
 * Frontend: **Node.js 18+ / npm 9+**
 * Banco: **MySQL 8.x** (ou RDS compatível)
-* Testes automatizados com `pytest` (backend) e `vitest` / `jest` (frontend)
+* Testes: Estrutura preparada para testes unitários.
 
 ---
 
@@ -69,7 +69,7 @@ SentryAI integra modelos generativos (Google GenAI / Gemini e OpenAI) com uma AP
 
 ```bash
 # clone o repositório e acesse o backend
-git clone https://github.com/Bernardo270408/SentryAI.git
+git clone [https://github.com/Bernardo270408/SentryAI.git](https://github.com/Bernardo270408/SentryAI.git)
 cd SentryAI/Backend
 
 # criar e ativar ambiente virtual
@@ -92,7 +92,7 @@ flask db upgrade
 
 # iniciar a API
 python app.py
-```
+````
 
 A API estará disponível por padrão em `http://localhost:5000`.
 
@@ -102,58 +102,63 @@ A API estará disponível por padrão em `http://localhost:5000`.
 cd ../frontend
 npm install
 cp .env.example .env
-# edite .env para apontar VITE_API_URL e VITE_GOOGLE_CLIENT_ID
+# edite .env para apontar VITE_GOOGLE_CLIENT_ID (e VITE_API_URL se necessário)
 npm run dev
 ```
 
 O frontend (Vite) normalmente roda em `http://localhost:5173`.
 
----
+-----
 
-## Dependências recomendadas (pinos)
+## Dependências (Backend)
 
-> Versões sugeridas (testadas/compatíveis em 2025). Use pins para reprodutibilidade.
+Principais bibliotecas utilizadas (baseado em `requirements.txt`):
 
 ```text
-Flask==3.1.2
-SQLAlchemy==2.0.44
-Flask-SQLAlchemy==3.1.1
-Flask-Cors==6.0.1
-Flask-Migrate==4.1.0
-PyJWT==2.10.1
-openai==2.9.0
-python-dotenv==1.2.1
-PyMySQL==1.1.2
-requests==2.32.0
-email-validator==2.3.0
-google-genai==<usar SDK oficial google-genai>
-cryptography==46.0.3
-google-auth==<versão_compatível>
-google-auth-oauthlib==1.2.3
+# Framework & DB
+Flask
+SQLAlchemy / Flask-SQLAlchemy
+Flask-Migrate
+Flask-Cors
+PyMySQL
 
-# Ferramentas para leitura/edição de documentos
-python-docx==1.2.0
-python-pptx==0.6.21
-openpyxl==3.1.2
-pypdf2==3.0.0
-odfpy==1.4.1
+# Autenticação & Segurança
+PyJWT
+cryptography
+google-auth
+google-auth-oauthlib
+
+# IA & Integrações
+openai
+google-generativeai
+email-validator
+
+# Processamento de Arquivos
+python-docx
+python-pptx
+openpyxl
+pypdf2
+odfpy
+pyyaml
+beautifulsoup4
+striprtf
 ```
 
----
+-----
 
 ## Variáveis de ambiente (exemplo `.env` - backend)
 
 ```ini
 # Segurança & App
-SECRET_KEY="substitua_por_string_segura"
+SECRET_KEY="sua_chave_secreta_aqui"
 ENV=development
 
 # Banco de Dados
 DATABASE_URL="mysql+pymysql://usuario:senha@host:3306/sentryai?charset=utf8mb4"
 
 # IA
-GEMINI_API_KEY="seu_key_google_genai"
-OPENAI_API_KEY="sua_key_openai"
+GEMINI_API_KEY="sua_api_key_aqui"
+OPENAI_API_KEY="sua_key_openai" # Opcional se usar apenas Gemini
 
 # OAuth Google
 GOOGLE_CLIENT_ID="..."
@@ -162,109 +167,95 @@ GOOGLE_CLIENT_SECRET="..."
 # Email (SMTP) - para OTP
 SMTP_SERVER=smtp.gmail.com
 SMTP_PORT=587
-SMTP_USER=seu_email@gmail.com
-SMTP_PASSWORD=sua_senha_app
-
-# Outros (opcionais)
-REDIS_URL=redis://host:6379/0   # opcional, para filas/cache
+SMTP_USER=api095427@gmail.com
+SMTP_PASSWORD=sua_senha_de_app_aqui
 ```
 
----
+-----
 
 ## Estrutura do repositório
 
 ```
 SentryAI/
 ├── Backend/
-│   ├── app.py
+│   ├── app.py               # Entry point da API
+│   ├── config.py            # Configurações gerais
 │   ├── requirements.txt
 │   ├── .env.example
-│   ├── src/
-│   │   ├── api/         # Blueprints / controllers
-│   │   ├── models/      # SQLAlchemy models
-│   │   ├── services/    # business logic, IA integracoes
-│   │   ├── dao/         # acesso a dados
-│   │   ├── migrations/  # Alembic (Flask-Migrate)
-│   │   └── cli/         # comandos administrativos
+│   ├── extensions.py        # Inicialização do DB
+│   ├── DAO/                 # Data Access Objects (Camada de dados)
+│   ├── models/              # Modelos SQLAlchemy
+│   ├── router/              # Rotas/Blueprints da API
+│   ├── services/            # Lógica de negócio e integrações (IA, Email, Arquivos)
+│   ├── middleware/          # JWT e Decorators
+│   └── migrations/          # Scripts do Alembic
 │
 ├── frontend/
 │   ├── package.json
 │   ├── vite.config.js
 │   └── src/
-│       ├── pages/
-│       └── components/
+│       ├── components/      # Componentes React reutilizáveis
+│       ├── pages/           # Páginas da aplicação
+│       ├── services/        # Integração com API (Axios/Fetch)
+│       └── styles/          # Arquivos CSS
 │
 ├── CLI/
-├── docs/
-│   ├── architecture.md
-│   ├── api.md
-│   └── runbooks/
-└── .github/              # ações/workflows (CI)
+│   ├── app.py               # Entry point Python da CLI
+│   ├── sentry.c             # Wrapper em C para execução
+│   ├── commands/            # Módulos de comando (chat, user, auth, etc.)
+│   └── defaults.py          # Gerenciamento de configurações locais
+│
+├── docs/                    # Documentação técnica (API, DB, CLI)
+└── LICENSE
 ```
 
----
+-----
 
 ## Arquitetura & Fluxo (resumo)
 
-1. **Frontend (React/Vite)** → chama API REST (Flask) → endpoints autenticados (JWT / OAuth).
-2. **API Flask** → recebe documentos / mensagens → `services`:
+1.  **Frontend (React/Vite)** → chama API REST (Flask) → endpoints autenticados (JWT / OAuth).
+2.  **API Flask** → recebe documentos / mensagens → `services`:
+      * **FileReader Service**: Extração de texto de PDF, DOCX, ODT, CSV, etc.
+      * **AI Service**: Normalização e envio de prompt para Google Gemini ou OpenAI.
+      * **Email Service**: Disparo de OTP para verificação de conta.
+3.  **Persistência**: MySQL (dados relacionais: Users, Chats, Messages, Ratings, Contracts).
+4.  **CLI**: Ferramenta de linha de comando para interação direta com a API, útil para administração e testes sem interface gráfica.
 
-   * pré-processamento (OCR, extração de texto)
-   * normalização e chunking
-   * chamada a provedor GenAI (Google / OpenAI)
-   * pós-processamento (scores, highlights)
-3. **Persistência**: MySQL (dados relacionais) + Redis (cache/filas) — Redis é opcional, dependendo do volume.
-4. **Observabilidade**: logs estruturados, métricas (Prometheus) e traces (OpenTelemetry) — instrumente rotas críticas.
-
----
+-----
 
 ## Testes, CI/CD e Observabilidade
 
-* **Testes unitários / integração**: `pytest` para backend; `vitest`/`jest` para frontend.
-* **Lint / Formatting**: `black` + `ruff` (Python); `prettier` + `eslint` (JS/TS).
-* **CI**: GitHub Actions (workflows para `test`, `lint`, `build` e `deploy`). Exemplos de workflows:
+  * **Testes**: Estrutura pronta para `pytest` no backend. A CLI serve como ferramenta de teste funcional manual.
+  * **Lint / Formatting**: Código Python segue padrões PEP8 (formatado com `black` recomendado).
+  * **Observabilidade**: Logs estruturados via módulo `logging` do Python.
 
-  * `ci/test-backend.yml` — cria venv, instala pins, roda `pytest`.
-  * `ci/test-frontend.yml` — `npm ci`, `npm run build`, `npm test`.
-* **Observabilidade**: envie logs para um sink (Cloud Logging / ELK). Adicione traces com OpenTelemetry nas rotas de IA (para medir latência de chamadas a provedores).
-
----
+-----
 
 ## Segurança & Privacidade (essenciais)
 
-* Nunca persista chaves (GEMINI/OPENAI) em repositório — use secrets do CI e variáveis de ambiente.
-* Habilite rotação de chaves e limites de acesso.
-* Proteja endpoints sensíveis com rate-limiting + WAF.
-* Criptografe dados sensíveis em repouso (ex.: PII) usando `cryptography` e chaves hospedadas em KMS.
-* Documente política de retenção e procedimentos para anonimização/exclusão sob solicitação.
+  * Nunca persista chaves (GEMINI/OPENAI) em repositório — use secrets do CI e variáveis de ambiente.
+  * Senhas de usuários são hashadas (Werkzeug security).
+  * Tokens JWT para proteção de rotas privadas.
+  * Validação de e-mail via OTP para novos cadastros.
 
----
+-----
 
 ## Como contribuir
 
-1. Fork → branch `feat/<descrição>` (ex.: `feat/contract-parser-pdf`)
-2. Siga o `CONTRIBUTING.md` (preencha templates de PR e issue).
-3. Tests obrigatórios: cada PR deve incluir testes unitários ou de integração relevantes.
-4. Code review: 2 revisores obrigatórios; um aprovador de segurança quando houver mudanças em auth/IA/data.
-5. Use `semantic-commit` (conventional commits) e mantenha o changelog atualizado via GH Actions.
+1.  Fork → branch `feat/<descrição>`
+2.  Siga o `CONTRIBUTING.md` (se disponível) ou padrão de PR.
+3.  Mantenha a estrutura de pastas (DAO/Service/Router) no Backend.
+4.  Atualize a documentação em `docs/` se alterar endpoints ou comandos da CLI.
 
----
-
-## Padrões de código & Boas práticas
-
-* Backend: PEP8, `black` (formatação), tipagem gradual (Python typing).
-* Frontend: componentes React com hooks; CSS Modules ou Tailwind; atenção a11y.
-* Documentação: atualize `docs/` e `api.md` sempre que um endpoint mudar.
-
----
+-----
 
 ## Documentação Técnica
 
-* `docs/api.md` — endpoints, exemplos de request/response, schemas.
-* `docs/architecture.md` — diagrama detalhado e decisões arquiteturais.
-* `docs/runbooks/` — playbooks para incidentes (ex.: latência IA, quota API estourada).
+  * `docs/API_ENDPOINTS.md` — Lista completa de rotas, exemplos de request/response.
+  * `docs/CLI_COMMANDS.md` — Manual de uso da interface de linha de comando.
+  * `docs/DB_SCHEMA.md` — Estrutura das tabelas e relacionamentos do banco de dados.
 
----
+-----
 
 ## Licença
 
