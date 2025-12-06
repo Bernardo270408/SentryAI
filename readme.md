@@ -31,6 +31,7 @@
 - [Endpoints da API](#principais-endpoints)
 - [Modelo do Banco de Dados](#modelo-do-banco-de-dados)
 - [Comandos da CLI](#comandos-da-cli)
+- [Licensa](#licença)
 
 ---
 
