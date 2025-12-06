@@ -10,168 +10,219 @@
   <img src="https://img.shields.io/badge/GenAI-Gemini-8E75B2?style=for-the-badge&logo=google%20cloud&logoColor=white"/>
 </p>
 
-**SentryAI** é uma plataforma full-stack para assistência jurídica democratizada. Fornece chat jurídico com contexto, análise automática de contratos (detecção e score de cláusulas de risco), dashboards analíticos e uma CLI para operações e testes.
+**SentryAI** é uma plataforma para assistência jurídica democratizada, voltada ao gerenciamento de modelos de IA, específicamente ao caráter jurídico brasileiro. Sua principal funcionalidade é a possibilidade de realizar um chat com uma IA especializada na lei brasileira.
 
 ---
 
 ## Índice
 
-* [Visão geral](#visão-geral)
-* [Funcionalidades principais](#funcionalidades-principais)
-* [Status & Compatibilidade](#status--compatibilidade)
-* [Quickstart (local)](#quickstart-local)
-* [Dependências (Backend)](#dependências-backend)
-* [Variáveis de ambiente](#variáveis-de-ambiente)
-* [Estrutura do repositório](#estrutura-do-repositório)
-* [Arquitetura & Fluxo](#arquitetura--fluxo)
-* [Testes, CI/CD e Observabilidade](#testes-cicd-e-observabilidade)
-* [Segurança & Privacidade](#segurança--privacidade)
-* [Como contribuir](#como-contribuir)
-* [Licença](#licença)
+- [Visão geral](#visão-geral)
+- [Funcionalidades principais](#funcionalidades-principais)
+- [Tecnologias Utilizadas](#tecnologias-utilizadas)
+- [Instalação](#instalação)
+  - [Pré Requisitos](#pré-requisitos)
+  - [Passo a passo](#passo-a-passo)
+  - [Configurando a CLI](#configurando-a-cli)
+- [Rodando o Projeto](#rodando-o-projeto)
+  - [Inicializando a API](#inicializando-a-api)
+  - [Inicializando a CLI](#inicializando-a-api)
+- [Estrutura do repositório](#estrutura-do-repositório)
+- [Estrutura do Projeto](#estrutura-do-projeto)
+- [Endpoints da API](#principais-endpoints)
+- [Modelo do Banco de Dados](#modelo-do-banco-de-dados)
+- [Comandos da CLI](#comandos-da-cli)
 
 ---
 
 ## Visão geral
 
-SentryAI integra modelos generativos (Google GenAI / Gemini e OpenAI) com uma API REST em Flask e um front em React/Vite. Foco: legislação brasileira — CLT, Código do Consumidor e Constituição — com pipelines para ingestão de documentos (PDF/DOCX/RTF/TXT) e geração de relatórios de risco.
+O **SentryAI**, como dito antes, é uma aplicação que visa coletar dados para uma pesquisa, cujo objetivo é identificar falhas comuns no entendimento da lei e fornecer auxílio rápido para pessoas com questionamentos a respeito da legislação.
 
 ---
 
 ## Funcionalidades principais
 
-* Chat jurídico com contexto por conversa (streaming suportado).
-* Análise automática de contratos: extração de cláusulas, sumarização e score de risco (0–100).
-* Upload multi-formato (PDF, DOCX, ODT, TXT, PPTX, XLSX) e extração robusta de texto.
-* Dashboard com KPIs, gráficos de uso e histórico de análises.
-* Autenticação híbrida: e-mail/senha + OTP por e-mail e OAuth Google.
-* CLI (Command Line Interface) robusta para administração, testes e integrações.
-* Estrutura modular backend (Router / Services / DAO / Models).
+- **Chat** com uma IA especializada na lei brasileira.
+- **Análise automática de contratos**: extração de cláusulas, sumarização e score de risco.
+- **Dashboard** com KPIs, gráficos de uso e histórico de análises.
+- **Autenticação híbrida**: e-mail/senha + OTP por e-mail e OAuth Google.
+- **CLI** (Command Line Interface) voltada para usuários avançados.
 
 ---
 
-## Status & Compatibilidade
 
-* Recomendado: **Python 3.11+**
-* Frontend: **Node.js 18+ / npm 9+**
-* Banco: **MySQL 8.x** (ou RDS compatível)
-* Testes: Estrutura preparada para testes unitários.
+## Tecnologias Utilizadas
+> **Nota:** Nas últimas atualizações, nós, a equipe de desenvolvimento, decidimos por substituír o **Ollama** pela API da **OpenAI** e do **Gemini 2.5**, ficando a critério do usuário qual utilizar. A mudança se deve ao alto custo em hardware demandado por LLMs locais. Isso não significa que o projeto se perdeu, uma vêz que o caráter inicial sempre foi experimentação na área das Inteligências Artificiais.
+
+- **ChatGPT** - Serviço de IA da OpenAI
+- **Gemini** - Serviço de IA da Google
+- **Google Auth** - API da Google para autenticação
+- **Flask** - Framework web para Python.
+- **React + Vite** - Frameworks para o Front-End.
+- **SQLAlchemy** - ORM para interação com o banco de dados.
+- **MySQL** - RDBMS escolhido por sua simplicidade e robustez
+- **JWT** - Tokens e Autenticação
 
 ---
 
-## Quickstart (local)
+## Instalação
+-
 
-### Preparação geral
+### Pré-Requisitos
+Antes de rodar o projeto, certifique-se de ter o Python 3.x e o pip instalados.
+- [Python3.x](#https://www.python.org/)
+- [Pip](#https://pip.pypa.io/en/stable/)
+- [MySQL](#https://www.mysql.com/)
+- [NPM](#https://www.npmjs.com/)
 
-1. Copie `.env.example` para `.env` nas pastas `Backend` e `frontend` e preencha as chaves (veja seção **Variáveis de ambiente**).
-2. Certifique-se de ter um servidor MySQL acessível e as credenciais corretas no `.env`.
 
-### Backend (local)
+### Passo a Passo
 
+**0.** Clone este repositório:
 ```bash
-# clone o repositório e acesse o backend
-git clone [https://github.com/Bernardo270408/SentryAI.git](https://github.com/Bernardo270408/SentryAI.git)
-cd SentryAI/Backend
+git clone https://github.com/Bernardo270408/SentryAI
+cd SentryAI
+```
 
-# criar e ativar ambiente virtual
-python -m venv venv
-source venv/bin/activate   # Linux / Mac
-.\venv\Scripts\activate    # Windows PowerShell
+**1.** Crie um ambiente virtual
+```bash
+cd Backend
+python3 -m venv venv
+```
+- Linux/MacOS
+  ```bash
+  source venv/bin/activate
+  ```
 
-# instalar dependências
+- Windows
+  ```bash
+  ./venv\Scripts\activate
+  ```
+
+**2.** Instale as dependencias do Backend
+```bash
 pip install -r requirements.txt
+```
 
-# preparar .env (veja seção Variáveis de ambiente)
-cp .env.example .env
-# edite .env e adicione as chaves e DATABASE_URL corretamente
+**3.** Configure as variáveis de Ambiente
+Renomeie o arquivo `.env.example` para `.env` na pasta raiz e configure as variáveis de ambiente:
+```env
+#app
+SECRET_KEY="sua_chave_secreta_aqui"
+DATABASE_URL="mysql+pymysql://root:senha@localhost:3306/sentryai"
 
-# criar o banco (exemplo via cliente mysql)
-# CREATE DATABASE sentryai CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+#ai service
+OPENAI_TOKEN="seu-token"
+GEMINI_API_KEY="sua_api_key_aqui"
 
-# rodar migrações
+#smtp
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=seu_email@gmail.com
+SMTP_PASSWORD=sua_senha_de_app_gmail
+```
+
+Há também um ambiente específico para o frontend em `frontend/.env.example`, que também deve ser devidamente configurado:
+```env
+#app
+VITE_API_URL="http:/localhost:5000"
+VITE_GOOGLE_CLIENT_ID="seu_google_client_id_aqui"
+```
+
+> **Nota**: Você pode obter todas as chaves de API necessárias para o projeto nos seguintes links de forma gratuita:<br>&nbsp;&nbsp;&nbsp; **•** [GEMINI_API_KEY](https://aistudio.google.com/apps) <br>&nbsp;&nbsp;&nbsp; **•** [VITE_GOOGLE_CLIENT_ID](https://console.cloud.google.com/auth/clients) <br>&nbsp;&nbsp;&nbsp; **•** [OPENAI_TOKEN](https://platform.openai.com/docs/overview)
+
+
+**4.** Configure o Banco de Dados
+
+Primeiro crie **com o MySQL** uma base de dados de nome `sentryai`:
+```sql
+CREATE DATABASE sentryai;
+```
+
+Após isso, na pasta do backend execute
+```bash
 flask db upgrade
+```
 
-# iniciar a API
-python app.py
-````
-
-A API estará disponível por padrão em `http://localhost:5000`.
-
-### Frontend (local)
-
+**5.** Instale as dependencias do Frontend
 ```bash
 cd ../frontend
 npm install
-cp .env.example .env
-# edite .env para apontar VITE_GOOGLE_CLIENT_ID (e VITE_API_URL se necessário)
+```
+
+### Configurando a CLI (Para Usuários Avançados apenas)
+O SentryAI conta com uma CLI (Command Line Interface) para facilitar o uso da API, e permitir que usuários avancados possam interagir com o sistema sem a necessidade de uma interface gráfica.
+
+#### Instalando a CLI
+
+**1.** Crie outro ambiente virtual para a CLI 
+```bash
+cd ../CLI
+python3 -m venv venv
+```
+- Linux/MacOS
+  ```bash
+  source venv/bin/activate
+  ```
+
+- Windows
+  ```bash
+  ./venv\Scripts\activate
+  ```
+
+**2.** Instale as dependencias da CLI 
+```bash
+pip install -r requirements.txt
+```
+
+>**Nota:** O inicializador da CLI é pre-compilado para Linux e Windows, mas caso seja necessário, o código fonte `sentry.c` está na mesma pasta, e pode ser compilado para o OS desejado.
+
+> É recomendado adicionar o executável da CLI ao PATH de seu sistema.
+
+
+#### Configurando os Defaults da CLI (Opcional)
+A CLI utiliza alguns valores default para facilitar o uso. Estes valores são armazenados em arquivos na pasta `CLI/data/`.
+
+Configure os valores padrão `domain` e `port`, que servirão para dizer à CLI onde exatamente está hospedada a API.
+Estes são os valores padrão:
+```bash
+sentry run
+sentry defaults -set key="domain" value="127.0.0.1"
+sentry defaults -set key="port" value="5000"
+sentry quit
+```
+> **Nota:** Este passo é apenas necessário caso a API esteja rodando em um domínio ou porta diferente do padrão (localhost:5000).
+
+## Rodando o Projeto
+
+### Inicializando a API (Back-End)
+Para iniciar a API, caso esteja em um ambiente de testes, rode dentro da pasta do backend
+```bash
+flask run --debug
+```
+Em outros casos, recomenda-se o uso de `gunicorn`
+
+### Inicializando o Client (Front-End)
+Para iniciar o Client, caso esteja em um ambiente de testes, rode dentro da pasta do frontend
+```bash
 npm run dev
 ```
+Em outros casos, recomenda-se usar `npm run buid`
 
-O frontend (Vite) normalmente roda em `http://localhost:5173`.
+### Inicializando a CLI (Command Line Interface)
 
------
-
-## Dependências (Backend)
-
-Principais bibliotecas utilizadas (baseado em `requirements.txt`):
-
-```text
-# Framework & DB
-Flask
-SQLAlchemy / Flask-SQLAlchemy
-Flask-Migrate
-Flask-Cors
-PyMySQL
-
-# Autenticação & Segurança
-PyJWT
-cryptography
-google-auth
-google-auth-oauthlib
-
-# IA & Integrações
-openai
-google-generativeai
-email-validator
-
-# Processamento de Arquivos
-python-docx
-python-pptx
-openpyxl
-pypdf2
-odfpy
-pyyaml
-beautifulsoup4
-striprtf
+Para iniciar a CLI, simplesmente digite no terminal:
+```bash
+sentry run
 ```
 
------
-
-## Variáveis de ambiente (exemplo `.env` - backend)
-
-```ini
-# Segurança & App
-SECRET_KEY="sua_chave_secreta_aqui"
-ENV=development
-
-# Banco de Dados
-DATABASE_URL="mysql+pymysql://usuario:senha@host:3306/sentryai?charset=utf8mb4"
-
-# IA
-GEMINI_API_KEY="sua_api_key_aqui"
-OPENAI_API_KEY="sua_key_openai" # Opcional se usar apenas Gemini
-
-# OAuth Google
-GOOGLE_CLIENT_ID="..."
-GOOGLE_CLIENT_SECRET="..."
-
-# Email (SMTP) - para OTP
-SMTP_SERVER=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=api095427@gmail.com
-SMTP_PASSWORD=sua_senha_de_app_aqui
+Caso não tenha sido incluida ao path, o comando deverá ser feito na pasta da CLI, sendo então:
+```bash
+./sentry run
 ```
 
------
+> **Nota:** o uso de `./` apenas é necessário para o comando `run`, não sendo utilizado nos demais comandos da CLI.
+
 
 ## Estrutura do repositório
 
@@ -211,55 +262,58 @@ SentryAI/
 
 -----
 
-## Arquitetura & Fluxo (resumo)
 
-1.  **Frontend (React/Vite)** → chama API REST (Flask) → endpoints autenticados (JWT / OAuth).
-2.  **API Flask** → recebe documentos / mensagens → `services`:
-      * **FileReader Service**: Extração de texto de PDF, DOCX, ODT, CSV, etc.
-      * **AI Service**: Normalização e envio de prompt para Google Gemini ou OpenAI.
-      * **Email Service**: Disparo de OTP para verificação de conta.
-3.  **Persistência**: MySQL (dados relacionais: Users, Chats, Messages, Ratings, Contracts).
-4.  **CLI**: Ferramenta de linha de comando para interação direta com a API, útil para administração e testes sem interface gráfica.
+## Principais Endpoints
+Ao rodar o backend, uma API ficará disponível em http://localhost:5000/ dentro do ambiente de testes. Caso esteja hospedado, a rota será diferente.
+> **Nota:** A forma recomendada de acesso à API é utilizando o *frontend* ou a *CLI*. Caso queira fazer as requisições de maneira alternativa, ou seja um dos desenvolvedores, recomendamos a leitura dos endpoints disponiveis [neste documento](docs/API_ENDPOINTS.md).
 
------
+Dicas:
+- Todas as rotas protegidas exigem o header: `Authorization: Bearer <token>`
+- O token é obtido via POST `/login` (leia o documento)
 
-## Testes, CI/CD e Observabilidade
 
-  * **Testes**: Estrutura pronta para `pytest` no backend. A CLI serve como ferramenta de teste funcional manual.
-  * **Lint / Formatting**: Código Python segue padrões PEP8 (formatado com `black` recomendado).
-  * **Observabilidade**: Logs estruturados via módulo `logging` do Python.
+## Modelo do Banco de Dados
+O Banco de Dados do SentryAI é baseado em MySQL, e gerenciado pelo SQLAlchemy com Pyhton. 
 
------
+Existem 6 Tabelas Principais na Base de dados, sendo elas `users`,`chats`,`user_messages`,`ai_messages`,`ratings` e `contracts`. Um modelo extenso foi elaborado para garantir a compreensão do funcionamento desse modelo relacional.
 
-## Segurança & Privacidade (essenciais)
+> **Nota**: O modelo do banco de dados acabou tornando-se uma sessão extensa. Foi necessário movê-lo para uma sessão à parte, que pode ser lida [neste documento](docs/DB_SCHEMA.md).
 
-  * Nunca persista chaves (GEMINI/OPENAI) em repositório — use secrets do CI e variáveis de ambiente.
-  * Senhas de usuários são hashadas (Werkzeug security).
-  * Tokens JWT para proteção de rotas privadas.
-  * Validação de e-mail via OTP para novos cadastros.
 
------
+---
 
-## Como contribuir
+## Comandos Da CLI
+A CLI foi pensada no início como uma simples substituta ao frontend, que ainda não existia. Porém, foi reformulada para realmente ser utilizável e alternativa à interface visual, sendo atualmente uma forma oficial e recomendada para usuários avançados de se comunicar com o backend.
 
-1.  Fork → branch `feat/<descrição>`
-2.  Siga o `CONTRIBUTING.md` (se disponível) ou padrão de PR.
-3.  Mantenha a estrutura de pastas (DAO/Service/Router) no Backend.
-4.  Atualize a documentação em `docs/` se alterar endpoints ou comandos da CLI.
+### Estrutura do Comando
 
------
+```bash
+sentry [comando] -[subcomando] [chave]=[valor] [chave]=[valor] ...
+```
 
-## Documentação Técnica
+exemplo de autenticação:
 
-  * `docs/API_ENDPOINTS.md` — Lista completa de rotas, exemplos de request/response.
-  * `docs/CLI_COMMANDS.md` — Manual de uso da interface de linha de comando.
-  * `docs/DB_SCHEMA.md` — Estrutura das tabelas e relacionamentos do banco de dados.
+```bash
+sentry auth -login email='test@mail' password='1234'
+```
 
------
+retorna o token, o seta como padrão e pergunta se o ID do usuário em questão deverá ser utilizado como padrão para próximas iterações
+
+> **Nota**: Há um documento detalhando **cada comando da CLI** e detalhes importantes de seu uso. Para lê-lo, acesse [este documento](docs/CLI_COMMANDS.md).
+
+Dicas:
+
+- Para executar qualquer comando, é necessário que a CLI esteja rodando
+- Argumentos omitidos usarão valores default.
+- Parâmetros extras serão ignorados (não causam erro).
+- Desenvolvedores podem enviar todos os defaults sem risco.
+
+---
+
 
 ## Licença
+Copyright (c) 2025 Bernardo "222" Duarte Marcelino
 
-Copyright (c) 2025
-Bernardo "222" Duarte Marcelino and Yagor Vitor Silva dos Santos
+Copyright (c) 2025 Yagor Vitor Silva dos Santos
 
-Distribuído sob a **MIT License** — veja o arquivo `LICENSE` para detalhes.
+Distribuído sob a MIT License — veja o arquivo `LICENSE` para detalhes.
