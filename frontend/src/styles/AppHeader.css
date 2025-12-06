@@ -201,3 +201,35 @@
     background: rgba(255, 70, 70, 0.15);
     color: #ff8585;
 }
+
+/* --- RESPONSIVIDADE MOBILE (S25 Base) --- */
+@media (max-width: 768px) {
+    .app-header-pill {
+        width: 94%; /* Mais largo no mobile */
+        min-width: unset; /* Remove limite mínimo */
+        margin: 10px auto; /* Menos margem superior */
+        padding: 8px 16px; /* Padding menor */
+        top: 8px;
+    }
+
+    .brand-title {
+        font-size: 0.9rem;
+    }
+
+    .brand-subtitle {
+        display: none; /* Remove subtítulo para economizar espaço vertical */
+    }
+
+    .header-user {
+        padding: 4px 8px 4px 4px;
+    }
+
+    .username {
+        display: none; /* Esconde o nome, mostra apenas o avatar no mobile */
+    }
+
+    .user-dropdown-panel {
+        width: 200px;
+        right: -10px; /* Ajuste fino para não cortar na tela */
+    }
+}

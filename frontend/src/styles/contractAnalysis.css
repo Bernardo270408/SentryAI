@@ -462,3 +462,59 @@
   from { box-shadow: 0 0 20px rgba(231, 76, 60, 0.1); }
   to { box-shadow: 0 0 35px rgba(231, 76, 60, 0.25); }
 }
+
+/* ... (MANTENHA O CÓDIGO EXISTENTE ATÉ O FIM DO ARQUIVO) ... */
+
+/* --- RESPONSIVIDADE MOBILE (S25) --- */
+@media (max-width: 900px) {
+    .ca-wrapper {
+        padding: 16px;
+        padding-top: 24px;
+    }
+
+    /* Header mais compacto */
+    .ca-header {
+        padding: 16px;
+        border-radius: 16px;
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .ca-header-left {
+        font-size: 18px;
+    }
+
+    /* Grid vira pilha */
+    .ca-main {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    /* Área de Upload */
+    .ca-upload {
+        padding: 24px;
+    }
+
+    /* Editor de texto menor */
+    .ca-textarea {
+        height: 180px; /* Menor altura no mobile */
+        font-size: 14px;
+    }
+
+    /* Botão de ação grande e fácil de clicar */
+    .ca-send-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 16px;
+    }
+
+    /* Chat interno do contrato */
+    .ca-chat-box {
+        height: 250px;
+    }
+
+    .ca-chat-input {
+        padding: 10px 14px;
+    }
+}

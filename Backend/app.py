@@ -51,4 +51,5 @@ def create_app():
 
 if __name__ == "__main__":
     app = create_app()
-    app.run(debug=True)
+    # 'host=0.0.0.0' expõe o servidor para a rede local
+    app.run(debug=True, host='0.0.0.0', port=5000)

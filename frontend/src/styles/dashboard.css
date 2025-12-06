@@ -539,3 +539,70 @@ body {
         display: none;
     }
 }
+
+/* ... (MANTENHA O CÓDIGO EXISTENTE ATÉ O FIM DO ARQUIVO) ... */
+
+/* --- RESPONSIVIDADE MOBILE --- */
+@media (max-width: 768px) {
+    .dashboard-main {
+        padding-top: 10px;
+    }
+
+    /* Header */
+    .landing-header {
+        padding: 15px 16px;
+    }
+
+    .brand-app strong {
+        font-size: 16px;
+    }
+
+    /* KPIs em Grid 2x2 ou 1x1 dependendo do tamanho */
+    .kpi-grid {
+        grid-template-columns: 1fr 1fr; /* 2 por linha no S25 */
+        gap: 12px;
+    }
+
+    .kpi-card {
+        padding: 14px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .kpi-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+    }
+
+    .kpi-value {
+        font-size: 20px;
+    }
+
+    /* Gráficos empilhados */
+    .charts-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .chart-container {
+        min-height: 300px; /* Altura reduzida para caber na tela */
+        padding: 16px;
+    }
+
+    /* Legendas e Eixos menores */
+    .recharts-text {
+        font-size: 10px !important;
+    }
+
+    /* Painel inferior */
+    .bottom-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .history-list {
+        max-height: 400px;
+        padding: 16px;
+    }
+}

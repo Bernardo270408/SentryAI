@@ -3,13 +3,14 @@ import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { 
     FiArrowUp, FiPlus, FiTrash2, FiSearch, 
-    FiMenu, FiPaperclip, FiUser, FiStopCircle 
+    FiMenu, FiPaperclip, FiUser, FiStopCircle, FiX, FiChevronRight 
 } from "react-icons/fi";
 import api from "../services/api";
 import "../styles/chatpage.css";
 import ChatHeader from "../components/ChatHeader";
 import toast from "react-hot-toast";
 
+// Helper para obter usuário
 function useLocalUser() {
     try {
         const raw = localStorage.getItem("user");
@@ -19,6 +20,7 @@ function useLocalUser() {
     }
 }
 
+// Ícone SVG do Gemini
 const GeminiIcon = () => (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M12 22C12 22 13.5 17.5 19 12C13.5 6.5 12 2 12 2C12 2 10.5 6.5 5 12C10.5 17.5 12 22 12 22Z" fill="currentColor" />
@@ -40,13 +42,6 @@ const MessagesSkeleton = () => (
                 <div className="skeleton skeleton-text short"></div>
             </div>
         </div>
-        <div className="msg-row assistant" style={{ opacity: 0.5 }}>
-            <div className="msg-avatar skeleton"></div>
-            <div style={{ width: '70%' }}>
-                <div className="skeleton skeleton-text"></div>
-                <div className="skeleton skeleton-text short"></div>
-            </div>
-        </div>
     </div>
 );
 
@@ -54,17 +49,22 @@ export default function ChatPage() {
     const navigate = useNavigate();
     const user = useLocalUser();
     
+    // Estados de Dados
     const [chats, setChats] = useState([]);
     const [activeChat, setActiveChat] = useState(null);
     const [messages, setMessages] = useState([]);
     const [loadingMessages, setLoadingMessages] = useState(false);
     
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    // Estados de UI e Responsividade
+    const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+    
     const [search, setSearch] = useState("");
     const [text, setText] = useState("");
     const [sending, setSending] = useState(false);
     const [attachedFile, setAttachedFile] = useState(null);
 
+    // Refs
     const listRef = useRef(null);
     const textareaRef = useRef(null);
     const assistantMessageRef = useRef(null); 
@@ -76,6 +76,20 @@ export default function ChatPage() {
         navigate("/");
     };
 
+    // Monitora redimensionamento da tela
+    useEffect(() => {
+        function handleResize() {
+            const mobile = window.innerWidth <= 768;
+            setIsMobile(mobile);
+            // Se for para desktop, garante que a sidebar abre. Se for mobile, fecha por padrão.
+            if (!mobile) setIsSidebarOpen(true);
+            else setIsSidebarOpen(false);
+        }
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    // 1. Carregar Chats
     const loadChats = async () => {
         const userId = user.id || localStorage.getItem("user_id");
         if (userId) {
@@ -97,6 +111,7 @@ export default function ChatPage() {
         });
     }, []);
 
+    // 2. Carregar Mensagens ao trocar Chat
     useEffect(() => {
         if (ignoreFetchRef.current) {
             ignoreFetchRef.current = false;
@@ -137,6 +152,7 @@ export default function ChatPage() {
         }
     };
 
+    // 3. Auto-Resize do Input
     const handleInput = (e) => {
         setText(e.target.value);
         if (textareaRef.current) {
@@ -152,8 +168,9 @@ export default function ChatPage() {
         }
     };
 
+    // 4. Enviar Mensagem
     const handleSend = async () => {
-        if (!text.trim() && !attachedFile) return; // Corrigido lógica para aceitar arquivo sem texto
+        if (!text.trim() && !attachedFile) return;
         if (sending) return;
 
         const contentToSend = text.trim();
@@ -230,10 +247,16 @@ export default function ChatPage() {
 
     const stopStreaming = () => setSending(false);
 
+    // Handlers de Interface
     const handleNewChatClick = () => {
         setActiveChat(null);
         setMessages([]);
-        if (window.innerWidth < 768) setIsSidebarOpen(false);
+        if (isMobile) setIsSidebarOpen(false); // Fecha sidebar no mobile
+    };
+
+    const handleChatSelect = (chat) => {
+        setActiveChat(chat);
+        if (isMobile) setIsSidebarOpen(false); // Fecha sidebar no mobile
     };
 
     const handleDelete = async (id) => {
@@ -275,16 +298,39 @@ export default function ChatPage() {
 
     return (
         <div className="chat-root">
-            <aside className={`fixed-sidebar ${!isSidebarOpen ? 'collapsed' : ''}`}>
+            {/* OVERLAY PARA MOBILE */}
+            <div 
+                className={`sidebar-overlay ${isMobile && isSidebarOpen ? 'visible' : ''}`} 
+                onClick={() => setIsSidebarOpen(false)}
+            />
+
+            {/* SIDEBAR */}
+            <aside className={`fixed-sidebar ${isMobile && isSidebarOpen ? 'mobile-open' : ''} ${!isSidebarOpen && !isMobile ? 'collapsed' : ''}`}>
                 <div className="sidebar-header">
-                    {isSidebarOpen && <span style={{fontWeight:'600'}}>Sentry AI</span>}
-                    <button 
-                        className="btn-toggle-sidebar" 
-                        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                        aria-label="Alternar barra lateral"
-                    >
-                        <FiMenu size={20} />
-                    </button>
+                    {(isSidebarOpen || isMobile) && <span style={{fontWeight:'600'}}>Sentry AI</span>}
+                    
+                    {/* Botão de Fechar no Mobile (X) - Fica dentro da sidebar */}
+                    {isMobile && (
+                        <button 
+                            className="btn-toggle-sidebar" 
+                            onClick={() => setIsSidebarOpen(false)}
+                            style={{
+                                position: 'static', 
+                                background: 'transparent', 
+                                marginLeft: 'auto', 
+                                padding: 4
+                            }}
+                        >
+                            <FiX size={20} />
+                        </button>
+                    )}
+
+                    {/* Botão de Colapso no Desktop (Hamburguer) */}
+                    {!isMobile && (
+                        <button className="btn-toggle-sidebar" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
+                            <FiMenu size={20} />
+                        </button>
+                    )}
                 </div>
 
                 <button 
@@ -293,10 +339,10 @@ export default function ChatPage() {
                     title="Novo Chat"
                     aria-label="Nova conversa"
                 >
-                    <FiPlus /> {isSidebarOpen && <span>Nova Conversa</span>}
+                    <FiPlus /> {(isSidebarOpen || isMobile) && <span>Nova Conversa</span>}
                 </button>
 
-                {isSidebarOpen && (
+                {(isSidebarOpen || isMobile) && (
                     <div className="sidebar-search">
                         <FiSearch size={14} color="gray" />
                         <input 
@@ -314,7 +360,7 @@ export default function ChatPage() {
                         <div 
                             key={chat.id} 
                             className={`chat-item ${activeChat?.id === chat.id ? 'active' : ''}`}
-                            onClick={() => { setActiveChat(chat); if(window.innerWidth < 768) setIsSidebarOpen(false); }}
+                            onClick={() => handleChatSelect(chat)}
                             role="button"
                             tabIndex={0}
                             aria-selected={activeChat?.id === chat.id}
@@ -332,9 +378,24 @@ export default function ChatPage() {
                 </div>
             </aside>
 
+            {/* BOTÃO FLUTUANTE LATERAL (SÓ VISÍVEL SE SIDEBAR FECHADA E MOBILE) */}
+            {isMobile && !isSidebarOpen && (
+                <button 
+                    className="mobile-sidebar-toggle"
+                    onClick={() => setIsSidebarOpen(true)}
+                    aria-label="Abrir menu lateral"
+                >
+                    <FiChevronRight size={20} />
+                </button>
+            )}
+
+            {/* MAIN AREA */}
             <main className="chat-main">
                 <ChatHeader user={user} onLogout={handleLogout} />
                 <header className="chat-header-centered">
+                    
+                    {/* Botão antigo de menu no header foi removido em favor do botão lateral */}
+                    
                     <div className="ch-info">
                         <h2>{activeChat ? activeChat.name : "Nova Conversa"}</h2>
                         {activeChat && <span className="ch-status">Gemini 2.5 Pro • Online</span>}

@@ -278,6 +278,9 @@
     position: relative;
     padding-bottom: 30px; 
     margin-bottom: 20px;
+    /* Correção: permite scroll horizontal sem cortar sombra */
+    margin-right: -20px; /* Compensa o padding do container */
+    padding-right: 20px;
 }
 
 .alert-carousel-track {
@@ -285,11 +288,12 @@
     overflow-x: auto; 
     scroll-snap-type: x mandatory; 
     -webkit-overflow-scrolling: touch;
-    gap: 18px;
+    gap: 16px;
     padding-bottom: 10px;
+    padding-left: 4px; /* Espaço inicial */
     scrollbar-width: none; 
-    -ms-overflow-style: none;
 }
+
 .alert-carousel-track::-webkit-scrollbar {
     display: none;
 }
@@ -390,5 +394,53 @@
     
     .user-name {
         display: inline;
+    }
+}
+
+/* ... (MANTENHA O CÓDIGO EXISTENTE ATÉ O FIM DO ARQUIVO) ... */
+
+/* --- RESPONSIVIDADE MOBILE (Fix de cortes) --- */
+@media (max-width: 900px) {
+    /* Container com padding seguro */
+    .container {
+        padding: 0 16px;
+        width: 100%;
+        overflow-x: hidden; /* Evita scroll horizontal na página toda */
+    }
+
+    .main-title {
+        font-size: 24px;
+        margin-top: 10px;
+    }
+
+    /* GRID: Força 1 coluna */
+    .app-grid-container {
+        display: flex;
+        flex-direction: column; /* Pilha vertical */
+        gap: 16px;
+    }
+
+    /* Ajuste específico dos cards no mobile */
+    .grid-item {
+        min-height: auto !important; /* Remove alturas fixas que causam buracos */
+    }
+
+    /* Chat item volta ao normal */
+    .grid-item.item-chat {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+    }
+    
+    /* Carrossel Mobile */
+    .carousel-tile {
+        flex: 0 0 85vw; /* Ocupa 85% da largura da viewport */
+        min-width: 280px;
+        scroll-snap-align: center; /* Centraliza ao rolar */
+    }
+    
+    .alert-carousel-wrap {
+        margin-right: -16px; /* Sangria para a borda no mobile */
+        padding-right: 16px;
     }
 }
