@@ -7,43 +7,34 @@ from email_validator import validate_email, EmailNotValidError
 from services.email_service import generate_verification_code, send_verification_email
 from datetime import datetime, timedelta
 from middleware.jwt_util import token_required
+from schemas import UserCreateSchema
+from pydantic import ValidationError
 
 user_bp = Blueprint("user", __name__, url_prefix="/users")
 
-
 @user_bp.route("/", methods=["POST"])
 def create_user():
-    data = request.json
-
-    name = data.get("name")
-    email = data.get("email")
-    password_raw = data.get("password")
-    extra_data = data.get("extra_data")
-
+    # 1. Validação Automática com Pydantic
     try:
-        valid = validate_email(email)
-        email = valid.email
-    except EmailNotValidError as e:
-        return jsonify({"error": str(e)}), 400
+        # Valida o JSON de entrada contra o Schema
+        payload = UserCreateSchema(**request.json)
+    except ValidationError as e:
+        # Retorna erro detalhado automaticamente se falhar
+        return jsonify({"error": "Dados inválidos", "details": e.errors()}), 400
 
-    if not name or not email or not password_raw:
-        return jsonify({"error": "Nome, email e senha são obrigatórios."}), 400
-
-    if UserDAO.get_user_by_email(email):
+    # 2. Lógica de Negócio (Agora limpa de verificações básicas)
+    if UserDAO.get_user_by_email(payload.email):
         return jsonify({"error": "Email já está em uso."}), 400
 
-    password_hash = generate_password_hash(str(password_raw))
-
-    # Geração do OTP
+    password_hash = generate_password_hash(payload.password)
     code = generate_verification_code()
     expiration = datetime.utcnow() + timedelta(minutes=15)
 
-    # Criação do usuário (Não verificado)
     user = User(
-        name=name,
-        email=email,
+        name=payload.name,
+        email=payload.email,
         password=password_hash,
-        extra_data=extra_data,
+        extra_data=payload.extra_data,
         is_verified=False,
         verification_code=code,
         verification_code_expires_at=expiration,
@@ -52,24 +43,14 @@ def create_user():
     db.session.add(user)
     db.session.commit()
 
-    # Envia e-mail
-    sent = send_verification_email(email, code)
-    msg = "Usuário criado. Verifique seu e-mail para ativar a conta."
-    if not sent:
-        msg += " (Aviso: Falha ao enviar e-mail. Verifique o log do servidor para o código em modo DEV)."
+    send_verification_email(payload.email, code)
 
-    return (
-        jsonify(
-            {
-                "message": msg,
-                "email": email,
-                "need_verification": True,
-                "user": user.to_dict(),
-            }
-        ),
-        201,
-    )
-
+    return jsonify({
+        "message": "Usuário criado. Verifique seu e-mail.",
+        "email": payload.email,
+        "need_verification": True,
+        "user": user.to_dict(),
+    }), 201
 
 @user_bp.route("/email/<email>", methods=["GET"])
 def get_user_by_email(email):

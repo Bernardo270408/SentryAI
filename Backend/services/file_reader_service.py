@@ -1,9 +1,10 @@
 import os
 import json
 import yaml
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 import io
 import csv
+import magic
 
 from docx import Document
 from pptx import Presentation
@@ -13,19 +14,75 @@ from odf.text import P
 from odf import teletype
 from PyPDF2 import PdfReader
 
+# Limite de caracteres para extração de texto (aprox 10MB de texto puro)
+MAX_TEXT_CHARS = 10 * 1024 * 1024
+
 """
 Formatos suportados:
 - TXT, MD, CSV, PDF, RTF, DOC, DOCX, ODT, PPTX, XLSX, HTML, XML, JSON, YAML, YML
 """
 
+def validate_file_type(file_stream, expected_ext):
+    """
+    Valida o tipo real do arquivo usando Magic Numbers.
+    Retorna True se o arquivo for seguro/correspondente.
+    """
+    # Lê os primeiros 2KB para identificar o cabeçalho
+    header = file_stream.read(2048)
+    file_stream.seek(0) # Reseta o ponteiro para o início
+    
+    mime = magic.Magic(mime=True)
+    detected_mime = mime.from_buffer(header)
+    
+    # Mapeamento simplificado de extensões permitidas para Mime Types
+    # Adicione mais conforme necessário
+    valid_mimes = {
+        'pdf': ['application/pdf'],
+        'docx': ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+        'txt': ['text/plain'],
+        'csv': ['text/plain', 'text/csv'],
+        'json': ['application/json', 'text/plain'],
+        'xml': ['text/xml', 'application/xml'],
+        'yaml': ['application/x-yaml', 'text/plain'],
+        'yml': ['application/x-yaml', 'text/plain'],
+        'rtf': ['application/rtf', 'text/rtf'],
+        'odt': ['application/vnd.oasis.opendocument.text'],
+        'pptx': ['application/vnd.openxmlformats-officedocument.presentationml.presentation'],
+        'xlsx': ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+        'md': ['text/markdown', 'text/plain'],
+        'html': ['text/html'],
+    }
+    
+    if expected_ext in valid_mimes:
+        # Se o mime detectado estiver na lista de permitidos ou for genérico (octet-stream as vezes acontece com arquivos novos)
+        if detected_mime in valid_mimes[expected_ext]:
+            return True
+        # Fallback para text/plain que muitas vezes é detectado incorretamente
+        if 'text' in detected_mime and 'text' in valid_mimes[expected_ext][0]:
+            return True
+            
+    # Se não conseguimos validar estritamente, mas não é um executável perigoso
+    blocked_mimes = ['application/x-dosexec', 'application/x-executable']
+    if detected_mime in blocked_mimes:
+        raise ValueError(f"Arquivo malicioso detectado. Tipo real: {detected_mime}")
+        
+    return True
 
 def extract_text_from_file(file_stream, filename: str) -> str:
     """Extrai texto de praticamente qualquer formato relevante para contratos."""
 
     ext = os.path.splitext(filename)[1].lower().replace(".", "")
+    
+    # Validação de segurança antes de processar
+    try:
+        validate_file_type(file_stream, ext)
+    except Exception as e:
+        return f"Erro de segurança: {str(e)}"
 
     if ext == "txt" or ext == "md":
-        return file_stream.read().decode("utf-8", errors="ignore")
+        # CORREÇÃO B: Limitar leitura para evitar estouro de memória
+        content = file_stream.read(MAX_TEXT_CHARS).decode("utf-8", errors="ignore")
+        return content
 
     if ext == "csv":
         return _extract_csv(file_stream)

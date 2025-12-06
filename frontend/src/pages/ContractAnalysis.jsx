@@ -2,11 +2,11 @@ import React, { useState, useRef, useEffect } from "react";
 import { FiZap, FiPlay, FiArrowUp, FiPaperclip, FiArrowUpCircle, FiClock, FiFileText } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
+import toast from "react-hot-toast";
 import FooterContent from "../components/FooterComponent";
 import "../styles/contractAnalysis.css";
 import api from "../services/api";
 
-/* COMPONENTE VISUAL DA BARRA DE RISCO */
 function RiskMeter({ score }) {
   let level = "safe";
   if (score > 30) level = "warning";
@@ -44,7 +44,6 @@ export default function ContractAnalysis() {
 
   const user = JSON.parse(localStorage.getItem("user"));
 
-  // Carrega histórico ao montar
   useEffect(() => {
     loadHistory();
   }, []);
@@ -53,7 +52,6 @@ export default function ContractAnalysis() {
     if (!user?.id) return;
     try {
       const res = await api.getUserContracts(user.id);
-      // Ordena do mais recente para o mais antigo
       const sorted = (res || []).sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
       setHistory(sorted);
     } catch (error) {
@@ -78,13 +76,15 @@ export default function ContractAnalysis() {
     } else {
       setTextPreview(`Arquivo: ${f.name} carregado.\n(Prévia visual indisponível para binários, mas será enviada para análise).`);
     }
+    toast.success("Arquivo carregado!");
   }
 
   async function handleAnalyze() {
-    if (!file && !textPreview.trim()) return alert("Envie um arquivo ou cole texto.");
-    if (!user?.id) return alert("Faça login para analisar.");
+    if (!file && !textPreview.trim()) return toast.error("Envie um arquivo ou cole texto.");
+    if (!user?.id) return toast.error("Faça login para analisar.");
 
     setStatus("processing");
+    const toastId = toast.loading("Enviando para análise...");
 
     try {
       const form = new FormData();
@@ -93,34 +93,32 @@ export default function ContractAnalysis() {
       if (file) form.append("file", file);
       else form.append("text", textPreview);
 
-      // O backend já salva automaticamente ao analisar
       const res = await api.analyzeContract(form);
       
-      // O backend retorna um objeto Contract que contem o campo 'json' com a análise
       if (res && res.json) {
           setAnalysis(res.json);
       } else {
-          // Fallback caso a estrutura mude
           setAnalysis(res); 
       }
       
       loadHistory();
+      toast.success("Análise concluída!", { id: toastId });
 
     } catch (err) {
       console.error(err);
-      alert("Erro na análise: " + (err.body?.error || err.message));
+      toast.error("Erro na análise: " + (err.body?.error || err.message), { id: toastId });
     } finally {
       setStatus("done");
     }
   }
 
-  // Carregar um contrato do histórico
   function loadFromHistory(contract) {
       if (contract.json) {
           setAnalysis(contract.json);
           setTextPreview(contract.text || "Conteúdo do arquivo não disponível para visualização textual.");
-          setMessages([]); // Limpa chat anterior
+          setMessages([]); 
           setStatus("done");
+          toast.success("Contrato carregado do histórico.");
       }
   }
 
@@ -141,6 +139,7 @@ export default function ContractAnalysis() {
       }
     } catch {
       setMessages(prev => [...prev, { id: Date.now()+1, role: "assistant", text: "Erro ao conectar com a IA." }]);
+      toast.error("Falha na comunicação com a IA.");
     }
   }
 
@@ -174,6 +173,10 @@ export default function ContractAnalysis() {
                 onDragLeave={() => setIsDragging(false)}
                 onDrop={handleDrop}
                 onClick={() => fileRef.current?.click()}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key==='Enter' && fileRef.current?.click()}
+                aria-label="Upload de arquivo"
               >
                 <div>
                   <FiArrowUpCircle size={32} style={{ marginBottom: 8, opacity: 0.7 }} />
@@ -186,6 +189,7 @@ export default function ContractAnalysis() {
                 className="ca-btn primary full ca-send-btn"
                 onClick={handleAnalyze}
                 disabled={status === "processing"}
+                style={status === "processing" ? {opacity: 0.7, cursor: 'not-allowed'} : {}}
               >
                 <FiPlay /> {status === "processing" ? "Analisando IA..." : "Analisar e Salvar"}
               </button>
@@ -202,6 +206,9 @@ export default function ContractAnalysis() {
                                 className="ca-highlight-item" 
                                 style={{cursor: 'pointer', padding: '10px'}}
                                 onClick={() => loadFromHistory(contract)}
+                                role="button"
+                                tabIndex={0}
+                                aria-label={`Carregar contrato de ${new Date(contract.created_at).toLocaleDateString()}`}
                             >
                                 <div style={{display:'flex', alignItems:'center', gap: 8}}>
                                     <FiFileText size={14} color="var(--accent)"/>
@@ -223,6 +230,7 @@ export default function ContractAnalysis() {
                 value={textPreview}
                 onChange={e => setTextPreview(e.target.value)}
                 placeholder="Cole o texto do contrato aqui..."
+                aria-label="Editor de texto do contrato"
               />
             </div>
           </section>
@@ -233,7 +241,14 @@ export default function ContractAnalysis() {
               <h3>Resultado da Análise</h3>
 
               {status === "idle" && !analysis && <p className="muted small">Aguardando documento ou selecione do histórico...</p>}
-              {status === "processing" && <p className="muted small">A IA está lendo o contrato...</p>}
+              {status === "processing" && (
+                  <div className="fade-in">
+                      <div className="skeleton skeleton-text" style={{width: '50%', marginBottom: 20}}></div>
+                      <div className="skeleton skeleton-text"></div>
+                      <div className="skeleton skeleton-text"></div>
+                      <div className="skeleton skeleton-text short"></div>
+                  </div>
+              )}
 
               {(status === "done" || analysis) && analysis && (
                 <div className="fade-in">
@@ -284,8 +299,14 @@ function ChatInput({ onSend, disabled }) {
         onChange={e => setVal(e.target.value)} 
         placeholder={disabled ? "Analise um contrato primeiro" : "Pergunte sobre multas, prazos..."} 
         disabled={disabled}
+        aria-label="Input de chat do contrato"
       />
-      <button type="submit" className="ca-chat-send active" disabled={!val.trim() || disabled}>
+      <button 
+        type="submit" 
+        className="ca-chat-send active" 
+        disabled={!val.trim() || disabled}
+        aria-label="Enviar mensagem"
+      >
         <FiArrowUp />
       </button>
     </form>

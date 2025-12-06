@@ -7,10 +7,10 @@ export default function AppHeader({ user, onLogout }) {
   const [isOpen, setIsOpen] = useState(false);
   
   // Refs
-  const wrapRef = useRef(null);      // Container relativo
-  const menuRef = useRef(null);      // O painel do dropdown
-  const firstBtnRef = useRef(null);  // Foco inicial
-  const lastBtnRef = useRef(null);   // Focus trap
+  const wrapRef = useRef(null);      
+  const menuRef = useRef(null);      
+  const firstBtnRef = useRef(null);  
+  const lastBtnRef = useRef(null);   
   
   const navigate = useNavigate();
 
@@ -28,14 +28,13 @@ export default function AppHeader({ user, onLogout }) {
     if (onLogout) onLogout();
   };
 
-  // Click Outside: Fecha ao clicar fora do componente
+  // Click Outside
   useEffect(() => {
     function onDocClick(e) {
       if (wrapRef.current && !wrapRef.current.contains(e.target)) {
         setIsOpen(false);
       }
     }
-    // Usa mousedown para detectar o clique antes do 'click' event completo
     if (isOpen) {
       document.addEventListener("mousedown", onDocClick);
     }
@@ -46,7 +45,6 @@ export default function AppHeader({ user, onLogout }) {
   useEffect(() => {
     if (!isOpen) return;
 
-    // Move foco para o primeiro item ao abrir
     const timer = setTimeout(() => {
       firstBtnRef.current?.focus();
     }, 50);
@@ -57,7 +55,6 @@ export default function AppHeader({ user, onLogout }) {
         closeMenu();
       }
       
-      // Loop de foco (Focus Trap simples para o dropdown)
       if (e.key === "Tab") {
         const focusable = menuRef.current?.querySelectorAll('button:not([disabled])');
         if (!focusable || focusable.length === 0) return;
@@ -110,7 +107,7 @@ export default function AppHeader({ user, onLogout }) {
         </div>
       </div>
 
-      {/* Lado Direito: User Wrapper (Relative) */}
+      {/* Lado Direito: User Wrapper */}
       <div className="header-user-wrap" ref={wrapRef}>
         <button
           className={`header-user ${isOpen ? 'active' : ''}`}
@@ -122,10 +119,9 @@ export default function AppHeader({ user, onLogout }) {
           <div className="user-avatar" aria-hidden>
             <FiUser size={18} />
           </div>
-          <span className="username">{user?.name || "Usuário"}</span>
+          <span className="username">{user?.name?.split(' ')[0] || "Usuário"}</span>
         </button>
 
-        {/* Dropdown Panel renderizado inline */}
         <div 
           id="user-dropdown-panel"
           className={`user-dropdown-panel ${isOpen ? 'open' : ''}`}
@@ -147,7 +143,11 @@ export default function AppHeader({ user, onLogout }) {
             className="dropdown-option"
             type="button"
           >
-            <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="2 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="18" width="18" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+            <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" height="18" width="18" xmlns="http://www.w3.org/2000/svg">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="3" y1="9" x2="21" y2="9"></line>
+                <line x1="9" y1="21" x2="9" y2="9"></line>
+            </svg>
             Dashboard
           </button>
 

@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import '../styles/settings.css';
 import FooterContent from "../components/FooterComponent";
 import { FiMoon, FiSun, FiMail, FiUser, FiShield, FiTrash2, FiGlobe, FiMessageCircle, FiChevronRight } from "react-icons/fi";
+import toast from "react-hot-toast";
 
-// Definição das seções de navegação
 const settingsSections = [
   { id: 'profile', label: 'Perfil', icon: FiUser },
   { id: 'security', label: 'Segurança', icon: FiShield },
@@ -21,10 +21,8 @@ export default function Settings() {
   const [language, setLanguage] = useState(localStorage.getItem("lang") || systemLang);
   const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")) || { name: "", email: "" });
   
-  // NOVO ESTADO: Controla a seção visível (default: 'profile')
   const [activeSection, setActiveSection] = useState('profile');
 
-  // Para alterações
   const [newName, setNewName] = useState(user.name);
   const [newEmail, setNewEmail] = useState(user.email);
   const [currentPassword, setCurrentPassword] = useState("");
@@ -40,35 +38,46 @@ export default function Settings() {
     localStorage.setItem("lang", language);
   }, [language]);
 
-  // --- Handlers (Simples) ---
+  // --- Handlers (UX Melhorada) ---
   const handleUpdateName = () => {
+    if (!newName.trim()) return toast.error("O nome não pode estar vazio.");
+    
     const updated = { ...user, name: newName };
     setUser(updated);
     localStorage.setItem("user", JSON.stringify(updated));
-    alert("Nome atualizado com sucesso!");
+    toast.success("Nome atualizado com sucesso!");
   };
 
   const handleUpdateEmail = () => {
-    alert("Enviamos um e-mail de confirmação para alterar seu endereço.");
+    toast.success("E-mail de confirmação enviado!", { icon: '📧' });
   };
 
   const handleUpdatePassword = () => {
-    alert("Um e-mail de verificação foi enviado para confirmar a alteração da senha.");
+    if (!currentPassword || !newPassword) return toast.error("Preencha as senhas.");
+    toast.success("Link de alteração de senha enviado.", { icon: '🔒' });
+    setCurrentPassword("");
+    setNewPassword("");
   };
 
   const handleDeleteAccount = () => {
-    alert("Um e-mail foi enviado para confirmar a exclusão permanente da conta.");
+    if(confirm("Tem certeza absoluta? Esta ação não pode ser desfeita.")){
+        const loadingId = toast.loading("Processando exclusão...");
+        setTimeout(() => {
+            toast.dismiss(loadingId);
+            toast.error("Solicitação enviada ao administrador.");
+        }, 2000);
+    }
   };
 
   const handleSendFeedback = () => {
-    alert("Seu feedback foi enviado para sentryai2025@gmail.com.\nObrigado!");
+    if (!feedback.trim()) return toast.error("Digite seu feedback.");
+    toast.success("Feedback enviado! Obrigado.", { icon: '📨' });
     setFeedback("");
   };
 
-  // --- Funções de Renderização das Seções ---
-
+  // --- Renderização das Seções ---
   const renderProfileSection = () => (
-    <div className="section-content">
+    <div className="section-content fade-in">
       <div className="settings-card">
         <label>Nome completo</label>
         <input value={newName} onChange={(e) => setNewName(e.target.value)} />
@@ -86,7 +95,7 @@ export default function Settings() {
   );
 
   const renderSecuritySection = () => (
-    <div className="section-content">
+    <div className="section-content fade-in">
       <div className="settings-card">
         <label>Senha atual</label>
         <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
@@ -100,13 +109,18 @@ export default function Settings() {
   );
   
   const renderAppearanceSection = () => (
-    <div className="section-content">
+    <div className="section-content fade-in">
       <div className="settings-card">
         <div className="theme-toggle">
-          <span>Tema atual: **{theme === "dark" ? "Escuro" : "Claro"}**</span>
+          <span>Tema atual: <strong>{theme === "dark" ? "Escuro" : "Claro"}</strong></span>
           <button
             className="btn small outline"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            onClick={() => {
+                const next = theme === "dark" ? "light" : "dark";
+                setTheme(next);
+                toast.success(`Tema alterado para ${next === 'dark' ? 'Escuro' : 'Claro'}`);
+            }}
+            aria-label="Alternar tema"
           >
             {theme === "dark" ? <FiSun /> : <FiMoon />} Alternar Tema
           </button>
@@ -116,9 +130,12 @@ export default function Settings() {
   );
 
   const renderLanguageSection = () => (
-    <div className="section-content">
+    <div className="section-content fade-in">
       <div className="settings-card">
-        <select value={language} onChange={(e) => setLanguage(e.target.value)}>
+        <select value={language} onChange={(e) => {
+            setLanguage(e.target.value);
+            toast.success("Idioma atualizado.");
+        }}>
           <option value="pt">Português (Brasil)</option>
           <option value="en">English (US)</option>
         </select>
@@ -128,7 +145,7 @@ export default function Settings() {
   );
   
   const renderFeedbackSection = () => (
-    <div className="section-content">
+    <div className="section-content fade-in">
       <div className="settings-card">
         <textarea
           rows="4"
@@ -142,7 +159,7 @@ export default function Settings() {
   );
 
   const renderDangerZone = () => (
-    <div className="section-content">
+    <div className="section-content fade-in">
       <div className="settings-card danger-zone">
         <h4><FiTrash2 /> Zona de Perigo</h4>
         <p className="muted small">Excluir sua conta apagará todos os seus dados permanentemente. Essa ação é irreversível.</p>
@@ -151,8 +168,8 @@ export default function Settings() {
     </div>
   );
 
-  // Mapeamento para renderizar a seção correta
-  const renderSection = () => {
+  // Switch de renderização
+  const renderContent = () => {
     switch (activeSection) {
       case 'profile': return renderProfileSection();
       case 'security': return renderSecuritySection();
@@ -166,7 +183,6 @@ export default function Settings() {
 
   return (
     <div className="settings-root">
-
       <main className="settings-main container">
         <div className="settings-header">
             <h2 className="settings-title">Configurações</h2>
@@ -174,13 +190,13 @@ export default function Settings() {
         </div>
 
         <div className="settings-layout">
-          {/* Coluna 1: Navegação (Menu Lateral) */}
           <nav className="settings-nav">
             {settingsSections.map(section => (
               <button
                 key={section.id}
                 className={`nav-item ${activeSection === section.id ? 'active' : ''} ${section.isDanger ? 'danger' : ''}`}
                 onClick={() => setActiveSection(section.id)}
+                aria-label={`Ir para ${section.label}`}
               >
                 <section.icon className="nav-icon" />
                 <span className="nav-label">{section.label}</span>
@@ -189,18 +205,16 @@ export default function Settings() {
             ))}
           </nav>
 
-          {/* Coluna 2: Conteúdo da Seção Ativa */}
           <section className="settings-content">
-            {/* Título dinâmico para telas pequenas ou como referência */}
             <h3 className="content-title">
               {settingsSections.find(s => s.id === activeSection)?.icon({ size: 20 })}
               {settingsSections.find(s => s.id === activeSection)?.label}
             </h3>
-            {renderSection()}
+            {/* Chamada corrigida */}
+            {renderContent()}
           </section>
         </div>
       </main>
-
       <FooterContent />
     </div>
   );

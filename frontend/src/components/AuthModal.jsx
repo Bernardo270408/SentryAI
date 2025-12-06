@@ -11,22 +11,21 @@ import {
   CheckCircle
 } from "lucide-react";
 import api from "../services/api";
+import toast from "react-hot-toast";
 
 export default function AuthModal({ open, onClose, initialTab = "login" }) {
-  const [tab, setTab] = useState(initialTab); // 'login' | 'register'
-  const [step, setStep] = useState("form");   // 'form' | 'verify'
+  const [tab, setTab] = useState(initialTab); 
+  const [step, setStep] = useState("form");   
   
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState(null);
 
   // form fields
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [otp, setOtp] = useState(""); // Código de 6 dígitos
-  const [error, setError] = useState(null);
+  const [otp, setOtp] = useState(""); 
 
   const navigate = useNavigate();
 
@@ -39,35 +38,31 @@ export default function AuthModal({ open, onClose, initialTab = "login" }) {
       setName("");
       setConfirm("");
       setOtp("");
-      setError(null);
-      setMsg(null);
       setShowPass(false);
     }
   }, [open, initialTab]);
 
   if (!open) return null;
 
-  // --- Handlers ---
-
   async function handleLogin(e) {
     e?.preventDefault?.();
-    setError(null);
     setLoading(true);
+    const toastId = toast.loading("Autenticando...");
+    
     try {
       const data = await api.request("/login", "POST", { email, password }, false);
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
-      setMsg("Autenticado com sucesso!");
+      
+      toast.success("Login realizado!", { id: toastId });
       onClose?.();
       navigate("/app");
     } catch (err) {
       if (err?.body?.need_verification) {
-        // Se o backend diz que precisa verificar, mudamos o passo
-        setError(null);
-        setMsg("E-mail não verificado. Digite o código enviado.");
+        toast.error("E-mail não verificado.", { id: toastId });
         setStep("verify");
       } else {
-        setError(err?.body?.error || "Erro ao autenticar. Verifique suas credenciais.");
+        toast.error(err?.body?.error || "Erro de autenticação.", { id: toastId });
       }
     } finally {
       setLoading(false);
@@ -76,25 +71,23 @@ export default function AuthModal({ open, onClose, initialTab = "login" }) {
 
   async function handleRegister(e) {
     e?.preventDefault?.();
-    setError(null);
 
     if (!name.trim() || !email.trim() || !password) {
-      setError("Preencha todos os campos.");
-      return;
+      return toast.error("Preencha todos os campos.");
     }
     if (password !== confirm) {
-      setError("Senhas não conferem.");
-      return;
+      return toast.error("Senhas não conferem.");
     }
 
     setLoading(true);
+    const toastId = toast.loading("Criando conta...");
+    
     try {
       await api.request("/users/", "POST", { name, email, password }, false);
-      setMsg("Conta criada! Código de verificação enviado para seu e-mail.");
-      // Muda para a tela de verificação
+      toast.success("Conta criada! Verifique seu e-mail.", { id: toastId });
       setStep("verify");
     } catch (err) {
-      setError(err?.body?.error || "Erro ao criar conta.");
+      toast.error(err?.body?.error || "Erro ao criar conta.", { id: toastId });
     } finally {
       setLoading(false);
     }
@@ -102,39 +95,41 @@ export default function AuthModal({ open, onClose, initialTab = "login" }) {
 
   async function handleVerify(e) {
     e?.preventDefault?.();
-    setError(null);
     setLoading(true);
+    const toastId = toast.loading("Verificando...");
+    
     try {
         const data = await api.request("/verify-email", "POST", { email, code: otp }, false);
-        // O backend retorna token após verificar
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
         
-        setMsg("Conta verificada e logada!");
+        toast.success("Conta verificada!", { id: toastId });
         setTimeout(() => {
             onClose();
             navigate("/app");
-        }, 1000);
+        }, 500);
     } catch(err) {
-        setError(err?.body?.error || "Código inválido ou expirado.");
+        toast.error(err?.body?.error || "Código inválido.", { id: toastId });
     } finally {
         setLoading(false);
     }
   }
 
   const handleGoogleSuccess = async (credentialResponse) => {
+    setLoading(true);
+    const toastId = toast.loading("Entrando com Google...");
     try {
-        setLoading(true);
         const data = await api.request("/google-login", "POST", { 
             credential: credentialResponse.credential 
         }, false);
         
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
+        toast.success("Login realizado!", { id: toastId });
         onClose();
         navigate("/app");
     } catch (err) {
-        setError("Falha no login com Google.");
+        toast.error("Falha no login com Google.", { id: toastId });
     } finally {
         setLoading(false);
     }
@@ -145,7 +140,7 @@ export default function AuthModal({ open, onClose, initialTab = "login" }) {
       <div className="auth-modal-backdrop" onClick={onClose} />
 
       <div className="auth-modal">
-        <button className="auth-back" onClick={onClose} aria-label="Fechar">
+        <button className="auth-back" onClick={onClose} aria-label="Voltar para home">
           <ArrowLeft size={16} /> <span className="auth-back-text">Voltar</span>
         </button>
 
@@ -167,7 +162,6 @@ export default function AuthModal({ open, onClose, initialTab = "login" }) {
             </p>
           </div>
 
-          {/* Renderização Condicional: FORM ou VERIFY */}
           {step === 'verify' ? (
             <div className="auth-form">
                 <div style={{display:'flex', flexDirection:'column', gap: 10, marginTop: 10}}>
@@ -183,9 +177,6 @@ export default function AuthModal({ open, onClose, initialTab = "login" }) {
                     />
                 </div>
 
-                {error && <div className="auth-error">{error}</div>}
-                {msg && <div className="auth-msg" style={{display:'flex', alignItems:'center', gap:5}}><CheckCircle size={14}/> {msg}</div>}
-
                 <button className="auth-primary" onClick={handleVerify} disabled={loading || otp.length < 6}>
                     {loading ? "Verificando..." : "Confirmar Código"}
                 </button>
@@ -198,7 +189,6 @@ export default function AuthModal({ open, onClose, initialTab = "login" }) {
             </div>
           ) : (
             <>
-              {/* LOGIN/REGISTER NORMAL */}
               <div className="admin-alert">
                 <Crown size={16} className="admin-icon" />
                 <div>
@@ -207,11 +197,10 @@ export default function AuthModal({ open, onClose, initialTab = "login" }) {
                 </div>
               </div>
 
-              {/* GOOGLE LOGIN */}
               <div style={{ width: '100%', display: 'flex', justifyContent: 'center', margin: '15px 0' }}>
                  <GoogleLogin
                      onSuccess={handleGoogleSuccess}
-                     onError={() => setError("Erro no Google Login")}
+                     onError={() => toast.error("Erro no Google Login")}
                      theme="filled_black"
                      text={tab === 'login' ? "signin_with" : "signup_with"}
                      shape="pill"
@@ -273,9 +262,6 @@ export default function AuthModal({ open, onClose, initialTab = "login" }) {
                       </button>
                     </div>
 
-                    {error && <div className="auth-error">{error}</div>}
-                    {msg && <div className="auth-msg">{msg}</div>}
-
                     <button className="auth-primary" type="submit" disabled={loading}>
                       {loading ? "Entrando..." : "Entrar"}
                     </button>
@@ -329,9 +315,6 @@ export default function AuthModal({ open, onClose, initialTab = "login" }) {
                         <p className="lgpd-sub">Seguimos a LGPD para proteger suas informações pessoais.</p>
                       </div>
                     </div>
-
-                    {error && <div className="auth-error">{error}</div>}
-                    {msg && <div className="auth-msg">{msg}</div>}
 
                     <button className="auth-primary" type="submit" disabled={loading}>
                       {loading ? "Criando..." : "Criar conta"}

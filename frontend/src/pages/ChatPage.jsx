@@ -8,8 +8,8 @@ import {
 import api from "../services/api";
 import "../styles/chatpage.css";
 import ChatHeader from "../components/ChatHeader";
+import toast from "react-hot-toast";
 
-// Helper para obter usuário
 function useLocalUser() {
     try {
         const raw = localStorage.getItem("user");
@@ -19,36 +19,55 @@ function useLocalUser() {
     }
 }
 
-// Ícone SVG do Gemini
 const GeminiIcon = () => (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M12 22C12 22 13.5 17.5 19 12C13.5 6.5 12 2 12 2C12 2 10.5 6.5 5 12C10.5 17.5 12 22 12 22Z" fill="currentColor" />
     </svg>
 );
 
+// Componente de Skeleton para Mensagens
+const MessagesSkeleton = () => (
+    <div className="messages-content fade-in">
+        <div className="msg-row user" style={{ opacity: 0.5 }}>
+            <div className="msg-avatar skeleton"></div>
+            <div className="skeleton" style={{ height: 40, width: '40%', borderRadius: 12 }}></div>
+        </div>
+        <div className="msg-row assistant" style={{ opacity: 0.5 }}>
+            <div className="msg-avatar skeleton"></div>
+            <div style={{ width: '60%' }}>
+                <div className="skeleton skeleton-text"></div>
+                <div className="skeleton skeleton-text"></div>
+                <div className="skeleton skeleton-text short"></div>
+            </div>
+        </div>
+        <div className="msg-row assistant" style={{ opacity: 0.5 }}>
+            <div className="msg-avatar skeleton"></div>
+            <div style={{ width: '70%' }}>
+                <div className="skeleton skeleton-text"></div>
+                <div className="skeleton skeleton-text short"></div>
+            </div>
+        </div>
+    </div>
+);
+
 export default function ChatPage() {
     const navigate = useNavigate();
     const user = useLocalUser();
     
-    // Estados de Dados
     const [chats, setChats] = useState([]);
-    const [activeChat, setActiveChat] = useState(null); // NULL = Tela "Novo Chat"
+    const [activeChat, setActiveChat] = useState(null);
     const [messages, setMessages] = useState([]);
     const [loadingMessages, setLoadingMessages] = useState(false);
     
-    // Estados de UI
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [search, setSearch] = useState("");
     const [text, setText] = useState("");
     const [sending, setSending] = useState(false);
     const [attachedFile, setAttachedFile] = useState(null);
 
-    // Refs
     const listRef = useRef(null);
     const textareaRef = useRef(null);
     const assistantMessageRef = useRef(null); 
-    
-    // REF PARA CORRIGIR O BUG: que estava impedindo que o useEffect limpasse as mensagens ao criar um novo chat
     const ignoreFetchRef = useRef(false);
 
     const handleLogout = () => {
@@ -57,13 +76,11 @@ export default function ChatPage() {
         navigate("/");
     };
 
-    // 1. Carregar Chats
     const loadChats = async () => {
         const userId = user.id || localStorage.getItem("user_id");
         if (userId) {
             try {
                 const res = await api.getUserChats(userId);
-                // Ordena chats do mais recente para o mais antigo
                 const sorted = (res || []).sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
                 setChats(sorted);
                 return sorted;
@@ -72,7 +89,6 @@ export default function ChatPage() {
         return [];
     };
 
-    // Carrega chats ao montar e seleciona o primeiro se existir
     useEffect(() => {
         loadChats().then(sortedChats => {
             if (sortedChats.length > 0 && !activeChat) {
@@ -81,9 +97,7 @@ export default function ChatPage() {
         });
     }, []);
 
-    // 2. Carregar Mensagens ao trocar Chat
     useEffect(() => {
-        // Se acabamos de criar o chat manualmente, NÃO buscamos do servidor ainda
         if (ignoreFetchRef.current) {
             ignoreFetchRef.current = false;
             return;
@@ -112,7 +126,7 @@ export default function ChatPage() {
             setMessages(allMessages);
             setTimeout(scrollToBottom, 50);
         })
-        .catch(err => console.error("Erro msgs:", err))
+        .catch(err => toast.error("Erro ao carregar mensagens"))
         .finally(() => setLoadingMessages(false));
 
     }, [activeChat?.id]);
@@ -123,7 +137,6 @@ export default function ChatPage() {
         }
     };
 
-    // 3. Auto-Resize do Input
     const handleInput = (e) => {
         setText(e.target.value);
         if (textareaRef.current) {
@@ -139,14 +152,13 @@ export default function ChatPage() {
         }
     };
 
-    // 4. Enviar Mensagem (Com Criação Automática e Streaming)
     const handleSend = async () => {
-        if (!text.trim() || sending) return;
+        if (!text.trim() && !attachedFile) return; // Corrigido lógica para aceitar arquivo sem texto
+        if (sending) return;
 
         const contentToSend = text.trim();
         const fileToSend = attachedFile;
         
-        // Limpa input
         setText("");
         setAttachedFile(null);
         if (textareaRef.current) textareaRef.current.style.height = 'auto';
@@ -156,31 +168,24 @@ export default function ChatPage() {
 
         let targetChatId = activeChat?.id;
 
-        // --- LÓGICA DE CRIAÇÃO PREGUIÇOSA ---
         if (!activeChat) {
             try {
-                // Cria chat com nome provisório.
                 const newChat = await api.createChat("Nova Conversa");
-                
-                // IMPORTANTÍSSIMO: Marca para ignorar o próximo fetch do useEffect
                 ignoreFetchRef.current = true;
-
                 setChats(prev => [newChat, ...prev]);
                 setActiveChat(newChat); 
                 targetChatId = newChat.id;
             } catch (e) {
-                alert("Erro ao iniciar conversa.");
+                toast.error("Erro ao iniciar conversa.");
                 setSending(false);
                 return;
             }
         }
 
-        // Adiciona mensagem otimista do usuário
         const userMsg = { id: `u-${Date.now()}`, role: 'user', content: finalContent, created_at: new Date().toISOString() };
         setMessages(prev => [...prev, userMsg]);
         setTimeout(scrollToBottom, 50);
 
-        // Adiciona mensagem otimista da IA (Loading)
         const aiTempId = `a-${Date.now()}`;
         const aiMsg = { id: aiTempId, role: 'assistant', content: '', streaming: true };
         setMessages(prev => [...prev, aiMsg]);
@@ -208,15 +213,13 @@ export default function ChatPage() {
                     setSending(false);
                     assistantMessageRef.current = null;
                     
-                    // Recarrega a lista de chats para pegar o novo título gerado pela IA
                     const updatedChats = await loadChats();
-                    
-                    // Atualiza o objeto activeChat para refletir o novo nome sem disparar fetch (pois o ID é o mesmo)
                     const currentUpdated = updatedChats.find(c => c.id === targetChatId);
                     if (currentUpdated) setActiveChat(currentUpdated);
                 },
                 onError: (err) => {
                     console.error(err);
+                    toast.error("Erro na comunicação com a IA");
                     setSending(false);
                 }
             });
@@ -227,7 +230,6 @@ export default function ChatPage() {
 
     const stopStreaming = () => setSending(false);
 
-    // Botão "Novo Chat" apenas limpa a seleção para estado inicial
     const handleNewChatClick = () => {
         setActiveChat(null);
         setMessages([]);
@@ -235,16 +237,20 @@ export default function ChatPage() {
     };
 
     const handleDelete = async (id) => {
-        if (!confirm("Excluir conversa?")) return;
-        await api.deleteChat(id);
-        setChats(chats.filter(c => c.id !== id));
-        if (activeChat?.id === id) {
-            setActiveChat(null);
-            setMessages([]);
+        if (!confirm("Excluir conversa permanentemente?")) return;
+        try {
+            await api.deleteChat(id);
+            setChats(chats.filter(c => c.id !== id));
+            if (activeChat?.id === id) {
+                setActiveChat(null);
+                setMessages([]);
+            }
+            toast.success("Conversa excluída.");
+        } catch (e) {
+            toast.error("Erro ao excluir.");
         }
     };
 
-    // Render Mensagem
     const renderMessage = (msg) => {
         const isUser = msg.role === 'user';
         return (
@@ -269,16 +275,24 @@ export default function ChatPage() {
 
     return (
         <div className="chat-root">
-            {/* SIDEBAR */}
             <aside className={`fixed-sidebar ${!isSidebarOpen ? 'collapsed' : ''}`}>
                 <div className="sidebar-header">
                     {isSidebarOpen && <span style={{fontWeight:'600'}}>Sentry AI</span>}
-                    <button className="btn-toggle-sidebar" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
+                    <button 
+                        className="btn-toggle-sidebar" 
+                        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                        aria-label="Alternar barra lateral"
+                    >
                         <FiMenu size={20} />
                     </button>
                 </div>
 
-                <button className="btn-new" onClick={handleNewChatClick} title="Novo Chat">
+                <button 
+                    className="btn-new" 
+                    onClick={handleNewChatClick} 
+                    title="Novo Chat"
+                    aria-label="Nova conversa"
+                >
                     <FiPlus /> {isSidebarOpen && <span>Nova Conversa</span>}
                 </button>
 
@@ -290,6 +304,7 @@ export default function ChatPage() {
                             value={search} 
                             onChange={e => setSearch(e.target.value)}
                             style={{background:'transparent', border:'none', color:'white', width:'100%', outline:'none', marginLeft:8}}
+                            aria-label="Buscar conversas"
                         />
                     </div>
                 )}
@@ -300,9 +315,16 @@ export default function ChatPage() {
                             key={chat.id} 
                             className={`chat-item ${activeChat?.id === chat.id ? 'active' : ''}`}
                             onClick={() => { setActiveChat(chat); if(window.innerWidth < 768) setIsSidebarOpen(false); }}
+                            role="button"
+                            tabIndex={0}
+                            aria-selected={activeChat?.id === chat.id}
                         >
                             <span className="ci-title">{chat.name}</span>
-                            <button className="ci-del" onClick={(e) => { e.stopPropagation(); handleDelete(chat.id); }}>
+                            <button 
+                                className="ci-del" 
+                                onClick={(e) => { e.stopPropagation(); handleDelete(chat.id); }}
+                                aria-label="Excluir conversa"
+                            >
                                 <FiTrash2 size={14} />
                             </button>
                         </div>
@@ -310,32 +332,31 @@ export default function ChatPage() {
                 </div>
             </aside>
 
-            {/* MAIN AREA */}
             <main className="chat-main">
                 <ChatHeader user={user} onLogout={handleLogout} />
                 <header className="chat-header-centered">
                     <div className="ch-info">
                         <h2>{activeChat ? activeChat.name : "Nova Conversa"}</h2>
-                        {activeChat && <span className="ch-status">Gemini 2.5 Flash • Online</span>}
+                        {activeChat && <span className="ch-status">Gemini 2.5 Pro • Online</span>}
                     </div>
                 </header>
 
                 <div className="messages-container" ref={listRef}>
                     <div className="messages-content">
-                        {/* Empty State: Sem chat ativo OU chat vazio */}
-                        {(!activeChat || (activeChat && messages.length === 0 && !loadingMessages)) && (
-                            <div className="empty-state">
-                                <div className="empty-logo-wrap"><GeminiIcon /></div>
-                                <h2>Como posso ajudar hoje?</h2>
-                                <p>Sou especializado em legislação brasileira. Pergunte sobre CLT, contratos ou direitos.</p>
-                            </div>
+                        {loadingMessages && messages.length === 0 ? (
+                            <MessagesSkeleton />
+                        ) : (
+                            <>
+                                {(!activeChat || (activeChat && messages.length === 0)) && (
+                                    <div className="empty-state fade-in">
+                                        <div className="empty-logo-wrap"><GeminiIcon /></div>
+                                        <h2>Como posso ajudar hoje?</h2>
+                                        <p>Sou especializado em legislação brasileira. Pergunte sobre CLT, contratos ou direitos.</p>
+                                    </div>
+                                )}
+                                {messages.map(renderMessage)}
+                            </>
                         )}
-                        
-                        {activeChat && loadingMessages && messages.length === 0 && (
-                            <div className="loading-spinner" style={{textAlign:'center', color:'#666', marginTop: 20}}>Carregando histórico...</div>
-                        )}
-                        
-                        {messages.map(renderMessage)}
                     </div>
                 </div>
 
@@ -344,12 +365,16 @@ export default function ChatPage() {
                         {attachedFile && (
                             <div className="attach-badge">
                                 <FiPaperclip /> {attachedFile}
-                                <button onClick={() => setAttachedFile(null)}>x</button>
+                                <button onClick={() => setAttachedFile(null)} aria-label="Remover anexo">x</button>
                             </div>
                         )}
                         
                         <div className="input-row">
-                            <button className="btn-action attach" onClick={() => document.getElementById('file-up').click()}>
+                            <button 
+                                className="btn-action attach" 
+                                onClick={() => document.getElementById('file-up').click()}
+                                aria-label="Anexar arquivo"
+                            >
                                 <FiPaperclip size={20} />
                             </button>
                             <input 
@@ -366,12 +391,15 @@ export default function ChatPage() {
                                 onKeyDown={handleKeyDown} 
                                 rows={1} 
                                 disabled={sending} 
+                                aria-label="Mensagem"
                             />
 
                             <button 
                                 className={`btn-action ${sending ? 'stop' : 'send'}`}
                                 onClick={sending ? stopStreaming : handleSend}
-                                disabled={!text.trim() && !sending}
+                                disabled={(!text.trim() && !attachedFile) && !sending}
+                                aria-label={sending ? "Parar resposta" : "Enviar mensagem"}
+                                style={sending ? { opacity: 1 } : (!text.trim() && !attachedFile ? { opacity: 0.5, cursor: 'not-allowed' } : {})}
                             >
                                 {sending ? <FiStopCircle size={18} /> : <FiArrowUp size={20} />}
                             </button>

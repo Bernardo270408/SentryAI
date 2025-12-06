@@ -1,20 +1,53 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from middleware.jwt_util import token_required
 from services.ai_service import analyze_contract_text, chat_about_contract
 from services.file_reader_service import extract_text_from_file
 from DAO.contract_dao import ContractDAO
 import logging
-
+import threading
+from concurrent.futures import ThreadPoolExecutor
 
 contract_bp = Blueprint("contract", __name__, url_prefix="/contract")
 logger = logging.getLogger(__name__)
 
+# Executor para tarefas de fundo (background tasks)
+# max_workers=2 impede que o servidor seja sobrecarregado com muitas análises simultâneas
+executor = ThreadPoolExecutor(max_workers=2)
 
-# só pra padronizar. eu deixei acessível em /, mas a rota antiga funciona normalmente também
-@contract_bp.route("/", methods=["POST"])
+def background_analysis(app, contract_id, text_content):
+    """
+    Função que roda em thread separada para analisar o contrato 
+    sem bloquear a resposta da API.
+    """
+    # É necessário criar um contexto de aplicação para acessar o Banco de Dados dentro da thread
+    with app.app_context(): 
+        try:
+            logger.info(f"Iniciando análise background para contrato ID {contract_id}")
+            
+            # Chama a IA (processo lento)
+            analysis_json = analyze_contract_text(text_content)
+            
+            # Atualiza o contrato existente com o resultado final
+            ContractDAO.update_contract(contract_id, {
+                "json": analysis_json
+            })
+            logger.info(f"Análise concluída com sucesso para contrato ID {contract_id}")
+            
+        except Exception as e:
+            logger.error(f"Falha na análise background do contrato {contract_id}: {e}")
+            # Em caso de erro, salva o estado de erro no JSON do contrato
+            ContractDAO.update_contract(contract_id, {
+                "json": {
+                    "summary": "Falha no processamento.", 
+                    "risk": {"score": 0, "label": "Erro"},
+                    "error": str(e)
+                }
+            })
+
 @contract_bp.route("/analyze", methods=["POST"])
 @token_required
 def analyze():
+    # Suporta tanto JSON quanto Form Data (para uploads de arquivo)
     data = request.get_json(silent=True) or request.form
     current_user = request.user
 
@@ -24,6 +57,7 @@ def analyze():
 
     content_to_analyze = ""
 
+    # Validações Básicas
     if not user_id:
         return jsonify({"error": "Campo user_id obrigatório"}), 400
 
@@ -32,11 +66,14 @@ def analyze():
     except ValueError:
         return jsonify({"error": "user_id inválido"}), 400
 
+    # Verifica permissão (apenas o dono ou admin pode analisar para aquele ID)
     if current_user.id != user_id and not current_user.is_admin:
         return jsonify({"error": "Acesso negado"}), 403
 
+    # Extração de Texto
     if uploaded_file:
         try:
+            # Nota: extract_text_from_file já deve ter as validações de segurança (Magic Numbers) aplicadas
             content_to_analyze = extract_text_from_file(
                 uploaded_file.stream, uploaded_file.filename
             )
@@ -50,18 +87,38 @@ def analyze():
     else:
         return jsonify({"error": "Nenhum texto ou arquivo fornecido."}), 400
 
+    # JSON Inicial (Placeholder enquanto processa)
+    initial_json = {
+        "summary": "A IA está analisando seu documento. Isso pode levar alguns segundos...",
+        "risk": {"score": 0, "label": "Processando"},
+        "highlights": []
+    }
+
     try:
-        analysis_json = analyze_contract_text(content_to_analyze)
+        # 1. Cria o registro no banco IMEDIATAMENTE
         contract = ContractDAO.create_contract(
-            user_id, analysis_json, content_to_analyze
+            user_id, initial_json, content_to_analyze
         )
 
-        return jsonify(contract.to_dict()), 200
+        # 2. Envia a tarefa pesada para o executor em background
+        # current_app._get_current_object() é necessário para passar o contexto real do Flask para a thread
+        executor.submit(
+            background_analysis, 
+            current_app._get_current_object(), 
+            contract.id, 
+            content_to_analyze
+        )
+
+        # 3. Retorna HTTP 202 (Accepted) imediatamente para o frontend não travar
+        return jsonify({
+            "message": "Análise iniciada.",
+            "contract": contract.to_dict(),
+            "status": "processing"
+        }), 202
 
     except Exception as e:
-        logger.exception("Erro na análise de contrato")
+        logger.exception("Erro ao iniciar análise")
         return jsonify({"error": str(e)}), 500
-
 
 @contract_bp.route("/", methods=["GET"])
 @token_required

@@ -21,14 +21,23 @@ def send_verification_email(to_email, code):
     password = os.getenv("SMTP_PASSWORD")
     server_host = os.getenv("SMTP_SERVER", "smtp.gmail.com")
     server_port = int(os.getenv("SMTP_PORT", 587))
+    
+    # Checagem de ambiente
+    current_env = os.getenv("ENV", "production") # Assume produção por segurança se não definido
 
-    # Se não houver configuração de e-mail, apenas loga o código
+    # Se não houver configuração de e-mail
     if not sender or not password:
         logger.warning(
-            f"SMTP não configurado. Código de verificação para {to_email}: {code}"
+            f"SMTP não configurado. Tentativa de envio para {to_email}."
         )
-        print(f"--- DEBUG EMAIL ---\nTo: {to_email}\nCode: {code}\n-------------------")
-        return True
+        
+        # Só exibe o código no console se estivermos explicitamente em desenvolvimento
+        if current_env == "development":
+            print(f"--- DEBUG EMAIL (DEV ONLY) ---\nTo: {to_email}\nCode: {code}\n-------------------")
+        else:
+            logger.info("Código de verificação gerado, mas não enviado (SMTP ausente e ambiente != development).")
+            
+        return True # Retorna True para não quebrar o fluxo no frontend em testes, mas em prod o usuário não receberá
 
     msg = MIMEText(
         f"Olá,\n\nSeu código de verificação para o SentryAI é:\n\n{code}\n\nEste código expira em 15 minutos.\n\nAtenciosamente,\nEquipe SentryAI"

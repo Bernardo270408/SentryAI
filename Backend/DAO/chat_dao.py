@@ -1,5 +1,8 @@
 from models.chat import Chat
 from extensions import db
+from models.message_user import UserMessage
+from models.message_ai import AIMessage
+from sqlalchemy import desc
 
 
 class ChatDAO:
@@ -45,25 +48,38 @@ class ChatDAO:
         return True
 
     @staticmethod
-    def get_messages_formated(chat_id):
+    def get_messages_formated(chat_id, limit=20):
+        """
+        CORREÇÃO A: Janela Deslizante.
+        Recupera apenas as últimas 'limit' mensagens para contexto da IA.
+        """
         chat = ChatDAO.get_chat_by_id(chat_id)
+        if not chat:
+            return []
 
-        messages = chat.user_messages + chat.ai_messages
-        messages.sort(key=lambda m: getattr(m, "created_at", None))
+        # Busca otimizada usando UNION no banco seria ideal, 
+        # mas vou usar o slicing em Python para manter compatibilidade com o ORM atual
+        # buscando apenas os últimos N registros de cada tabela para evitar load total
+        
+        # Pega as últimas X mensagens de cada tipo (segurança para garantir ordem)
+        user_msgs = chat.user_messages[-limit:] 
+        ai_msgs = chat.ai_messages[-limit:]
+        
+        all_msgs = user_msgs + ai_msgs
+        # Ordena pela data
+        all_msgs.sort(key=lambda m: getattr(m, "created_at", None))
+        
+        # Pega apenas as últimas 'limit' do total combinado (Janela Deslizante)
+        recent_msgs = all_msgs[-limit:]
 
         history = []
-
-        for i, message in enumerate(messages):
-            if i % 2 == 0:
-                history.append({"role": "user", "message": message})
-            else:
-                history.append({"role": "assistaint", "message": message})
-
-        if not history:
-            return None
+        for message in recent_msgs:
+            role = "user" if isinstance(message, UserMessage) else "assistant"
+            history.append({"role": role, "content": message.content})
 
         return history
 
+    @staticmethod
     def get_rating_by_chat(chat_id):
         chat = ChatDAO.get_chat_by_id(chat_id)
         return chat.rating

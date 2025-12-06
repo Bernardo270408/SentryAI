@@ -2,6 +2,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { Toaster } from 'react-hot-toast';
 
 import App from "./App";
 import Home from "./pages/Home";
@@ -19,7 +20,6 @@ import Privacy from "./pages/Privacy";
 import Disclaimer from "./pages/Disclaimer";
 import "./styles/global.css";
 
-// Acessando a variável de ambiente (Vite)
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 function Protected({ children }) {
@@ -31,10 +31,20 @@ function Protected({ children }) {
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <BrowserRouter>
+      <Toaster 
+        position="top-center" 
+        toastOptions={{
+          style: {
+            background: '#18181b',
+            color: '#fff',
+            border: '1px solid rgba(255,255,255,0.1)'
+          }
+        }} 
+      />
+      
+      {/* CORREÇÃO: Flags v7_startTransition e v7_relativeSplatPath */}
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Routes>
-
-          {/* Rotas Públicas */}
           <Route path="/" element={<Home />} />
           <Route path="/knowledge-base" element={<KnowledgeBase />} />
           <Route path="/docs" element={<Documentation />} />

@@ -79,7 +79,7 @@ def send_message():
     except ValueError as e:
         return jsonify({"error": str(e)}), 500
 
-    history = ChatDAO.get_messages_formated(chat_id) or []
+    history = ChatDAO.get_messages_formated(chat_id, limit=15) or []
 
     check_and_update_title(chat_id, content, history)
 

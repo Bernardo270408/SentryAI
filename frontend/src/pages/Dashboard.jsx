@@ -151,8 +151,8 @@ export default function Dashboard() {
                     {/* Gráfico de Volume */}
                     <div className="chart-container main-chart">
                         <div className="chart-header"><h4>Volume de Consultas (7 dias)</h4></div>
-                        <div style={{ width: '100%', height: 350 }}>
-                            <ResponsiveContainer>
+                        <div style={{ width: '100%', height: 350, minHeight: 350 }}>
+                            <ResponsiveContainer width="100%" height="100%">
                                 <AreaChart data={stats.chart_data}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
                                     <XAxis dataKey="name" stroke="#a0a0a0" tick={{fontSize: 12}} />
@@ -175,16 +175,16 @@ export default function Dashboard() {
                         </div>
                     </div>
                     
-                    {/* Gráfico de Pizza - (Legenda Horizontal) */}
+                    {/* Gráfico de Pizza */}
                     <div className="chart-container pie-chart">
                         <div className="chart-header"><h4>Áreas de Interesse</h4></div>
-                        <div style={{ width: '100%', height: 380 }}> 
-                            <ResponsiveContainer>
+                        <div style={{ width: '100%', height: 380, minHeight: 380 }}> 
+                            <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                     <Pie 
                                         data={stats.categories} 
-                                        cx="50%" // Centralizado
-                                        cy="45%" // Um pouco para cima para dar espaço à legenda embaixo
+                                        cx="50%" 
+                                        cy="45%" 
                                         innerRadius={70} 
                                         outerRadius={100} 
                                         paddingAngle={4} 

@@ -13,6 +13,8 @@ google-generativeai
 cryptography
 google-auth
 google-auth-oauthlib
+python-magic-bin
+pydantic
 
 #file_readers
 python-docx
@@ -23,3 +25,10 @@ odfpy
 pyyaml
 beautifulsoup4
 striprtf
+defusedxml
+
+# IA advanced tools
+chromadb
+pypdf
+tiktoken # for token counting
+sentence-transformers
