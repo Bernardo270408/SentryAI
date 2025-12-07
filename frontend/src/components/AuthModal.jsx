@@ -7,8 +7,7 @@ import {
   Crown,
   Eye,
   EyeOff,
-  Shield,
-  CheckCircle
+  Shield
 } from "lucide-react";
 import api from "../services/api";
 import toast from "react-hot-toast";
@@ -44,6 +43,23 @@ export default function AuthModal({ open, onClose, initialTab = "login" }) {
 
   if (!open) return null;
 
+  // --- LÓGICA CENTRAL DE SUCESSO E REDIRECIONAMENTO ---
+  const handleAuthSuccess = (data, toastId) => {
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
+    
+    // Feedback visual
+    toast.success(`Bem-vindo, ${data.user.name.split(' ')[0]}!`, { id: toastId });
+    onClose?.();
+
+    // Roteamento baseado em permissão (Admin vs User)
+    if (data.user.is_admin) {
+        navigate("/admin");
+    } else {
+        navigate("/app");
+    }
+  };
+
   async function handleLogin(e) {
     e?.preventDefault?.();
     setLoading(true);
@@ -51,12 +67,7 @@ export default function AuthModal({ open, onClose, initialTab = "login" }) {
     
     try {
       const data = await api.request("/login", "POST", { email, password }, false);
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      
-      toast.success("Login realizado!", { id: toastId });
-      onClose?.();
-      navigate("/app");
+      handleAuthSuccess(data, toastId);
     } catch (err) {
       if (err?.body?.need_verification) {
         toast.error("E-mail não verificado.", { id: toastId });
@@ -100,14 +111,7 @@ export default function AuthModal({ open, onClose, initialTab = "login" }) {
     
     try {
         const data = await api.request("/verify-email", "POST", { email, code: otp }, false);
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-        
-        toast.success("Conta verificada!", { id: toastId });
-        setTimeout(() => {
-            onClose();
-            navigate("/app");
-        }, 500);
+        handleAuthSuccess(data, toastId);
     } catch(err) {
         toast.error(err?.body?.error || "Código inválido.", { id: toastId });
     } finally {
@@ -123,11 +127,7 @@ export default function AuthModal({ open, onClose, initialTab = "login" }) {
             credential: credentialResponse.credential 
         }, false);
         
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-        toast.success("Login realizado!", { id: toastId });
-        onClose();
-        navigate("/app");
+        handleAuthSuccess(data, toastId);
     } catch (err) {
         toast.error("Falha no login com Google.", { id: toastId });
     } finally {
@@ -167,12 +167,11 @@ export default function AuthModal({ open, onClose, initialTab = "login" }) {
                 <div style={{display:'flex', flexDirection:'column', gap: 10, marginTop: 10}}>
                     <label className="auth-label" style={{textAlign:'center'}}>Código de Verificação</label>
                     <input 
-                        className="auth-input" 
+                        className="auth-input otp-input" 
                         value={otp} 
                         onChange={e => setOtp(e.target.value.replace(/\D/g, ''))} 
                         placeholder="000000" 
                         maxLength={6}
-                        style={{textAlign:'center', letterSpacing: '0.2em', fontSize: 24, fontWeight: 'bold'}}
                         autoFocus
                     />
                 </div>
@@ -189,11 +188,12 @@ export default function AuthModal({ open, onClose, initialTab = "login" }) {
             </div>
           ) : (
             <>
+              {/* ALERTA DE ADMIN ATUALIZADO */}
               <div className="admin-alert">
-                <Crown size={16} className="admin-icon" />
+                <Crown size={18} className="admin-icon" />
                 <div>
-                  <strong>Acesso Administrativo</strong>
-                  <div className="admin-text">Administradores têm acesso ao dashboard de analytics.</div>
+                  <strong>Área Restrita</strong>
+                  <div className="admin-text">O acesso administrativo redireciona automaticamente para o Painel de Controle.</div>
                 </div>
               </div>
 

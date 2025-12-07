@@ -1,6 +1,6 @@
 const BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
-// 1. Função request (suporta FormData para upload de arquivos)
+// 1. Função request centralizada
 async function request(path, method = "GET", body = null, auth = true, isFormData = false) {
   const headers = { Accept: "application/json" };
 
@@ -25,22 +25,38 @@ async function request(path, method = "GET", body = null, auth = true, isFormDat
   try {
     data = text ? JSON.parse(text) : null;
   } catch {
-    throw { status: response.status, body: text };
+    // Se o parse falhar, armazena o texto cru
+    data = { error: text || response.statusText };
   }
 
   if (!response.ok) {
+    // --- LÓGICA DE EXPULSÃO DE USUÁRIO BANIDO OU TOKEN EXPIRADO ---
+    // Se receber 401 (Não autorizado) ou 403 com indicação de logout forçado
+    if (response.status === 401 || (response.status === 403 && data?.force_logout)) {
+        console.warn("Acesso revogado. Redirecionando para login.");
+        
+        // Limpeza dos dados locais
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        
+        // Redirecionamento forçado para a tela inicial/login
+        window.location.href = "/";
+        
+        // Lança erro para interromper o fluxo da aplicação
+        throw { status: response.status, body: { error: "Sessão encerrada." } };
+    }
+    // --------------------------------------------------------------
+
     throw { status: response.status, body: data };
   }
 
   return data;
 }
 
-//    STREAMING: Fetch com ReadableStream
-
+// 2. STREAMING: Fetch com ReadableStream
 async function streamChatMessage({ chatId, content, onChunk, onEnd, onError }) {
   const token = localStorage.getItem("token");
-  const model = "gemini-2.5-pro";
-  // const model = "gemini-2.5-flash";
+  const model = "gemini-2.5-flash-lite";
 
   const url = `${BASE}/ai-messages/send-stream`;
 
@@ -60,6 +76,13 @@ async function streamChatMessage({ chatId, content, onChunk, onEnd, onError }) {
     });
 
     if (!response.ok) {
+      // Verifica se o erro no stream também é de banimento
+      if (response.status === 401 || response.status === 403) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          window.location.href = "/";
+          return;
+      }
       const errText = await response.text();
       throw new Error(errText || response.statusText);
     }
@@ -110,7 +133,6 @@ async function streamChatMessage({ chatId, content, onChunk, onEnd, onError }) {
 }
 
 // EXPORTS
-
 export default {
   request,
 

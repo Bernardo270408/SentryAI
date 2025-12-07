@@ -259,7 +259,7 @@ def analyze_contract_text(text: str) -> Dict:
     # 1. Tenta Gemini com native JSON Mode
     try:
         model = genai.GenerativeModel(
-            model_name="gemini-1.5-flash", # Modelo mais recente suporta JSON mode melhor
+            model_name="gemini-2.5-flash-lite", # Modelo mais recente suporta JSON mode melhor
             generation_config=GEMINI_JSON_CONFIG, # Force JSON
             system_instruction=system_prompt,
         )
@@ -302,7 +302,7 @@ def analyze_contract_text(text: str) -> Dict:
 def chat_about_contract(message: str, context: str) -> str:
     api_key = os.getenv("GEMINI_API_KEY")
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-2.0-flash")
+    model = genai.GenerativeModel("gemini-2.0-pro-exp")
     res = model.generate_content(f"Contexto: {context}\n\nPergunta: {message}")
     return res.text
 
@@ -314,7 +314,7 @@ def generate_dashboard_insight(user_name: str, last_interaction: str) -> str:
     if os.getenv("GEMINI_API_KEY"):
         try:
             genai.configure(api_key=api_key)
-            model = genai.GenerativeModel("gemini-2.0-flash")
+            model = genai.GenerativeModel("gemini-2.5-flash-lite")
             prompt = f"Com base na pergunta: '{last_interaction}', gere uma frase curta de conselho jurídico."
             response = model.generate_content(prompt)
             return response.text.strip()
@@ -329,7 +329,7 @@ def analyze_user_doubts(messages_list: List[str]) -> List[str]:
         return ["Sem dados."]
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel(
-        "gemini-2.0-flash", generation_config={"response_mime_type": "application/json"}
+        "gemini-2.0-pro-exp", generation_config={"response_mime_type": "application/json"}
     )
     recent = "\n".join(messages_list[-20:])
     prompt = f"Analise as perguntas: {recent}. Retorne JSON {{ 'doubts': ['Dúvida 1', 'Dúvida 2'] }}."
@@ -348,7 +348,7 @@ def generate_chat_title(message_content: str) -> str:
         return "Nova Conversa"
 
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-2.0-flash")
+    model = genai.GenerativeModel("gemini-2.0-pro-exp")
 
     prompt = f"""
     Analise a seguinte mensagem inicial de um usuário em um chat jurídico:
@@ -408,3 +408,48 @@ def get_available_models(api_key: str = "", openai_token: str = "") -> List[str]
 
     return available_models
 
+def analyze_user_risk_profile(user_messages: List[str]) -> Dict:
+    """
+    Analisa o histórico de mensagens de um usuário para determinar o risco de segurança.
+    """
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        return {"score": 0, "summary": "IA Indisponível"}
+
+    if not user_messages:
+        return {"score": 0, "summary": "Sem dados suficientes."}
+
+    # Pegar as últimas 50 mensagens para contexto
+    context = "\n".join([f"- {msg}" for msg in user_messages[-50:]])
+
+    prompt = f"""
+    Você é um analista de segurança de um sistema de IA Jurídica.
+    Analise as mensagens enviadas por um usuário e determine se ele apresenta comportamento de risco.
+    
+    Critérios de Risco:
+    - Tentativas de "Jailbreak" ou manipulação do prompt.
+    - Solicitação de ajuda para cometer crimes ou fraudes.
+    - Linguagem abusiva ou assédio.
+    - Uso normal = Risco Baixo.
+
+    Histórico do Usuário:
+    {context}
+
+    Retorne APENAS um JSON neste formato:
+    {{
+        "score": (inteiro de 0 a 100, onde 100 é perigo extremo),
+        "summary": "Uma frase curta descrevendo o comportamento."
+    }}
+    """
+
+    try:
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel(
+            model_name="gemini-2.0-pro-exp",
+            generation_config={"response_mime_type": "application/json"}
+        )
+        response = model.generate_content(prompt)
+        return json.loads(response.text)
+    except Exception as e:
+        logger.error(f"Erro na análise de risco: {e}")
+        return {"score": 0, "summary": "Erro na análise."}

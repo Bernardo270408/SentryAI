@@ -1,0 +1,208 @@
+/* src/styles/admin.css */
+
+.admin-root {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  color: #e4e4e7;
+  font-family: 'Inter', sans-serif;
+  /* Garante que o root não crie um contexto que prenda o modal */
+  transform: none; 
+  filter: none;
+}
+
+/* --- Header --- */
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #27272a;
+  padding-bottom: 1rem;
+}
+
+.admin-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-header p {
+  color: #a1a1aa;
+  font-size: 0.9rem;
+}
+
+/* --- Toolbar & Search --- */
+.admin-table-container {
+  background-color: #18181b;
+  border: 1px solid #27272a;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.admin-toolbar {
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #27272a;
+  gap: 1rem;
+}
+
+.search-box {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #71717a;
+}
+
+.admin-search {
+  width: 100%;
+  background-color: #09090b;
+  border: 1px solid #27272a;
+  border-radius: 6px;
+  padding: 0.6rem 1rem 0.6rem 2.5rem;
+  color: #fff;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.admin-search:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* --- Tabela --- */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.data-table th {
+  text-align: left;
+  padding: 1rem;
+  background-color: #09090b;
+  color: #a1a1aa;
+  font-weight: 500;
+  border-bottom: 1px solid #27272a;
+}
+
+.data-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #27272a;
+  vertical-align: middle;
+}
+
+.data-table tr:hover {
+  background-color: #27272a;
+}
+
+/* --- Badges & Status --- */
+.badge-risk {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  width: fit-content;
+}
+
+.badge-risk.safe { background-color: rgba(16, 185, 129, 0.1); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.2); }
+.badge-risk.warning { background-color: rgba(245, 158, 11, 0.1); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.2); }
+.badge-risk.danger { background-color: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); }
+
+.status-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-right: 6px;
+  margin-bottom: 2px;
+}
+.active-dot { background-color: #34d399; box-shadow: 0 0 8px rgba(52, 211, 153, 0.4); }
+.banned-dot { background-color: #ef4444; }
+
+/* --- Botões --- */
+.actions-cell {
+  display: flex;
+  gap: 8px;
+}
+
+.btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: opacity 0.2s;
+  font-weight: 500;
+}
+
+.btn:hover { opacity: 0.9; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn.tiny { padding: 6px 10px; font-size: 0.8rem; }
+.btn.outline { background: transparent; border: 1px solid #3f3f46; color: #e4e4e7; }
+.btn.primary { background: #3b82f6; color: white; }
+.btn.danger { background: #ef4444; color: white; }
+.btn.ghost { background: transparent; color: #a1a1aa; }
+
+/* --- MODAL FIX (NUCLEAR OPTION) --- */
+/* Forçamos o position fixed na viewport inteira e removemos filtros */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  /* Cor preta com 80% de opacidade */
+  background-color: rgba(0, 0, 0, 0.8) !important;
+  
+  /* Reset TOTAL de filtros para evitar blur */
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+  
+  /* Z-index alto para cobrir tudo */
+  z-index: 9998 !important;
+}
+
+.admin-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  /* Centralização precisa */
+  transform: translate(-50%, -50%) !important;
+  
+  background-color: #18181b !important;
+  border: 1px solid #3f3f46;
+  padding: 24px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  
+  /* Z-index maior que o overlay */
+  z-index: 9999 !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  
+  /* Garante opacidade total */
+  opacity: 1 !important;
+}

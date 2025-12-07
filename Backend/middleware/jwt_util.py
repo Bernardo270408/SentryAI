@@ -3,7 +3,6 @@ from functools import wraps
 from flask import request, jsonify, current_app
 from DAO.user_dao import UserDAO
 
-
 def generate_token(user):
     """
     Gera um token JWT com payload básico (id, is_admin).
@@ -14,11 +13,10 @@ def generate_token(user):
     payload = {
         "id": user.id,
         "is_admin": user.is_admin,
-        # Poderia incluir 'exp' para expiração do token
+        # Poderia incluir 'exp' para expiração do token se desejar
     }
     token = jwt.encode(payload, current_app.config["SECRET_KEY"], algorithm="HS256")
     return token
-
 
 def decode_token(token):
     """
@@ -30,18 +28,15 @@ def decode_token(token):
         )
         return payload
     except jwt.ExpiredSignatureError:
-        # Token expirado
         return None
     except jwt.InvalidTokenError:
-        # Token inválido
         return None
-
 
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
+        # Permite preflight requests do CORS
         if request.method == "OPTIONS":
-            # Não retorna nada — deixa o flask-cors responder
             return "", 200
 
         auth_header = request.headers.get("Authorization", None)
@@ -53,13 +48,38 @@ def token_required(f):
         if not payload:
             return jsonify({"error": "Token is invalid or expired"}), 401
 
+        # Busca o usuário no banco para garantir que ele ainda existe e verificar status
         user = UserDAO.get_user_by_id(payload["id"])
+        
         if not user:
             return jsonify({"error": "User not found"}), 401
+
+        # --- BLOQUEIO DE SEGURANÇA IMEDIATO ---
+        # Verifica se o usuário foi banido APÓS ter recebido o token
+        if user.is_banned:
+            return jsonify({
+                "error": "Conta suspensa",
+                "message": "Sua conta foi banida administrativamente.",
+                "force_logout": True # Flag para o frontend identificar
+            }), 403
+        # --------------------------------------
 
         request.user = user
         request.user_payload = payload
 
         return f(*args, **kwargs)
 
+    return decorated
+
+def admin_required(f):
+    """
+    Decorador para rotas que exigem privilégios de administrador.
+    Deve ser colocado APÓS @token_required.
+    """
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        current_user = request.user
+        if not current_user.is_admin:
+            return jsonify({"error": "Acesso Negado. Privilégios de administrador requeridos."}), 403
+        return f(*args, **kwargs)
     return decorated

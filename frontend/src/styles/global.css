@@ -435,14 +435,64 @@ h1{font-size:40px;margin:0 0 10px;color:var(--text)}
 .auth-title { text-align:center; font-size:20px; margin: 6px 0 2px; color:var(--text); }
 .auth-sub { text-align:center; color: #9aa3ab; font-size:13px; margin-bottom:14px; }
 
-/* admin alert */
+/* ===== Auth Modal Updates ===== */
+
+/* Admin Alert Box - Estilo Robusto */
 .admin-alert {
-  display:flex; gap:10px; align-items:flex-start; padding:10px; border-radius:10px;
-  background: rgba(255,180,20,0.04); border: 1px solid rgba(255,180,20,0.06); color:#ffcc80;
-  margin-bottom:14px; font-size:13px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 16px;
+  border-radius: 10px;
+  
+  /* Cores douradas/âmbar para denotar privilégio e atenção */
+  background: rgba(255, 180, 20, 0.08); 
+  border: 1px solid rgba(255, 180, 20, 0.2);
+  color: #ffdca8;
+  
+  margin-bottom: 20px;
+  font-size: 13px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transition: all 0.2s ease;
 }
-.admin-icon { color:#ffcc80; }
-.admin-text { color:#ffdfb5; font-size:13px; margin-top:2px; }
+
+.admin-alert:hover {
+  background: rgba(255, 180, 20, 0.12);
+  border-color: rgba(255, 180, 20, 0.3);
+}
+
+.admin-icon {
+  color: #ffb74d;
+  flex-shrink: 0;
+  margin-top: 2px;
+  filter: drop-shadow(0 0 5px rgba(255, 183, 77, 0.3));
+}
+
+.admin-text {
+  color: #e0e0e0;
+  font-size: 12px;
+  line-height: 1.4;
+  margin-top: 2px;
+  opacity: 0.9;
+}
+
+/* OTP Input específico */
+.auth-input.otp-input {
+  text-align: center;
+  letter-spacing: 0.3em;
+  font-size: 24px;
+  font-weight: 700;
+  font-family: monospace;
+  padding: 14px;
+  background: rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--accent);
+}
+
+.auth-input.otp-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+}
 
 /* google button */
 .auth-google {

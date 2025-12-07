@@ -13,7 +13,6 @@ auth_bp = Blueprint("auth_bp", __name__)
 
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 
-
 @auth_bp.route("/login", methods=["POST"])
 def login():
     data = request.json
@@ -25,6 +24,15 @@ def login():
     user = UserDAO.get_user_by_email(data["email"])
 
     if user and user.password and check_password_hash(user.password, password_input):
+        
+        # --- VERIFICAÇÃO DE BANIMENTO NO LOGIN ---
+        if user.is_banned:
+            return jsonify({
+                "error": "Conta suspensa.", 
+                "message": "Você não tem permissão para acessar a plataforma."
+            }), 403
+        # -----------------------------------------
+
         if not user.is_verified:
             return (
                 jsonify(
@@ -130,7 +138,11 @@ def google_login():
             db.session.add(user)
             db.session.commit()
         else:
-            # Se já existe, vincula o google_id e marca como verificado
+            # Se já existe, verifica se está banido ANTES de atualizar qualquer coisa
+            if user.is_banned:
+                return jsonify({"error": "Conta suspensa permanentemente."}), 403
+
+            # Vincula o google_id e marca como verificado
             changed = False
             if not user.google_id:
                 user.google_id = google_id
@@ -141,6 +153,10 @@ def google_login():
 
             if changed:
                 db.session.commit()
+        
+        # Verificação extra para usuários novos que possam ter sido banidos imediatamente (raro, mas seguro)
+        if user.is_banned:
+            return jsonify({"error": "Conta suspensa."}), 403
 
         token = generate_token(user)
         return jsonify({"token": token, "user": user.to_dict()}), 200

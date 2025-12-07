@@ -6,6 +6,7 @@ import { Toaster } from 'react-hot-toast';
 
 import App from "./App";
 import Home from "./pages/Home";
+import AdminPanel from "./pages/AdminPanel";
 import Aplication from "./pages/Aplication";
 import Dashboard from "./pages/Dashboard";
 import ChatPage from "./pages/ChatPage";
@@ -22,15 +23,39 @@ import "./styles/global.css";
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
+// COMPONENTES DE PROTEÇÃO DE ROTA ---
+
+// 1. Proteção Básica: Apenas verifica se está logado
 function Protected({ children }) {
   const token = localStorage.getItem("token");
   if (!token) return <Navigate to="/" replace />;
   return children;
 }
 
+// 2. Proteção de Admin: Verifica Login + Permissão de Admin
+function AdminRoute({ children }) {
+  const token = localStorage.getItem("token");
+  // Tenta ler o usuário com segurança, caso esteja vazio retorna objeto vazio
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+  // Se não tem token, volta pra home
+  if (!token) {
+    return <Navigate to="/" replace />;
+  }
+
+  // Se tem token mas NÃO é admin, manda para o painel de usuário comum
+  if (!user.is_admin) {
+    return <Navigate to="/app" replace />;
+  }
+
+  // Se passou por tudo, libera o Admin
+  return children;
+}
+
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      {/* Configuração do Toaster (Notificações) */}
       <Toaster 
         position="top-center" 
         toastOptions={{
@@ -42,9 +67,9 @@ createRoot(document.getElementById("root")).render(
         }} 
       />
       
-      {/* CORREÇÃO: Flags v7_startTransition e v7_relativeSplatPath */}
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Routes>
+          {/* --- ROTAS PÚBLICAS --- */}
           <Route path="/" element={<Home />} />
           <Route path="/knowledge-base" element={<KnowledgeBase />} />
           <Route path="/docs" element={<Documentation />} />
@@ -52,6 +77,17 @@ createRoot(document.getElementById("root")).render(
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/disclaimer" element={<Disclaimer />} />
 
+          {/* --- ROTA DE ADMINISTRAÇÃO (Separada do App) --- */}
+          <Route 
+            path="/admin" 
+            element={
+              <AdminRoute>
+                <AdminPanel />
+              </AdminRoute>
+            } 
+          />
+
+          {/* --- ROTAS DA APLICAÇÃO (Usuário Comum) --- */}
           <Route
             path="/app"
             element={
@@ -69,6 +105,7 @@ createRoot(document.getElementById("root")).render(
             <Route path="settings" element={<Settings />} />
           </Route>
 
+          {/* --- ROTA DE FALLBACK (Qualquer erro 404 volta pra home) --- */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
