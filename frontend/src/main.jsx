@@ -13,6 +13,8 @@ import ChatPage from "./pages/ChatPage";
 import Profile from "./pages/Profile";
 import RightsExplorer from "./pages/RightsExplorer";
 import ContractAnalysis from "./pages/ContractAnalysis";
+import BannedPage from "./pages/BannedPage";
+import AppealPage from "./pages/AppealPage";
 import Settings from "./pages/Settings";
 import KnowledgeBase from "./pages/KnowledgeBase";
 import Documentation from "./pages/Documentation";
@@ -76,6 +78,10 @@ createRoot(document.getElementById("root")).render(
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/disclaimer" element={<Disclaimer />} />
+
+          {/* NOVAS ROTAS DE BANIMENTO */}
+          <Route path="/banned" element={<BannedPage />} />
+          <Route path="/appeal" element={<AppealPage />} />
 
           {/* --- ROTA DE ADMINISTRAÇÃO (Separada do App) --- */}
           <Route 

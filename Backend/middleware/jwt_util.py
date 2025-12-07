@@ -54,13 +54,15 @@ def token_required(f):
         if not user:
             return jsonify({"error": "User not found"}), 401
 
-        # --- BLOQUEIO DE SEGURANÇA IMEDIATO ---
-        # Verifica se o usuário foi banido APÓS ter recebido o token
+        # --- BLOQUEIO DE SEGURANÇA COM DETALHES ---
         if user.is_banned:
             return jsonify({
                 "error": "Conta suspensa",
-                "message": "Sua conta foi banida administrativamente.",
-                "force_logout": True # Flag para o frontend identificar
+                "force_logout": True,
+                "ban_details": {
+                    "reason": user.ban_reason or "Violação dos Termos de Uso",
+                    "expires_at": user.ban_expires_at.isoformat() if user.ban_expires_at else None
+                }
             }), 403
         # --------------------------------------
 

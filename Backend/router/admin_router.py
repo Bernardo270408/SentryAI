@@ -84,8 +84,11 @@ def trigger_analysis(user_id):
 @admin_required
 def ban_user(user_id):
     data = request.json
-    duration_hours = data.get("duration") # Se None = Permanente
-    reason = data.get("reason", "Violação dos termos")
+    duration_hours = data.get("duration") 
+    reason = data.get("reason")
+
+    if not reason or len(reason.strip()) < 5:
+        return jsonify({"error": "É obrigatório fornecer um motivo para o banimento (min. 5 caracteres)."}), 400
 
     user = UserDAO.get_user_by_id(user_id)
     if not user:
@@ -103,7 +106,11 @@ def ban_user(user_id):
         user.ban_expires_at = None # Permanente
 
     db.session.commit()
-    return jsonify({"message": "Usuário banido com sucesso.", "expires": user.ban_expires_at})
+    return jsonify({
+        "message": "Usuário banido.", 
+        "reason": reason,
+        "expires": user.ban_expires_at
+    })
 
 @admin_bp.route("/unban/<int:user_id>", methods=["POST"])
 @token_required

@@ -30,19 +30,21 @@ async function request(path, method = "GET", body = null, auth = true, isFormDat
   }
 
   if (!response.ok) {
-    // --- LÓGICA DE EXPULSÃO DE USUÁRIO BANIDO OU TOKEN EXPIRADO ---
-    // Se receber 401 (Não autorizado) ou 403 com indicação de logout forçado
+    // --- LÓGICA DE EXPULSÃO ---
     if (response.status === 401 || (response.status === 403 && data?.force_logout)) {
-        console.warn("Acesso revogado. Redirecionando para login.");
         
-        // Limpeza dos dados locais
+        // Se houver detalhes do banimento, salvamos para mostrar na tela
+        if (data.ban_details) {
+            localStorage.setItem("ban_info", JSON.stringify(data.ban_details));
+            window.location.href = "/banned"; // Redireciona para página de banido
+        } else {
+            // Logout comum (token expirado ou 401 simples)
+            window.location.href = "/";
+        }
+
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         
-        // Redirecionamento forçado para a tela inicial/login
-        window.location.href = "/";
-        
-        // Lança erro para interromper o fluxo da aplicação
         throw { status: response.status, body: { error: "Sessão encerrada." } };
     }
     // --------------------------------------------------------------

@@ -25,13 +25,16 @@ def login():
 
     if user and user.password and check_password_hash(user.password, password_input):
         
-        # --- VERIFICAÇÃO DE BANIMENTO NO LOGIN ---
+        # --- BLOQUEIO NO LOGIN COM DETALHES ---
         if user.is_banned:
             return jsonify({
                 "error": "Conta suspensa.", 
-                "message": "Você não tem permissão para acessar a plataforma."
+                "force_logout": True,
+                "ban_details": {
+                    "reason": user.ban_reason or "Violação dos Termos",
+                    "expires_at": user.ban_expires_at.isoformat() if user.ban_expires_at else None
+                }
             }), 403
-        # -----------------------------------------
 
         if not user.is_verified:
             return (
