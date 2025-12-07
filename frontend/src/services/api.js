@@ -167,4 +167,10 @@ export default {
 
   // ---------- STREAMING ----------
   streamChatMessage,
+
+  sendAppeal: (email, message) => request("/users/appeal", "POST", { email, message }, false), // auth=false
+  
+  getAppeals: () => request("/admin/appeals", "GET"),
+  
+  resolveAppeal: (userId, action) => request(`/admin/appeal/${userId}/resolve`, "POST", { action }),
 };

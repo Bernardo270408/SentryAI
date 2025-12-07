@@ -6,6 +6,7 @@ from DAO.message_user_dao import UserMessageDAO
 from middleware.jwt_util import token_required, admin_required
 from services.ai_service import analyze_user_risk_profile
 from datetime import datetime, timedelta
+from sqlalchemy import or_
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -13,9 +14,8 @@ admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 @token_required
 @admin_required
 def get_all_users_admin():
-    """Lista usuários com paginação e filtros de risco/busca."""
     search = request.args.get("search", "").lower()
-    filter_risk = request.args.get("risk", "all") # all, safe, warning, danger
+    filter_risk = request.args.get("risk", "all")
     
     query = User.query
 
@@ -29,29 +29,17 @@ def get_all_users_admin():
     results = []
 
     for u in users:
-        # Lógica de filtro local (ou via DB se otimizar query)
-        risk_level = "safe"
-        # Dentro do loop for u in users:
-
-        # 1. Trata o valor None convertendo para 0
         current_score = u.risk_profile_score if u.risk_profile_score is not None else 0
-
-        risk_level = "safe" # Valor padrão
-
-        # 2. Faz as comparações usando a variável tratada 'current_score'
-        if current_score > 75: 
-            risk_level = "danger"
-        elif current_score > 30: 
-            risk_level = "warning"
-
-        # ... resto do código que monta o objeto de resposta ...
+        risk_level = "safe"
+        if current_score > 75: risk_level = "danger"
+        elif current_score > 30: risk_level = "warning"
 
         if filter_risk != "all" and risk_level != filter_risk:
             continue
 
         results.append({
             **u.to_dict(),
-            "msg_count": len(u.user_messages), # Contagem rápida
+            "msg_count": len(u.user_messages),
             "status": "Banned" if u.is_banned else "Active"
         })
 
@@ -61,7 +49,6 @@ def get_all_users_admin():
 @token_required
 @admin_required
 def trigger_analysis(user_id):
-    """Dispara análise de IA sob demanda para um usuário."""
     user = UserDAO.get_user_by_id(user_id)
     if not user:
         return jsonify({"error": "User not found"}), 404
@@ -83,12 +70,13 @@ def trigger_analysis(user_id):
 @token_required
 @admin_required
 def ban_user(user_id):
+    current_admin = request.user
     data = request.json
     duration_hours = data.get("duration") 
     reason = data.get("reason")
 
     if not reason or len(reason.strip()) < 5:
-        return jsonify({"error": "É obrigatório fornecer um motivo para o banimento (min. 5 caracteres)."}), 400
+        return jsonify({"error": "É obrigatório fornecer um motivo (min. 5 caracteres)."}), 400
 
     user = UserDAO.get_user_by_id(user_id)
     if not user:
@@ -99,11 +87,12 @@ def ban_user(user_id):
 
     user.is_banned = True
     user.ban_reason = reason
+    user.banned_by_id = current_admin.id  # Salva quem baniu
     
     if duration_hours:
         user.ban_expires_at = datetime.utcnow() + timedelta(hours=int(duration_hours))
     else:
-        user.ban_expires_at = None # Permanente
+        user.ban_expires_at = None
 
     db.session.commit()
     return jsonify({
@@ -123,6 +112,81 @@ def unban_user(user_id):
     user.is_banned = False
     user.ban_expires_at = None
     user.ban_reason = None
+    user.banned_by_id = None
+    user.appeal_data = None # Limpa o recurso se houver
     
     db.session.commit()
     return jsonify({"message": "Banimento removido."})
+
+# --- NOVAS ROTAS DE RECURSO ---
+
+@admin_bp.route("/appeals", methods=["GET"])
+@token_required
+@admin_required
+def get_appeals():
+    """
+    Retorna lista de usuários que enviaram recurso.
+    FILTRO CRÍTICO: Exclui usuários banidos pelo admin atual.
+    Inclui usuários onde banned_by_id é NULL (banimentos antigos ou de sistema).
+    """
+    current_admin_id = request.user.id
+    
+    # Busca usuários banidos que tenham dados de apelação
+    # Lógica: (Quem baniu NÃO é o admin atual) OU (Ninguém assinou o banimento/Legacy)
+    users = User.query.filter(
+        User.is_banned == True,
+        User.appeal_data.isnot(None),
+        or_(
+            User.banned_by_id != current_admin_id,
+            User.banned_by_id.is_(None)
+        )
+    ).all()
+    
+    results = []
+    for u in users:
+        # Filtro adicional em Python para garantir que só pegamos os pendentes
+        # (Dependendo do banco, filtrar JSON via SQL pode ser complexo, aqui é seguro)
+        if u.appeal_data and u.appeal_data.get("status") == "pending":
+            results.append({
+                "user_id": u.id,
+                "user_name": u.name,
+                "user_email": u.email,
+                "ban_reason": u.ban_reason,
+                "appeal": u.appeal_data 
+            })
+        
+    return jsonify(results)
+
+@admin_bp.route("/appeal/<int:user_id>/resolve", methods=["POST"])
+@token_required
+@admin_required
+def resolve_appeal(user_id):
+    """Aceita (desbane) ou Rejeita (mantém ban) o recurso."""
+    data = request.json
+    action = data.get("action") # 'approve' ou 'reject'
+    
+    user = UserDAO.get_user_by_id(user_id)
+    if not user: return jsonify({"error": "User not found"}), 404
+    
+    if action == "approve":
+        user.is_banned = False
+        user.ban_reason = None
+        user.ban_expires_at = None
+        user.banned_by_id = None
+        user.appeal_data = None # Limpa recurso
+        msg = "Recurso aceito. Usuário desbanido."
+        
+    elif action == "reject":
+        # Mantém banido, mas limpa o pedido para não aparecer mais na lista pendente
+        # Ou atualiza status para 'rejected' para manter histórico
+        appeal = dict(user.appeal_data)
+        appeal['status'] = 'rejected'
+        appeal['admin_note'] = 'Recurso negado após análise.'
+        user.appeal_data = appeal # Atualiza JSON
+        msg = "Recurso negado. Banimento mantido."
+        
+    else:
+        return jsonify({"error": "Ação inválida."}), 400
+        
+    db.session.commit()
+    return jsonify({"message": msg})

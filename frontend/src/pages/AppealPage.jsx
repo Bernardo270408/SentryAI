@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiArrowLeft, FiSend } from "react-icons/fi";
 import toast from "react-hot-toast";
+import api from "../services/api";
 import "../styles/global.css";
 
 export default function AppealPage() {
@@ -10,16 +11,19 @@ export default function AppealPage() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    // Simulação de envio para API (Futuramente criar endpoint /users/appeal)
-    setTimeout(() => {
+    try {
+        await api.sendAppeal(email, message);
+        toast.success("Recurso enviado! Um moderador diferente analisará seu caso.");
+        setTimeout(() => navigate('/'), 2500);
+    } catch (err) {
+        toast.error(err.body?.error || "Erro ao enviar recurso.");
+    } finally {
         setLoading(false);
-        toast.success("Recurso enviado! Analisaremos em até 48h.");
-        setTimeout(() => navigate('/'), 2000);
-    }, 1500);
+    }
   };
 
   return (
@@ -31,7 +35,10 @@ export default function AppealPage() {
 
         <div className="card" style={{padding: '30px', border: '1px solid rgba(255,255,255,0.1)'}}>
             <h2 style={{marginTop: 0}}>Recorrer Suspensão</h2>
-            <p className="muted">Se você acredita que houve um erro, envie uma mensagem para nossa equipe de suporte.</p>
+            <p className="muted">
+                Se você acredita que houve um erro, envie sua defesa. 
+                <br/><small style={{color:'#a1a1aa'}}>Nota: Seu recurso será avaliado por um administrador diferente daquele que aplicou o banimento.</small>
+            </p>
 
             <form onSubmit={handleSubmit} style={{marginTop: '20px', display:'flex', flexDirection:'column', gap: '15px'}}>
                 <div>

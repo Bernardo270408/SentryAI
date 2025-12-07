@@ -113,3 +113,36 @@ def delete_user(user_id):
         return jsonify({"error": "Usuário não encontrado."}), 404
 
     return jsonify({"message": "Usuário deletado com sucesso."})
+
+@user_bp.route("/appeal", methods=["POST"])
+def submit_appeal():
+    """
+    Rota pública para usuários banidos enviarem recurso.
+    Valida pelo e-mail cadastrado.
+    """
+    data = request.json
+    email = data.get("email")
+    message = data.get("message")
+    
+    if not email or not message:
+        return jsonify({"error": "Email e mensagem são obrigatórios."}), 400
+        
+    user = UserDAO.get_user_by_email(email)
+    
+    if not user:
+        return jsonify({"error": "E-mail não encontrado."}), 404
+        
+    if not user.is_banned:
+        return jsonify({"error": "Esta conta não está banida."}), 400
+        
+    # Salva o recurso como JSON no banco
+    appeal_payload = {
+        "message": message,
+        "date": datetime.utcnow().isoformat(),
+        "status": "pending"
+    }
+    
+    user.appeal_data = appeal_payload
+    db.session.commit()
+    
+    return jsonify({"message": "Recurso enviado com sucesso. Aguarde análise de um moderador."})
