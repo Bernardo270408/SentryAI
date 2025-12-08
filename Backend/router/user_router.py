@@ -1,148 +1,181 @@
-from flask import Blueprint, request, jsonify
-from DAO.user_dao import UserDAO
-from models.user import User
-from extensions import db
+# routers/user_router.py
+from fastapi import APIRouter, Depends, HTTPException, Request
+from sqlalchemy.orm import Session
+from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash
 from email_validator import validate_email, EmailNotValidError
+
+from config import Settings
+from extensions import get_db
+from DAO.user_dao import UserDAO
+from models.user import User
 from services.email_service import generate_verification_code, send_verification_email
-from datetime import datetime, timedelta
-from middleware.jwt_util import token_required
-from schemas import UserCreateSchema
-from pydantic import ValidationError
+from middleware.jwt_util import get_current_user
 
-user_bp = Blueprint("user", __name__, url_prefix="/users")
+user_router = APIRouter(prefix="/users", tags=["users"])
 
-@user_bp.route("/", methods=["POST"])
-def create_user():
-    # 1. Validação Automática com Pydantic
+settings = Settings
+
+
+
+# --- Endpoints ---
+
+@user_router.post("/", status_code=201)
+async def create_user(request: Request, db: Session = Depends(get_db)):
+    """
+    Cria usuário (validação mínima + email validation).
+    Mantém o mesmo retorno da versão Flask.
+    """
+    data = await request.json()
+
+    # Validação de presença
+    if "name" not in data or "email" not in data or "password" not in data:
+        raise HTTPException(status_code=400, detail="Campos obrigatórios: name, email, password")
+
+    # Validação de formato de email (como na versão Flask)
     try:
-        # Valida o JSON de entrada contra o Schema
-        payload = UserCreateSchema(**request.json)
-    except ValidationError as e:
-        # Retorna erro detalhado automaticamente se falhar
-        return jsonify({"error": "Dados inválidos", "details": e.errors()}), 400
+        validate_email(data["email"])
+    except EmailNotValidError as e:
+        raise HTTPException(status_code=400, detail=f"Email inválido: {str(e)}")
 
-    # 2. Lógica de Negócio (Agora limpa de verificações básicas)
-    if UserDAO.get_user_by_email(payload.email):
-        return jsonify({"error": "Email já está em uso."}), 400
+    # Verifica se já existe
+    if UserDAO.get_user_by_email(db, data["email"]):
+        raise HTTPException(status_code=400, detail="Email já está em uso.")
 
-    password_hash = generate_password_hash(payload.password)
+    password_hash = generate_password_hash(data["password"])
+
     code = generate_verification_code()
     expiration = datetime.utcnow() + timedelta(minutes=15)
 
     user = User(
-        name=payload.name,
-        email=payload.email,
+        name=data["name"],
+        email=data["email"],
         password=password_hash,
-        extra_data=payload.extra_data,
+        extra_data=data.get("extra_data"),
         is_verified=False,
         verification_code=code,
         verification_code_expires_at=expiration,
     )
 
-    db.session.add(user)
-    db.session.commit()
+    created = UserDAO.create_user_obj(db, user)
 
-    send_verification_email(payload.email, code)
+    # envio de email (mantive chamada direta; considere BackgroundTasks se bloquear)
+    send_verification_email(created.email, code)
 
-    return jsonify({
+    return {
         "message": "Usuário criado. Verifique seu e-mail.",
-        "email": payload.email,
+        "email": created.email,
         "need_verification": True,
-        "user": user.to_dict(),
-    }), 201
+        "user": created.to_dict(),
+    }
 
-@user_bp.route("/email/<email>", methods=["GET"])
-def get_user_by_email(email):
-    user = UserDAO.get_user_by_email(email)
 
+@user_router.get("/email/{email}")
+def get_user_by_email(email: str, db: Session = Depends(get_db)):
+    user = UserDAO.get_user_by_email(db, email)
     if not user:
-        return jsonify({"error": "Usuário não encontrado."}), 404
+        raise HTTPException(status_code=404, detail="Usuário não encontrado.")
+    return user.to_dict()
 
-    return jsonify(user.to_dict())
 
-
-@user_bp.route("/<int:user_id>", methods=["GET"])
-def get_user(user_id):
-    user = UserDAO.get_user_by_id(user_id)
-
+@user_router.get("/{user_id}")
+def get_user(user_id: int, db: Session = Depends(get_db)):
+    user = UserDAO.get_user_by_id(db, user_id)
     if not user:
-        return jsonify({"error": "Usuário não encontrado."}), 404
-
-    return jsonify(user.to_dict())
-
-
-@user_bp.route("/", methods=["GET"])
-def get_all_users():
-    users = UserDAO.get_all_users()
-    return jsonify([u.to_dict() for u in users])
+        raise HTTPException(status_code=404, detail="Usuário não encontrado.")
+    return user.to_dict()
 
 
-@user_bp.route("/<int:user_id>", methods=["PUT"])
-@token_required
-def update_user(user_id):
-    data = request.json
-    current_user = request.user
+@user_router.get("/")
+def get_all_users(db: Session = Depends(get_db)):
+    users = UserDAO.get_all_users(db)
+    return [u.to_dict() for u in users]
+
+
+@user_router.put("/{user_id}", status_code=201)
+async def update_user(
+    user_id: int,
+    request: Request,
+    current_user: User = Depends(get_current_user),  # <--- passe a função, NÃO a execute
+    db: Session = Depends(get_db)
+):
+    """
+    Atualiza apenas campos permitidos — evita mass assignment.
+    Lógica de autorização igual ao Flask.
+    """
     if current_user.id != user_id and not current_user.is_admin:
-        return jsonify({"error": "Permission denied"}), 403
+        raise HTTPException(status_code=403, detail="Permission denied")
 
+    data = await request.json()
+    if not isinstance(data, dict):
+        raise HTTPException(status_code=400, detail="Payload inválido")
+
+    # somente campos permitidos (mesmo set da versão Flask)
     allowed_fields = {"name", "email", "password", "extra_data"}
     data = {k: v for k, v in data.items() if k in allowed_fields}
 
+    # se tentar atualizar sem campos válidos
+    if not data:
+        raise HTTPException(status_code=400, detail="Nenhum campo válido para atualizar")
+
+    # hashing de senha
     if "password" in data:
         data["password"] = generate_password_hash(data["password"])
 
-    user = UserDAO.update_user(user_id, data)
+    user = UserDAO.update_user(db, user_id, data)
     if not user:
-        return jsonify({"error": "Usuário não encontrado."}), 404
+        raise HTTPException(status_code=404, detail="Usuário não encontrado.")
 
     user_dict = user.to_dict()
     user_dict.pop("password", None)
-    return jsonify(user_dict), 201
+    return user_dict
 
 
-@user_bp.route("/<int:user_id>", methods=["DELETE"])
-@token_required
-def delete_user(user_id):
-    current_user = request.user
+@user_router.delete("/{user_id}")
+def delete_user(
+    user_id: int,
+    current_user: User = Depends(get_current_user),  # <--- certo
+    db: Session = Depends(get_db)
+):
     if current_user.id != user_id and not current_user.is_admin:
-        return jsonify({"error": "Permission denied"}), 403
+        raise HTTPException(status_code=403, detail="Permission denied")
 
-    success = UserDAO.delete_user(user_id)
+    success = UserDAO.delete_user(db, user_id)
     if not success:
-        return jsonify({"error": "Usuário não encontrado."}), 404
+        raise HTTPException(status_code=404, detail="Usuário não encontrado.")
+    return {"message": "Usuário deletado com sucesso."}
 
-    return jsonify({"message": "Usuário deletado com sucesso."})
 
-@user_bp.route("/appeal", methods=["POST"])
-def submit_appeal():
+@user_router.post("/appeal")
+async def submit_appeal(request: Request, db: Session = Depends(get_db)):
     """
     Rota pública para usuários banidos enviarem recurso.
     Valida pelo e-mail cadastrado.
     """
-    data = request.json
+    data = await request.json()
     email = data.get("email")
     message = data.get("message")
-    
+
     if not email or not message:
-        return jsonify({"error": "Email e mensagem são obrigatórios."}), 400
-        
-    user = UserDAO.get_user_by_email(email)
-    
+        raise HTTPException(status_code=400, detail="Email e mensagem são obrigatórios.")
+
+    user = UserDAO.get_user_by_email(db, email)
     if not user:
-        return jsonify({"error": "E-mail não encontrado."}), 404
-        
+        raise HTTPException(status_code=404, detail="E-mail não encontrado.")
+
     if not user.is_banned:
-        return jsonify({"error": "Esta conta não está banida."}), 400
-        
-    # Salva o recurso como JSON no banco
+        raise HTTPException(status_code=400, detail="Esta conta não está banida.")
+
+    # Salva o recurso como JSON no banco (mesma estrutura do Flask)
     appeal_payload = {
         "message": message,
         "date": datetime.utcnow().isoformat(),
         "status": "pending"
     }
-    
+
     user.appeal_data = appeal_payload
-    db.session.commit()
-    
-    return jsonify({"message": "Recurso enviado com sucesso. Aguarde análise de um moderador."})
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+    return {"message": "Recurso enviado com sucesso. Aguarde análise de um moderador."}

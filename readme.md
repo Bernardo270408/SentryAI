@@ -2,7 +2,6 @@
 
 <p align="center" display="inline-block">
   <img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?style=for-the-badge&logo=python&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Flask-3.1.2-000000?style=for-the-badge&logo=flask&logoColor=white"/>
   <img src="https://img.shields.io/badge/SQLAlchemy-2.0.44-D71F00?style=for-the-badge&logo=sqlalchemy&logoColor=white"/>
   <img src="https://img.shields.io/badge/MySQL-8.0-005C84?style=for-the-badge&logo=mysql&logoColor=white"/>
   <img src="https://img.shields.io/badge/React-18-20232A?style=for-the-badge&logo=react&logoColor=61DAFB"/>
@@ -58,7 +57,7 @@ O **SentryAI**, como dito antes, é uma aplicação que visa coletar dados para 
 - **ChatGPT** - Serviço de IA da OpenAI
 - **Gemini** - Serviço de IA da Google
 - **Google Auth** - API da Google para autenticação
-- **Flask** - Framework web para Python.
+- **FastAPI** - Framework web para Python.
 - **React + Vite** - Frameworks para o Front-End.
 - **SQLAlchemy** - ORM para interação com o banco de dados.
 - **MySQL** - RDBMS escolhido por sua simplicidade e robustez
@@ -142,7 +141,7 @@ CREATE DATABASE sentryai;
 
 Após isso, na pasta do backend execute
 ```bash
-flask db upgrade
+alembic update head
 ```
 
 **5.** Instale as dependencias do Frontend
@@ -199,9 +198,14 @@ sentry quit
 ### Inicializando a API (Back-End)
 Para iniciar a API, caso esteja em um ambiente de testes, rode dentro da pasta do backend
 ```bash
-flask run --debug
+python app.py
 ```
-Em outros casos, recomenda-se o uso de `gunicorn`
+
+Em outros casos, recomenda-se o uso de `uvicorn`. A forma anterior apenas o chama via python.
+
+```bash
+uvicorn app:app
+```
 
 ### Inicializando o Client (Front-End)
 Para iniciar o Client, caso esteja em um ambiente de testes, rode dentro da pasta do frontend
@@ -240,7 +244,7 @@ SentryAI/
 │   ├── router/              # Rotas/Blueprints da API
 │   ├── services/            # Lógica de negócio e integrações (IA, Email, Arquivos)
 │   ├── middleware/          # JWT e Decorators
-│   └── migrations/          # Scripts do Alembic
+│   └── migrations_new/          # Scripts do Alembic
 │
 ├── frontend/
 │   ├── package.json

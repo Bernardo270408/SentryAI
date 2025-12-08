@@ -1,10 +1,19 @@
-import os
-import dotenv
+from pydantic_settings import BaseSettings
+from typing import List
+import dotenv, os
 
-class Config:
-    SECRET_KEY = dotenv.get_key(dotenv.find_dotenv(), "SECRET_KEY")
-    SQLALCHEMY_DATABASE_URI = dotenv.get_key(dotenv.find_dotenv(), "DATABASE_URL")
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-    
-    # CORREÇÃO B: Limitar tamanho do upload (Ex: 16MB)
-    MAX_CONTENT_LENGTH = 16 * 1024 * 1024
+dotenv.load_dotenv()
+
+class Settings(BaseSettings):
+    DEBUG: bool = os.getenv("DEBUG", "True").lower() in ("1", "true", "yes")
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "change-me")
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./dev.db")
+    MAX_CONTENT_LENGTH: int = 16 * 1024 * 1024  # 16 MB
+    ALLOWED_ORIGINS: List[str] = ["*"]
+
+    class Config:
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+
+
+Settings = Settings()

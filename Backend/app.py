@@ -1,57 +1,48 @@
-from flask import Flask, jsonify
-from flask_cors import CORS
-from config import Config
-from extensions import db
-from flask_migrate import Migrate
-from models import User, Chat, UserMessage, AIMessage
-from dotenv import load_dotenv
-import os
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from config import Settings
+from extensions import engine, SessionLocal
+import uvicorn
 
-load_dotenv()
+from router.user_router import user_router
+#from router.auth_router import auth_router
+#from router.message_user_router import message_user_router
+#from router.message_ai_router import message_ai_router
+#from router.chat_router import chat_router
+#from router.rating_router import rating_router
+#from router.contract_router import contract_router
+#from router.dashboard_router import dashboard_router
+#from router.admin_router import admin_router
 
-migrate = Migrate()
+settings = Settings
 
+app = FastAPI(title="SentryAI API")
 
-def create_app():
-    app = Flask(__name__)
-    app.config.from_object(Config)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"] if settings.DEBUG else settings.ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-    db.init_app(app)
-    migrate.init_app(app, db)
-
-    CORS(app, supports_credentials=True)
-
-    # Test Route
-    @app.route("/", methods=["GET"])
-    def index():
-        return jsonify({"message": "API is running"}), 200
-
-    # Import routers
-    from router.auth_router import auth_bp
-    from router.user_router import user_bp
-    from router.message_user_router import message_user_bp
-    from router.message_ai_router import message_ai_bp
-    from router.chat_router import chat_bp
-    from router.rating_router import rating_bp
-    from router.contract_router import contract_bp
-    from router.dashboard_router import dashboard_bp
-    from router.admin_router import admin_bp
-
-    # Register blueprints
-    app.register_blueprint(auth_bp)
-    app.register_blueprint(user_bp)
-    app.register_blueprint(message_user_bp)
-    app.register_blueprint(message_ai_bp)
-    app.register_blueprint(chat_bp)
-    app.register_blueprint(rating_bp)
-    app.register_blueprint(contract_bp)
-    app.register_blueprint(dashboard_bp)
-    app.register_blueprint(admin_bp)
-
-    return app
+# Include routers
+app.include_router(user_router)
+#app.include_router(auth_router)
+#app.include_router(message_user_router)
+#app.include_router(message_ai_router)
+#app.include_router(chat_router)
+#app.include_router(rating_router)
+#app.include_router(contract_router)
+#app.include_router(dashboard_router)
+#app.include_router(admin_router)
 
 
+@app.get("/", tags=["health"])
+def index():
+    return {"message": "API is running"}
+
+
+# If you want to run with `python main.py`
 if __name__ == "__main__":
-    app = create_app()
-    # 'host=0.0.0.0' expõe o servidor para a rede local
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    uvicorn.run("app:app", port=5000, reload=settings.DEBUG)

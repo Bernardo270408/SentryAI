@@ -1,8 +1,8 @@
 from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, JSON, ForeignKey
 from sqlalchemy.orm import relationship
-from extensions import db
+from extensions import Base
 
-class User(db.Model):
+class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
@@ -16,6 +16,10 @@ class User(db.Model):
     is_verified = Column(Boolean, default=False)
     verification_code = Column(String(6), nullable=True)
     verification_code_expires_at = Column(DateTime, nullable=True)
+
+    created_at = Column(DateTime, nullable=False)
+    updated_at = Column(DateTime, nullable=True)
+    verified_at = Column(DateTime, nullable=True)
 
     # --- CAMPOS DE SEGURANÇA E BANIMENTO ---
     is_banned = Column(Boolean, default=False)
@@ -33,6 +37,8 @@ class User(db.Model):
     risk_profile_summary = Column(Text, nullable=True)
     last_risk_analysis = Column(DateTime, nullable=True)
 
+
+
     # Relacionamentos
     chats = relationship("Chat", back_populates="user", cascade="all, delete-orphan")
     user_messages = relationship("UserMessage", back_populates="user", cascade="all, delete-orphan")
@@ -42,6 +48,9 @@ class User(db.Model):
     # Auto-relacionamento para saber quem baniu
     banner = relationship("User", remote_side=[id])
 
+    def __repr__(self):
+        return f"<User id={self.id} email={self.email}>"
+    
     def to_dict(self):
         return {
             "id": self.id,
@@ -49,17 +58,16 @@ class User(db.Model):
             "email": self.email,
             "extra_data": self.extra_data,
             "is_admin": self.is_admin,
+            "google_id": self.google_id,
             "is_verified": self.is_verified,
             "is_banned": self.is_banned,
+            "ban_reason": self.ban_reason,
+            "ban_expires_at": self.ban_expires_at.isoformat() if self.ban_expires_at else None,
+            "banned_by_id": self.banned_by_id,
             "appeal_data": self.appeal_data,
-            "risk_profile": {
-                "score": self.risk_profile_score,
-                "summary": self.risk_profile_summary
-            }
+            "risk_profile_score": self.risk_profile_score,
+            "risk_profile_summary": self.risk_profile_summary,
+            "last_risk_analysis": self.last_risk_analysis.isoformat() if self.last_risk_analysis else None,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
-
-    def update_from_dict(self, data):
-        for key, value in data.items():
-            if hasattr(self, key):
-                setattr(self, key, value)
-        db.session.commit()

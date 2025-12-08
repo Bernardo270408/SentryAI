@@ -1,56 +1,71 @@
+from sqlalchemy.orm import Session
 from models.user import User
 from models.message_user import UserMessage
-from extensions import db
-
+from typing import List, Optional
 
 class UserDAO:
     @staticmethod
-    def create_user(name, email, password, extra_data=None):
-        user = User(name=name, email=email, password=password, extra_data=extra_data)
-
-        if UserDAO.get_user_by_email(email):
+    def create_user_obj(db: Session, user: User) -> User:
+        """
+        Recebe um objeto User (instanciado), faz persistência e commit.
+        """
+        if UserDAO.get_user_by_email(db, user.email):
             return None
-
-        db.session.add(user)
-        db.session.commit()
+        db.add(user)
+        db.commit()
+        db.refresh(user)
         return user
 
     @staticmethod
-    def get_user_by_id(user_id):
-        return User.query.get(user_id)
+    def create_user(db: Session, name: str, email: str, password: str, extra_data: Optional[str] = None) -> Optional[User]:
+        if UserDAO.get_user_by_email(db, email):
+            return None
+        user = User(name=name, email=email, password=password, extra_data=extra_data)
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        return user
 
     @staticmethod
-    def get_user_by_email(email):
-        return User.query.filter_by(email=email).first()
+    def get_user_by_id(db: Session, user_id: int) -> Optional[User]:
+        return db.query(User).get(user_id)
 
     @staticmethod
-    def get_all_users():
-        return User.query.all()
+    def get_user_by_email(db: Session, email: str) -> Optional[User]:
+        return db.query(User).filter(User.email == email).first()
 
     @staticmethod
-    def get_all_admins():
-        return User.query.filter_by(is_admin=True).all()
+    def get_all_users(db: Session) -> List[User]:
+        return db.query(User).all()
 
     @staticmethod
-    def is_user_admin(user_id):
-        user = User.query.get(user_id)
-        return user.is_admin if user else False
+    def get_all_admins(db: Session) -> List[User]:
+        return db.query(User).filter(User.is_admin == True).all()
 
     @staticmethod
-    def update_user(user_id, data):
-        user = UserDAO.get_user_by_id(user_id)
+    def is_user_admin(db: Session, user_id: int) -> bool:
+        user = db.query(User).get(user_id)
+        return bool(user and user.is_admin)
+
+    @staticmethod
+    def update_user(db: Session, user_id: int, data: dict) -> Optional[User]:
+        user = UserDAO.get_user_by_id(db, user_id)
         if not user:
             return None
-
         data.pop("id", None)
-        user.update_from_dict(data)
+        # expected user has an update_from_dict or we set attrs manually
+        for k, v in data.items():
+            setattr(user, k, v)
+        db.add(user)
+        db.commit()
+        db.refresh(user)
         return user
 
     @staticmethod
-    def delete_user(user_id):
-        user = UserDAO.get_user_by_id(user_id)
+    def delete_user(db: Session, user_id: int) -> bool:
+        user = UserDAO.get_user_by_id(db, user_id)
         if not user:
             return False
-        db.session.delete(user)
-        db.session.commit()
+        db.delete(user)
+        db.commit()
         return True

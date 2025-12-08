@@ -1,10 +1,10 @@
 import datetime
 from sqlalchemy import Column, Integer, ForeignKey, JSON, DateTime, Text
 from sqlalchemy.orm import relationship
-from extensions import db
+from extensions import Base
 
 
-class Contract(db.Model):
+class Contract(Base):
     __tablename__ = "contracts"
 
     id = Column(Integer, primary_key=True)
@@ -24,15 +24,9 @@ class Contract(db.Model):
             "user_id": self.user_id,
             "json": self.json,
             "text": self.text,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
 
     def __repr__(self):
         return f"<Contract {self.id} - User {self.user_id} - Created at {self.created_at} - Updated at {self.updated_at}>"
-
-    def update_from_dict(self, data):
-        for key, value in data.items():
-            if hasattr(self, key):
-                setattr(self, key, value)
-        db.session.commit()
