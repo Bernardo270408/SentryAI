@@ -5,7 +5,7 @@ from extensions import engine, SessionLocal
 import uvicorn
 
 from router.user_router import user_router
-#from router.auth_router import auth_router
+from router.auth_router import auth_router
 #from router.message_user_router import message_user_router
 #from router.message_ai_router import message_ai_router
 #from router.chat_router import chat_router
@@ -28,7 +28,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(user_router)
-#app.include_router(auth_router)
+app.include_router(auth_router)
 #app.include_router(message_user_router)
 #app.include_router(message_ai_router)
 #app.include_router(chat_router)

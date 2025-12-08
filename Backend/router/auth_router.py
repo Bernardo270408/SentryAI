@@ -11,7 +11,7 @@ from DAO.user_dao import UserDAO
 from models.user import User
 from middleware.jwt_util import generate_token
 
-auth_router = APIRouter(prefix="/auth", tags=["auth"])
+auth_router = APIRouter(tags=["auth"])
 
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 

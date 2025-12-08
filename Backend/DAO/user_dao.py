@@ -2,10 +2,11 @@ from sqlalchemy.orm import Session
 from models.user import User
 from models.message_user import UserMessage
 from typing import List, Optional
+import datetime
 
 class UserDAO:
     @staticmethod
-    def create_user_obj(db: Session, user: User) -> User:
+    def create_user(db: Session, user: User) -> User:
         """
         Recebe um objeto User (instanciado), faz persistência e commit.
         """
@@ -17,14 +18,6 @@ class UserDAO:
         return user
 
     @staticmethod
-    def create_user(db: Session, name: str, email: str, password: str, extra_data: Optional[str] = None) -> Optional[User]:
-        if UserDAO.get_user_by_email(db, email):
-            return None
-        user = User(name=name, email=email, password=password, extra_data=extra_data)
-        db.add(user)
-        db.commit()
-        db.refresh(user)
-        return user
 
     @staticmethod
     def get_user_by_id(db: Session, user_id: int) -> Optional[User]:

@@ -17,7 +17,7 @@ class User(Base):
     verification_code = Column(String(6), nullable=True)
     verification_code_expires_at = Column(DateTime, nullable=True)
 
-    created_at = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, nullable=True) #true temporário
     updated_at = Column(DateTime, nullable=True)
     verified_at = Column(DateTime, nullable=True)
 

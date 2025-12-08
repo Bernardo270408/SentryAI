@@ -46,6 +46,7 @@ async def create_user(request: Request, db: Session = Depends(get_db)):
 
     code = generate_verification_code()
     expiration = datetime.utcnow() + timedelta(minutes=15)
+    creation = datetime.utcnow()
 
     user = User(
         name=data["name"],
@@ -55,9 +56,10 @@ async def create_user(request: Request, db: Session = Depends(get_db)):
         is_verified=False,
         verification_code=code,
         verification_code_expires_at=expiration,
+        created_at=creation
     )
 
-    created = UserDAO.create_user_obj(db, user)
+    created = UserDAO.create_user(db, user)
 
     # envio de email (mantive chamada direta; considere BackgroundTasks se bloquear)
     send_verification_email(created.email, code)
