@@ -7,8 +7,8 @@ from email_validator import validate_email, EmailNotValidError
 
 from config import Settings
 from extensions import get_db
-from DAO.user_dao import UserDAO
-from models.user import User
+from repositories import UserRepo
+from models import User
 from services.email_service import generate_verification_code, send_verification_email
 from middleware.jwt_util import get_current_user
 

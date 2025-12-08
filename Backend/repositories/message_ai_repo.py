@@ -3,7 +3,7 @@ from extensions import db
 from sqlalchemy import asc
 
 
-class AIMessageDAO:
+class AIMessageRepo:
 
     @staticmethod
     def create_message(chat_id, content, created_at=None, model=None):
@@ -49,7 +49,7 @@ class AIMessageDAO:
 
     @staticmethod
     def update_message(message_id, data):
-        message = AIMessageDAO.get_message_by_id(message_id)
+        message = AIMessageRepo.get_message_by_id(message_id)
         if not message:
             return None
 
@@ -64,7 +64,7 @@ class AIMessageDAO:
 
     @staticmethod
     def delete_message(message_id):
-        message = AIMessageDAO.get_message_by_id(message_id)
+        message = AIMessageRepo.get_message_by_id(message_id)
         if not message:
             return False
 

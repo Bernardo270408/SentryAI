@@ -2,7 +2,7 @@ from models.message_user import UserMessage
 from extensions import db
 
 
-class UserMessageDAO:
+class UserMessageRepo:
     @staticmethod
     def create_message(user_id, chat_id, content):
         message = UserMessage(user_id=user_id, chat_id=chat_id, content=content)
@@ -28,7 +28,7 @@ class UserMessageDAO:
 
     @staticmethod
     def update_message(message_id, data):
-        message = UserMessageDAO.get_message_by_id(message_id)
+        message = UserMessageRepo.get_message_by_id(message_id)
         if not message:
             return None
         data.pop("id", None)
@@ -39,7 +39,7 @@ class UserMessageDAO:
 
     @staticmethod
     def delete_message(message_id):
-        message = UserMessageDAO.get_message_by_id(message_id)
+        message = UserMessageRepo.get_message_by_id(message_id)
         if not message:
             return False
         db.session.delete(message)

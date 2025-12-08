@@ -3,7 +3,7 @@ from extensions import db
 from datetime import datetime, timezone
 
 
-class ContractDAO:
+class ContractRepo:
     @staticmethod
     def create_contract(user_id, json_data, text):
         now = datetime.now(timezone.utc)
@@ -28,7 +28,7 @@ class ContractDAO:
 
     @staticmethod
     def update_contract(contract_id, data):
-        contract = ContractDAO.get_contract_by_id(contract_id)
+        contract = ContractRepo.get_contract_by_id(contract_id)
         if not contract:
             return None
         data.pop("id", None)
@@ -39,7 +39,7 @@ class ContractDAO:
 
     @staticmethod
     def delete_contract(contract_id):
-        contract = ContractDAO.get_contract_by_id(contract_id)
+        contract = ContractRepo.get_contract_by_id(contract_id)
         if not contract:
             return False
         db.session.delete(contract)

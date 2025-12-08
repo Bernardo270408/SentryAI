@@ -5,7 +5,7 @@ from models.message_ai import AIMessage
 from sqlalchemy import desc
 
 
-class ChatDAO:
+class ChatRepo:
     @staticmethod
     def create_chat(user_id, name, rating_id=None):
         chat = Chat(user_id=user_id, name=name, rating_id=rating_id)
@@ -27,7 +27,7 @@ class ChatDAO:
 
     @staticmethod
     def update_chat(chat_id, data):
-        chat = ChatDAO.get_chat_by_id(chat_id)
+        chat = ChatRepo.get_chat_by_id(chat_id)
 
         if not chat:
             return None
@@ -40,7 +40,7 @@ class ChatDAO:
 
     @staticmethod
     def delete_chat(chat_id):
-        chat = ChatDAO.get_chat_by_id(chat_id)
+        chat = ChatRepo.get_chat_by_id(chat_id)
         if not chat:
             return False
         db.session.delete(chat)
@@ -53,7 +53,7 @@ class ChatDAO:
         CORREÇÃO A: Janela Deslizante.
         Recupera apenas as últimas 'limit' mensagens para contexto da IA.
         """
-        chat = ChatDAO.get_chat_by_id(chat_id)
+        chat = ChatRepo.get_chat_by_id(chat_id)
         if not chat:
             return []
 
@@ -81,5 +81,5 @@ class ChatDAO:
 
     @staticmethod
     def get_rating_by_chat(chat_id):
-        chat = ChatDAO.get_chat_by_id(chat_id)
+        chat = ChatRepo.get_chat_by_id(chat_id)
         return chat.rating

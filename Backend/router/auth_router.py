@@ -7,7 +7,7 @@ from datetime import datetime
 import os
 
 from extensions import get_db
-from DAO.user_dao import UserDAO
+from repositories import UserRepo
 from models.user import User
 from middleware.jwt_util import generate_token
 

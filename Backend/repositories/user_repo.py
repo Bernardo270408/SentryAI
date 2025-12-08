@@ -2,22 +2,20 @@ from sqlalchemy.orm import Session
 from models.user import User
 from models.message_user import UserMessage
 from typing import List, Optional
-import datetime
 
-class UserDAO:
+class UserRepo:
     @staticmethod
     def create_user(db: Session, user: User) -> User:
         """
         Recebe um objeto User (instanciado), faz persistência e commit.
         """
-        if UserDAO.get_user_by_email(db, user.email):
+        if UserRepo.get_user_by_email(db, user.email):
             return None
         db.add(user)
         db.commit()
         db.refresh(user)
         return user
 
-    @staticmethod
 
     @staticmethod
     def get_user_by_id(db: Session, user_id: int) -> Optional[User]:
@@ -42,7 +40,7 @@ class UserDAO:
 
     @staticmethod
     def update_user(db: Session, user_id: int, data: dict) -> Optional[User]:
-        user = UserDAO.get_user_by_id(db, user_id)
+        user = UserRepo.get_user_by_id(db, user_id)
         if not user:
             return None
         data.pop("id", None)
@@ -56,7 +54,7 @@ class UserDAO:
 
     @staticmethod
     def delete_user(db: Session, user_id: int) -> bool:
-        user = UserDAO.get_user_by_id(db, user_id)
+        user = UserRepo.get_user_by_id(db, user_id)
         if not user:
             return False
         db.delete(user)

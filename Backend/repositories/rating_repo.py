@@ -2,7 +2,7 @@ from models.rating import Rating
 from extensions import db
 
 
-class RatingDAO:
+class RatingRepo:
     @staticmethod
     def create_rating(user_id, score, feedback=None):
         rating = Rating(user_id=user_id, score=score, feedback=feedback)
@@ -24,7 +24,7 @@ class RatingDAO:
 
     @staticmethod
     def update_rating(rating_id, data):
-        rating = RatingDAO.get_rating_by_id(rating_id)
+        rating = RatingRepo.get_rating_by_id(rating_id)
         if not rating:
             return None
         data.pop("id", None)
@@ -33,7 +33,7 @@ class RatingDAO:
 
     @staticmethod
     def delete_rating(rating_id):
-        rating = RatingDAO.get_rating_by_id(rating_id)
+        rating = RatingRepo.get_rating_by_id(rating_id)
         if not rating:
             return False
         db.session.delete(rating)
@@ -50,7 +50,7 @@ class RatingDAO:
 
     @staticmethod
     def get_chat_by_rating(rating_id):
-        rating = RatingDAO.get_rating_by_id(rating_id)
+        rating = RatingRepo.get_rating_by_id(rating_id)
         if rating:
             return rating.chat
         return None

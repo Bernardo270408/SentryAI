@@ -6,8 +6,7 @@ from sqlalchemy.orm import Session
 
 from config import Settings  
 from extensions import get_db
-from DAO.user_dao import UserDAO
-
+from repositories import UserRepo
 
 def generate_token(user, expires_in_hours: int = 48):
     expire = datetime.utcnow() + timedelta(hours=expires_in_hours)
