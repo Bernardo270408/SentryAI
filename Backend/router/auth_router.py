@@ -25,7 +25,7 @@ async def login(request: Request, db: Session = Depends(get_db)):
     if not email or not password_input:
         raise HTTPException(400, "Email e senha são obrigatórios")
 
-    user = UserDAO.get_user_by_email(db, email)
+    user = UserRepo.get_user_by_email(db, email)
 
     if not user or not user.password or not check_password_hash(user.password, str(password_input)):
         raise HTTPException(401, "Credenciais inválidas")
@@ -65,7 +65,7 @@ async def verify_email(request: Request, db: Session = Depends(get_db)):
     if not email or not code:
         raise HTTPException(400, "Email e código são obrigatórios")
 
-    user = UserDAO.get_user_by_email(db, email)
+    user = UserRepo.get_user_by_email(db, email)
     if not user:
         raise HTTPException(404, "Usuário não encontrado")
 
@@ -117,7 +117,7 @@ async def google_login(request: Request, db: Session = Depends(get_db)):
         google_id = idinfo["sub"]
         name = idinfo.get("name", "Google User")
 
-        user = UserDAO.get_user_by_email(db, email)
+        user = UserRepo.get_user_by_email(db, email)
 
         if not user:
             # Auto-verificado

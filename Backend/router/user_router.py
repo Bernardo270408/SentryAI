@@ -39,7 +39,7 @@ async def create_user(request: Request, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail=f"Email inválido: {str(e)}")
 
     # Verifica se já existe
-    if UserDAO.get_user_by_email(db, data["email"]):
+    if UserRepo.get_user_by_email(db, data["email"]):
         raise HTTPException(status_code=400, detail="Email já está em uso.")
 
     password_hash = generate_password_hash(data["password"])
@@ -59,7 +59,7 @@ async def create_user(request: Request, db: Session = Depends(get_db)):
         created_at=creation
     )
 
-    created = UserDAO.create_user(db, user)
+    created = UserRepo.create_user(db, user)
 
     # envio de email (mantive chamada direta; considere BackgroundTasks se bloquear)
     send_verification_email(created.email, code)
@@ -74,7 +74,7 @@ async def create_user(request: Request, db: Session = Depends(get_db)):
 
 @user_router.get("/email/{email}")
 def get_user_by_email(email: str, db: Session = Depends(get_db)):
-    user = UserDAO.get_user_by_email(db, email)
+    user = UserRepo.get_user_by_email(db, email)
     if not user:
         raise HTTPException(status_code=404, detail="Usuário não encontrado.")
     return user.to_dict()
@@ -82,7 +82,7 @@ def get_user_by_email(email: str, db: Session = Depends(get_db)):
 
 @user_router.get("/{user_id}")
 def get_user(user_id: int, db: Session = Depends(get_db)):
-    user = UserDAO.get_user_by_id(db, user_id)
+    user = UserRepo.get_user_by_id(db, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="Usuário não encontrado.")
     return user.to_dict()
@@ -90,7 +90,7 @@ def get_user(user_id: int, db: Session = Depends(get_db)):
 
 @user_router.get("/")
 def get_all_users(db: Session = Depends(get_db)):
-    users = UserDAO.get_all_users(db)
+    users = UserRepo.get_all_users(db)
     return [u.to_dict() for u in users]
 
 
@@ -124,7 +124,7 @@ async def update_user(
     if "password" in data:
         data["password"] = generate_password_hash(data["password"])
 
-    user = UserDAO.update_user(db, user_id, data)
+    user = UserRepo.update_user(db, user_id, data)
     if not user:
         raise HTTPException(status_code=404, detail="Usuário não encontrado.")
 
@@ -142,7 +142,7 @@ def delete_user(
     if current_user.id != user_id and not current_user.is_admin:
         raise HTTPException(status_code=403, detail="Permission denied")
 
-    success = UserDAO.delete_user(db, user_id)
+    success = UserRepo.delete_user(db, user_id)
     if not success:
         raise HTTPException(status_code=404, detail="Usuário não encontrado.")
     return {"message": "Usuário deletado com sucesso."}
@@ -161,7 +161,7 @@ async def submit_appeal(request: Request, db: Session = Depends(get_db)):
     if not email or not message:
         raise HTTPException(status_code=400, detail="Email e mensagem são obrigatórios.")
 
-    user = UserDAO.get_user_by_email(db, email)
+    user = UserRepo.get_user_by_email(db, email)
     if not user:
         raise HTTPException(status_code=404, detail="E-mail não encontrado.")
 

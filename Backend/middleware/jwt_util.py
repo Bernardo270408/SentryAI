@@ -62,7 +62,7 @@ def get_current_user(
             detail="Invalid token payload"
         )
 
-    user = UserDAO.get_user_by_id(db, user_id)
+    user = UserRepo.get_user_by_id(db, user_id)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
