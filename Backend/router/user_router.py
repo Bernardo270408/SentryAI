@@ -1,4 +1,3 @@
-# routers/user_router.py
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
@@ -16,16 +15,10 @@ user_router = APIRouter(prefix="/users", tags=["users"])
 
 settings = Settings
 
-
-
 # --- Endpoints ---
 
 @user_router.post("/", status_code=201)
 async def create_user(request: Request, db: Session = Depends(get_db)):
-    """
-    Cria usuário (validação mínima + email validation).
-    Mantém o mesmo retorno da versão Flask.
-    """
     data = await request.json()
 
     # Validação de presença
@@ -98,13 +91,10 @@ def get_all_users(db: Session = Depends(get_db)):
 async def update_user(
     user_id: int,
     request: Request,
-    current_user: User = Depends(get_current_user),  # <--- passe a função, NÃO a execute
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """
-    Atualiza apenas campos permitidos — evita mass assignment.
-    Lógica de autorização igual ao Flask.
-    """
+
     if current_user.id != user_id and not current_user.is_admin:
         raise HTTPException(status_code=403, detail="Permission denied")
 
@@ -112,8 +102,26 @@ async def update_user(
     if not isinstance(data, dict):
         raise HTTPException(status_code=400, detail="Payload inválido")
 
-    # somente campos permitidos (mesmo set da versão Flask)
-    allowed_fields = {"name", "email", "password", "extra_data"}
+    allowed_fields = {
+        "name",
+        "email",
+        "password",
+        "extra_data",
+        "is_admin",
+        "google_id",
+        "is_verified",
+        "is_banned",
+        "ban_reason",
+        "ban_expires_at",
+        "banned_by_id",
+        "appeal_data",
+        "risk_profile_score",
+        "risk_profile_summary",
+        "last_risk_analysis",
+        "updated_at"
+    }
+
+
     data = {k: v for k, v in data.items() if k in allowed_fields}
 
     # se tentar atualizar sem campos válidos
@@ -123,6 +131,8 @@ async def update_user(
     # hashing de senha
     if "password" in data:
         data["password"] = generate_password_hash(data["password"])
+
+    data["updated_at"] = datetime.utcnow()
 
     user = UserRepo.update_user(db, user_id, data)
     if not user:

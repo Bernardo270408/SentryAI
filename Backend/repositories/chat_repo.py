@@ -1,59 +1,59 @@
-from models.chat import Chat
-from extensions import db
-from models.message_user import UserMessage
-from models.message_ai import AIMessage
-from sqlalchemy import desc
+from sqlalchemy.orm import Session
+from models import Chat, UserMessage, AIMessage
+from sqlalchemy.orm import Session
+
 
 
 class ChatRepo:
     @staticmethod
-    def create_chat(user_id, name, rating_id=None):
-        chat = Chat(user_id=user_id, name=name, rating_id=rating_id)
-        db.session.add(chat)
-        db.session.commit()
+    def create_chat(db: Session, user_id:int, name:str, rating_id=None, created_at=None) -> Chat:
+        chat = Chat(user_id=user_id, name=name, rating_id=rating_id, created_at=created_at)
+        db.add(chat)
+        db.commit()
+        db.refresh(chat)
         return chat
 
     @staticmethod
-    def get_chat_by_id(chat_id):
-        return Chat.query.get(chat_id)
+    def get_chat_by_id(db: Session, chat_id: int):
+        return db.query(Chat).get(chat_id)
 
     @staticmethod
-    def get_chats_by_user(user_id):
-        return Chat.query.filter_by(user_id=user_id).all()
+    def get_chats_by_user(db: Session, user_id: int):
+        return db.query(Chat).filter_by(user_id=user_id).all()
 
     @staticmethod
-    def get_all_chats():
-        return Chat.query.all()
+    def get_all_chats(db: Session):
+        return db.query(Chat).all()
 
     @staticmethod
-    def update_chat(chat_id, data):
+    def update_chat(db: Session, chat_id, data):
         chat = ChatRepo.get_chat_by_id(chat_id)
-
         if not chat:
             return None
+        
+        for k,v in data.items():
+                setattr(chat,k,v)
 
-        data.pop("id", None)
-        data.pop("user_id", None)
-
-        chat.update_from_dict(data)
+        db.commit()
+        db.refresh(chat)
         return chat
 
     @staticmethod
-    def delete_chat(chat_id):
+    def delete_chat(db: Session, chat_id:int):
         chat = ChatRepo.get_chat_by_id(chat_id)
         if not chat:
             return False
-        db.session.delete(chat)
-        db.session.commit()
+        db.delete(chat)
+        db.commit()
         return True
 
     @staticmethod
-    def get_messages_formated(chat_id, limit=20):
+    def get_messages_formated(db: Session, chat_id, limit=20):
         """
         CORREÇÃO A: Janela Deslizante.
         Recupera apenas as últimas 'limit' mensagens para contexto da IA.
         """
-        chat = ChatRepo.get_chat_by_id(chat_id)
+        chat: Chat = ChatRepo.get_chat_by_id(chat_id)
         if not chat:
             return []
 
@@ -80,6 +80,6 @@ class ChatRepo:
         return history
 
     @staticmethod
-    def get_rating_by_chat(chat_id):
-        chat = ChatRepo.get_chat_by_id(chat_id)
+    def get_rating_by_chat(db: Session, chat_id):
+        chat: Chat = ChatRepo.get_chat_by_id(chat_id)
         return chat.rating

@@ -19,7 +19,7 @@ def create(user_id, token, name=None, domain="localhost", port=5000, **kwargs):
         print("\033[31m> ERROR: ", e, "\033[0m")
         print(
             "\033[33m> WARNING:",
-            response.json().get("error", "Unknown error"),
+            response.json().get("detail", "Unknown error"),
             "\033[0m",
         )
         return None
@@ -39,7 +39,7 @@ def get(chat_id, token, domain="localhost", port=5000, **kwargs):
         print("\033[31m> ERROR: ", e, "\033[0m")
         print(
             "\033[33m> WARNING:",
-            response.json().get("error", "Unknown error"),
+            response.json().get("detail", "Unknown error"),
             "\033[0m",
         )
         return None
@@ -59,7 +59,7 @@ def getall(token, domain="localhost", port=5000, **kwargs):
         print("\033[31m> ERROR: ", e, "\033[0m")
         print(
             "\033[33m> WARNING:",
-            response.json().get("error", "Unknown error"),
+            response.json().get("detail", "Unknown error"),
             "\033[0m",
         )
         return None
@@ -79,7 +79,7 @@ def getbyuser(user_id, token, domain="localhost", port=5000, **kwargs):
         print("\033[31m> ERROR: ", e, "\033[0m")
         print(
             "\033[33m> WARNING:",
-            response.json().get("error", "Unknown error"),
+            response.json().get("detail", "Unknown error"),
             "\033[0m",
         )
         return None
@@ -97,7 +97,7 @@ def update(chat_id, token, domain="localhost", port=5000, **kwargs):
         print("\033[31m> ERROR: ", e, "\033[0m")
         print(
             "\033[33m> WARNING:",
-            response.json().get("error", "Unknown error"),
+            response.json().get("detail", "Unknown error"),
             "\033[0m",
         )
         return None
@@ -114,7 +114,7 @@ def delete(chat_id, token, domain="localhost", port=5000, **kwargs):
         print("\033[31m> ERROR: ", e, "\033[0m")
         print(
             "\033[33m> WARNING:",
-            response.json().get("error", "Unknown error"),
+            response.json().get("detail", "Unknown error"),
             "\033[0m",
         )
         return None

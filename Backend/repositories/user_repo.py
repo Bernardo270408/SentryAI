@@ -1,25 +1,21 @@
 from sqlalchemy.orm import Session
-from models.user import User
-from models.message_user import UserMessage
+from models import User
 from typing import List, Optional
 
 class UserRepo:
     @staticmethod
-    def create_user(db: Session, user: User) -> User:
-        """
-        Recebe um objeto User (instanciado), faz persistência e commit.
-        """
+    def create_user(db: Session, user: User) -> Optional[User]:
         if UserRepo.get_user_by_email(db, user.email):
+            # Melhor lançar exceção ou retornar uma mensagem, aqui retorno None para manter o padrão
             return None
         db.add(user)
         db.commit()
         db.refresh(user)
         return user
 
-
     @staticmethod
     def get_user_by_id(db: Session, user_id: int) -> Optional[User]:
-        return db.query(User).get(user_id)
+        return db.get(User, user_id)
 
     @staticmethod
     def get_user_by_email(db: Session, email: str) -> Optional[User]:
@@ -35,19 +31,18 @@ class UserRepo:
 
     @staticmethod
     def is_user_admin(db: Session, user_id: int) -> bool:
-        user = db.query(User).get(user_id)
-        return bool(user and user.is_admin)
+        admin = db.query(User.is_admin).filter(User.id == user_id).scalar()
+        return bool(admin)
 
     @staticmethod
     def update_user(db: Session, user_id: int, data: dict) -> Optional[User]:
         user = UserRepo.get_user_by_id(db, user_id)
         if not user:
             return None
-        data.pop("id", None)
-        # expected user has an update_from_dict or we set attrs manually
+
         for k, v in data.items():
             setattr(user, k, v)
-        db.add(user)
+
         db.commit()
         db.refresh(user)
         return user

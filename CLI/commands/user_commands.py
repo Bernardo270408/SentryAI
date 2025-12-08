@@ -53,7 +53,7 @@ def get(user_id, domain="localhost", port=5000, **kwargs):
         print("\033[31m> ERROR: ", e, "\033[0m")
         print(
             "\033[33m> WARNING:",
-            response.json().get("error", "Unknown error"),
+            response.json().get("detail", "Unknown error"),
             "\033[0m",
         )
         return None
@@ -70,7 +70,7 @@ def getbyemail(email, domain="localhost", port=5000, **kwargs):
         print("\033[31m> ERROR: ", e, "\033[0m")
         print(
             "\033[33m> WARNING:",
-            response.json().get("error", "Unknown error"),
+            response.json().get("detail", "Unknown error"),
             "\033[0m",
         )
         return None
@@ -87,7 +87,7 @@ def getall(domain="localhost", port=5000, **kwargs):
         print("\033[31m> ERROR: ", e, "\033[0m")
         print(
             "\033[33m> WARNING:",
-            response.json().get("error", "Unknown error"),
+            response.json().get("detail", "Unknown error"),
             "\033[0m",
         )
         return None
@@ -105,7 +105,7 @@ def update(user_id, token, domain="localhost", port=5000, **kwargs):
         print("\033[31m> ERROR: ", e, "\033[0m")
         print(
             "\033[33m> WARNING:",
-            response.json().get("error", "Unknown error"),
+            response.json().get("detail", "Unknown error"),
             "\033[0m",
         )
         return None
@@ -127,7 +127,7 @@ def delete(user_id, token, domain="localhost", port=5000, **kwargs):
         print("\033[31m> ERROR: ", e, "\033[0m")
         print(
             "\033[33m> WARNING:",
-            response.json().get("error", "Unknown error"),
+            response.json().get("detail", "Unknown error"),
             "\033[0m",
         )
         return None

@@ -1,32 +1,33 @@
 import jwt
-from jwt.exceptions import PyJWTError
+from jwt.exceptions import PyJWTError, ExpiredSignatureError, InvalidTokenError
 from datetime import datetime, timedelta
 from fastapi import Header, HTTPException, Depends, status
 from sqlalchemy.orm import Session
 
-from config import Settings  
+from config import Settings
 from extensions import get_db
 from repositories import UserRepo
 
+# Garanta que está usando a instância de configurações
+settings = Settings 
+
 def generate_token(user, expires_in_hours: int = 48):
+    # Use utcnow() para consistência universal
     expire = datetime.utcnow() + timedelta(hours=expires_in_hours)
-
+    
     payload = {
-        "sub": user.id,
-        "is_admin": user.is_admin,
-        "exp": expire
+        "sub": str(user.id),  # <--- CRUCIAL: Converta o ID para string
+        "exp": expire,
+        "iat": datetime.utcnow() # "Issued At" ajuda na validação
     }
-
-    token = jwt.encode(payload, Settings.SECRET_KEY, algorithm="HS256")
+    
+    # Gera o token usando a chave das configurações
+    token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
     return token
 
-
 def decode_token(token: str):
-    try:
-        payload = jwt.decode(token, Settings.SECRET_KEY, algorithms=["HS256"])
-        return payload
-    except PyJWTError:
-        return None
+    # Adicione algorithms=["HS256"] explicitamente
+    return jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
 
 def get_current_user(
     authorization: str = Header(None),
@@ -37,32 +38,52 @@ def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authorization header required"
         )
-
+    
     parts = authorization.split()
+    
     if len(parts) != 2 or parts[0].lower() != "bearer":
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid Authorization header format"
         )
-
+    
     token = parts[1]
-
+    
     try:
-        payload = jwt.decode(token, Settings.SECRET_KEY, algorithms=["HS256"])
-    except PyJWTError:
+        payload = decode_token(token)
+        user_id = payload.get("sub")
+        
+        if user_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token payload: missing sub"
+            )
+            
+    except ExpiredSignatureError:
+        # Erro específico para token expirado
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token"
+            detail="Token has expired"
         )
-
-    user_id = payload.get("sub")
-    if not user_id:
+    except PyJWTError as e:
+        # Imprima o erro no console para debugar
+        print(f"\033[31mJWT Error: {str(e)}\033[0m") 
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token payload"
+            detail="Invalid token"
         )
 
-    user = UserRepo.get_user_by_id(db, user_id)
+    # Converter string de volta para int se seu DB usa IDs numéricos
+    try:
+        user_id_int = int(user_id)
+    except ValueError:
+         raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token subject format"
+        )
+
+    user = UserRepo.get_user_by_id(db, user_id_int)
+    
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -75,12 +96,4 @@ def get_current_user(
             detail=f"User banned: {user.ban_reason or 'no reason provided'}"
         )
 
-    return user
-
-def admin_required(user = Depends(get_current_user)):
-    if not user.is_admin:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Admin privileges required"
-        )
     return user
