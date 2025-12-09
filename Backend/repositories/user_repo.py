@@ -2,12 +2,13 @@ from sqlalchemy.orm import Session
 from models import User
 from typing import List, Optional
 
+
 class UserRepo:
     @staticmethod
     def create_user(db: Session, user: User) -> Optional[User]:
         if UserRepo.get_user_by_email(db, user.email):
-            # Melhor lançar exceção ou retornar uma mensagem, aqui retorno None para manter o padrão
             return None
+
         db.add(user)
         db.commit()
         db.refresh(user)
@@ -15,6 +16,7 @@ class UserRepo:
 
     @staticmethod
     def get_user_by_id(db: Session, user_id: int) -> Optional[User]:
+        # SQLAlchemy moderno
         return db.get(User, user_id)
 
     @staticmethod
@@ -27,12 +29,13 @@ class UserRepo:
 
     @staticmethod
     def get_all_admins(db: Session) -> List[User]:
-        return db.query(User).filter(User.is_admin == True).all()
+        return db.query(User).filter(User.is_admin.is_(True)).all()
 
     @staticmethod
     def is_user_admin(db: Session, user_id: int) -> bool:
-        admin = db.query(User.is_admin).filter(User.id == user_id).scalar()
-        return bool(admin)
+        # Consulta mais eficiente (retorna só o valor bool)
+        admin_flag = db.query(User.is_admin).filter(User.id == user_id).scalar()
+        return bool(admin_flag)
 
     @staticmethod
     def update_user(db: Session, user_id: int, data: dict) -> Optional[User]:
@@ -41,7 +44,8 @@ class UserRepo:
             return None
 
         for k, v in data.items():
-            setattr(user, k, v)
+            if hasattr(user, k):
+                setattr(user, k, v)
 
         db.commit()
         db.refresh(user)
@@ -52,6 +56,7 @@ class UserRepo:
         user = UserRepo.get_user_by_id(db, user_id)
         if not user:
             return False
+
         db.delete(user)
         db.commit()
         return True

@@ -1,63 +1,72 @@
+from sqlalchemy.orm import Session
+from sqlalchemy import func
 from models.rating import Rating
-from extensions import db
 
 
 class RatingRepo:
     @staticmethod
-    def create_rating(user_id, score, feedback=None):
-        rating = Rating(user_id=user_id, score=score, feedback=feedback)
-        db.session.add(rating)
-        db.session.commit()
+    def create_rating(db: Session, user_id: int, score: int, feedback: str = None):
+        rating = Rating(
+            user_id=user_id,
+            score=score,
+            feedback=feedback
+        )
+
+        db.add(rating)
+        db.commit()
+        db.refresh(rating)
         return rating
 
     @staticmethod
-    def get_rating_by_id(rating_id):
-        return Rating.query.get(rating_id)
+    def get_rating_by_id(db: Session, rating_id: int):
+        return db.get(Rating, rating_id)
 
     @staticmethod
-    def get_ratings_by_user(user_id):
-        return Rating.query.filter_by(user_id=user_id).all()
+    def get_ratings_by_user(db: Session, user_id: int):
+        return db.query(Rating).filter(Rating.user_id == user_id).all()
 
     @staticmethod
-    def get_all_ratings():
-        return Rating.query.all()
+    def get_all_ratings(db: Session):
+        return db.query(Rating).all()
 
     @staticmethod
-    def update_rating(rating_id, data):
-        rating = RatingRepo.get_rating_by_id(rating_id)
+    def update_rating(db: Session, rating_id: int, data: dict):
+        rating = RatingRepo.get_rating_by_id(db, rating_id)
         if not rating:
             return None
-        data.pop("id", None)
-        rating.update_from_dict(data)
+
+        for k, v in data.items():
+            if hasattr(rating, k):
+                setattr(rating, k, v)
+
+        db.commit()
+        db.refresh(rating)
         return rating
 
     @staticmethod
-    def delete_rating(rating_id):
-        rating = RatingRepo.get_rating_by_id(rating_id)
+    def delete_rating(db: Session, rating_id: int):
+        rating = RatingRepo.get_rating_by_id(db, rating_id)
         if not rating:
             return False
-        db.session.delete(rating)
-        db.session.commit()
+
+        db.delete(rating)
+        db.commit()
         return True
 
     @staticmethod
-    def get_ratings_by_score(score):
-        return Rating.query.filter_by(score=score).all()
+    def get_ratings_by_score(db: Session, score: int):
+        return db.query(Rating).filter(Rating.score == score).all()
 
     @staticmethod
-    def get_ratings_with_feedback():
-        return Rating.query.filter(Rating.feedback.isnot(None)).all()
+    def get_ratings_with_feedback(db: Session):
+        return db.query(Rating).filter(Rating.feedback.isnot(None)).all()
 
     @staticmethod
-    def get_chat_by_rating(rating_id):
-        rating = RatingRepo.get_rating_by_id(rating_id)
-        if rating:
-            return rating.chat
-        return None
+    def get_chat_by_rating(db: Session, rating_id: int):
+        rating = RatingRepo.get_rating_by_id(db, rating_id)
+        return rating.chat if rating else None
 
     @staticmethod
-    def get_average_score():
-        from sqlalchemy import func
-
-        avg_score = db.session.query(func.avg(Rating.score)).scalar()
+    def get_average_score(db: Session):
+        avg_score = db.query(func.avg(Rating.score)).scalar()
         return avg_score

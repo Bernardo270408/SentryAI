@@ -1,47 +1,57 @@
+from sqlalchemy.orm import Session
 from models.message_user import UserMessage
-from extensions import db
 
 
 class UserMessageRepo:
     @staticmethod
-    def create_message(user_id, chat_id, content):
-        message = UserMessage(user_id=user_id, chat_id=chat_id, content=content)
-        db.session.add(message)
-        db.session.commit()
+    def create_message(db: Session, user_id: int, chat_id: int, content: str):
+        message = UserMessage(
+            user_id=user_id,
+            chat_id=chat_id,
+            content=content
+        )
+
+        db.add(message)
+        db.commit()
+        db.refresh(message)
         return message
 
     @staticmethod
-    def get_message_by_id(message_id):
-        return UserMessage.query.get(message_id)
+    def get_message_by_id(db: Session, message_id: int):
+        return db.get(UserMessage, message_id)
 
     @staticmethod
-    def get_messages_by_user(user_id):
-        return UserMessage.query.filter_by(user_id=user_id).all()
+    def get_messages_by_user(db: Session, user_id: int):
+        return db.query(UserMessage).filter(UserMessage.user_id == user_id).all()
 
     @staticmethod
-    def get_messages_by_chat(chat_id):
-        return UserMessage.query.filter_by(chat_id=chat_id).all()
+    def get_messages_by_chat(db: Session, chat_id: int):
+        return db.query(UserMessage).filter(UserMessage.chat_id == chat_id).all()
 
     @staticmethod
-    def get_all_messages():
-        return UserMessage.query.all()
+    def get_all_messages(db: Session):
+        return db.query(UserMessage).all()
 
     @staticmethod
-    def update_message(message_id, data):
-        message = UserMessageRepo.get_message_by_id(message_id)
+    def update_message(db: Session, message_id: int, data: dict):
+        message = UserMessageRepo.get_message_by_id(db, message_id)
         if not message:
             return None
-        data.pop("id", None)
-        data.pop("user_id", None)
-        data.pop("chat_id", None)
-        message.update_from_dict(data)
+
+        for k, v in data.items():
+            if hasattr(message, k):
+                setattr(message, k, v)
+
+        db.commit()
+        db.refresh(message)
         return message
 
     @staticmethod
-    def delete_message(message_id):
-        message = UserMessageRepo.get_message_by_id(message_id)
+    def delete_message(db: Session, message_id: int):
+        message = UserMessageRepo.get_message_by_id(db, message_id)
         if not message:
             return False
-        db.session.delete(message)
-        db.session.commit()
+
+        db.delete(message)
+        db.commit()
         return True

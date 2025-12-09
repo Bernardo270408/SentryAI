@@ -15,23 +15,19 @@ user_router = APIRouter(prefix="/users", tags=["users"])
 
 settings = Settings
 
-# --- Endpoints ---
 
 @user_router.post("/", status_code=201)
 async def create_user(request: Request, db: Session = Depends(get_db)):
     data = await request.json()
 
-    # Validação de presença
     if "name" not in data or "email" not in data or "password" not in data:
         raise HTTPException(status_code=400, detail="Campos obrigatórios: name, email, password")
 
-    # Validação de formato de email (como na versão Flask)
     try:
         validate_email(data["email"])
     except EmailNotValidError as e:
         raise HTTPException(status_code=400, detail=f"Email inválido: {str(e)}")
 
-    # Verifica se já existe
     if UserRepo.get_user_by_email(db, data["email"]):
         raise HTTPException(status_code=400, detail="Email já está em uso.")
 
@@ -66,7 +62,7 @@ async def create_user(request: Request, db: Session = Depends(get_db)):
 
 
 @user_router.get("/email/{email}")
-def get_user_by_email(email: str, db: Session = Depends(get_db)):
+async def get_user_by_email(email: str, db: Session = Depends(get_db)):
     user = UserRepo.get_user_by_email(db, email)
     if not user:
         raise HTTPException(status_code=404, detail="Usuário não encontrado.")
@@ -74,7 +70,7 @@ def get_user_by_email(email: str, db: Session = Depends(get_db)):
 
 
 @user_router.get("/{user_id}")
-def get_user(user_id: int, db: Session = Depends(get_db)):
+async def get_user(user_id: int, db: Session = Depends(get_db)):
     user = UserRepo.get_user_by_id(db, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="Usuário não encontrado.")
@@ -82,7 +78,7 @@ def get_user(user_id: int, db: Session = Depends(get_db)):
 
 
 @user_router.get("/")
-def get_all_users(db: Session = Depends(get_db)):
+async def get_all_users(db: Session = Depends(get_db)):
     users = UserRepo.get_all_users(db)
     return [u.to_dict() for u in users]
 
@@ -144,7 +140,7 @@ async def update_user(
 
 
 @user_router.delete("/{user_id}")
-def delete_user(
+async def delete_user(
     user_id: int,
     current_user: User = Depends(get_current_user),  # <--- certo
     db: Session = Depends(get_db)
