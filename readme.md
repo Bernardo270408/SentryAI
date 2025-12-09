@@ -67,7 +67,6 @@ O **SentryAI**, como dito antes, é uma aplicação que visa coletar dados para 
 ---
 
 ## Instalação
--
 
 ### Pré-Requisitos
 Antes de rodar o projeto, certifique-se de ter o Python 3.x e o pip instalados.
