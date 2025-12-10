@@ -1,8 +1,8 @@
 """initial migration
 
-Revision ID: d3d931c8713f
+Revision ID: fc1ff2d2feb0
 Revises: 
-Create Date: 2025-12-07 16:55:17.656628
+Create Date: 2025-12-10 15:14:53.952915
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'd3d931c8713f'
+revision = 'fc1ff2d2feb0'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -29,6 +29,15 @@ def upgrade():
     sa.Column('is_verified', sa.Boolean(), nullable=True),
     sa.Column('verification_code', sa.String(length=6), nullable=True),
     sa.Column('verification_code_expires_at', sa.DateTime(), nullable=True),
+    sa.Column('is_banned', sa.Boolean(), nullable=True),
+    sa.Column('ban_reason', sa.String(length=255), nullable=True),
+    sa.Column('ban_expires_at', sa.DateTime(), nullable=True),
+    sa.Column('banned_by_id', sa.Integer(), nullable=True),
+    sa.Column('appeal_data', sa.JSON(), nullable=True),
+    sa.Column('risk_profile_score', sa.Integer(), nullable=True),
+    sa.Column('risk_profile_summary', sa.Text(), nullable=True),
+    sa.Column('last_risk_analysis', sa.DateTime(), nullable=True),
+    sa.ForeignKeyConstraint(['banned_by_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email'),
     sa.UniqueConstraint('google_id')
