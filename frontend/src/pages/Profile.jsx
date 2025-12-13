@@ -2,16 +2,83 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   FiUser, FiMail, FiSave, FiBriefcase, FiShield, 
-  FiActivity, FiFileText, FiMessageSquare, FiCpu 
+  FiActivity, FiFileText, FiMessageSquare, FiCpu, 
+  FiStar
 } from "react-icons/fi";
 import api from "../services/api";
 import FooterContent from "../components/FooterComponent";
 import "../styles/profile.css";
 
+function Conta({ user, setUser, handleSave, saving }) {
+  return (
+    <form onSubmit={handleSave} className="profile-form">
+      <div className="form-group">
+        <label>Nome Completo</label>
+        <input 
+          type="text" 
+          value={user.name} 
+          onChange={e => setUser({ ...user, name: e.target.value })}
+          className="profile-input"
+        />
+      </div>
+
+      <div className="form-group">
+        <label>E-mail</label>
+        <input 
+          type="email" 
+          value={user.email} 
+          disabled 
+          className="profile-input disabled"
+        />
+      </div>
+
+      <div className="form-group highlight-group">
+        <label>
+          <FiBriefcase /> Contexto para a IA
+        </label>
+
+        <textarea 
+          rows="5"
+          value={user.extra_data} 
+          onChange={e => setUser({ ...user, extra_data: e.target.value })}
+          className="profile-textarea"
+        />
+      </div>
+
+      <div className="form-actions">
+        <button type="submit" className="btn outline" disabled={saving}>
+          {saving ? "Salvando..." : <><FiSave /> Salvar Alterações</>}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function Chats() {
+  return <h2>Lista de chats</h2>;
+}
+
+function Avaliações() {
+  return <h2>Avaliações</h2>;
+}
+
+function Contratos() {
+  return <h2>Contratos</h2>;
+}
+
+const sections = {
+  conta: Conta,
+  chats: Chats,
+  contratos: Contratos,
+  avaliacoes: Avaliações
+};
+
 export default function Profile() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [section, setSection] = useState("conta");
+  const SectionComponent = sections[section];
   
   const [user, setUser] = useState({
     id: null,
@@ -109,58 +176,50 @@ export default function Profile() {
         <div className="profile-grid">
           
           <section className="profile-col-main">
+
             <div className="profile-card">
-              <div className="card-header">
-                <h3><FiUser /> Dados Pessoais & Contexto</h3>
-              </div>
-              
-              <form onSubmit={handleSave} className="profile-form">
-                <div className="form-group">
-                  <label>Nome Completo</label>
-                  <input 
-                    type="text" 
-                    value={user.name} 
-                    onChange={e => setUser({...user, name: e.target.value})}
-                    className="profile-input"
-                  />
-                </div>
 
-                {/* Email é readonly por segurança básica */}
-                <div className="form-group">
-                  <label>E-mail</label>
-                  <input 
-                    type="email" 
-                    value={user.email} 
-                    disabled 
-                    className="profile-input disabled"
-                  />
-                </div>
+            <div className="card-header">
+              <button 
+                className={`btn ${section === 'conta' ? 'active' : ''}`}
+                onClick={() => setSection("conta")}
+              >
+                <FiUser /> Conta
+              </button>
 
-                <div className="form-group highlight-group">
-                  <label style={{display:'flex', alignItems:'center', gap: 8, color: 'var(--accent)'}}>
-                    <FiBriefcase /> Contexto para a IA (Extra Data)
-                  </label>
-                  <p className="field-hint">
-                    A IA usa esta informação para personalizar suas respostas jurídicas. 
-                    <br/><em>Ex: "Sou designer gráfico PJ" ou "Trabalhador rural em regime CLT".</em>
-                  </p>
-                  <textarea 
-                    rows="5"
-                    value={user.extra_data} 
-                    onChange={e => setUser({...user, extra_data: e.target.value})}
-                    className="profile-textarea"
-                    placeholder="Descreva seu contexto profissional ou jurídico aqui..."
-                  />
-                </div>
+              <button 
+                className={`btn ${section === 'chats' ? 'active' : ''}`}
+                onClick={() => setSection("chats")}
+              >
+                <FiMessageSquare /> Chats
+              </button>
 
-                <div className="form-actions">
-                  <button type="submit" className="btn primary" disabled={saving}>
-                    {saving ? "Salvando..." : <><FiSave /> Salvar Alterações</>}
-                  </button>
-                </div>
-              </form>
+              <button 
+                className={`btn ${section === 'contratos' ? 'active' : ''}`}
+                onClick={() => setSection("contratos")}
+              >
+                <FiFileText /> Contratos
+              </button>
+
+              <button 
+                className={`btn ${section === 'avaliacoes' ? 'active' : ''}`}
+                onClick={() => setSection("avaliacoes")}
+              >
+                <FiStar /> Avaliações
+              </button>
+            </div>
+
+            <div className="profile-section-content">
+              <SectionComponent 
+                user={user}
+                setUser={setUser}
+                handleSave={handleSave}
+                saving={saving}
+              />
+            </div>
             </div>
           </section>
+
 
           <section className="profile-col-side">
             <div className="profile-card stats-card">
