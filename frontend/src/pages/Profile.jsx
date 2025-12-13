@@ -7,6 +7,7 @@ import {
 } from "react-icons/fi";
 import api from "../services/api";
 import FooterContent from "../components/FooterComponent";
+import toast from "react-hot-toast";
 import "../styles/profile.css";
 
 function Conta({ user, setUser, handleSave, saving }) {
@@ -129,24 +130,29 @@ export default function Profile() {
     }
   }
 
+
   async function handleSave(e) {
     e.preventDefault();
     setSaving(true);
+
     try {
       const updated = await api.updateUser(user.id, {
         name: user.name,
         extra_data: user.extra_data
       });
 
-      // Atualiza localStorage e estado
       const currentUser = JSON.parse(localStorage.getItem("user"));
-      localStorage.setItem("user", JSON.stringify({ ...currentUser, ...updated }));
-      
+      localStorage.setItem(
+        "user",
+        JSON.stringify({ ...currentUser, ...updated })
+      );
+
       setUser(prev => ({ ...prev, ...updated }));
-      alert("Perfil atualizado com sucesso!");
+
+      toast.success("Perfil atualizado com sucesso!");
     } catch (err) {
       console.error(err);
-      alert("Erro ao salvar alterações.");
+      toast.error("Erro ao salvar alterações.");
     } finally {
       setSaving(false);
     }

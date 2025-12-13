@@ -59,7 +59,7 @@ createRoot(document.getElementById("root")).render(
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       {/* Configuração do Toaster (Notificações) */}
       <Toaster 
-        position="top-center" 
+        position="bottom-right" 
         toastOptions={{
           style: {
             background: '#18181b',
