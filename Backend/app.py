@@ -36,6 +36,7 @@ def create_app():
     from router.contract_router import contract_bp
     from router.dashboard_router import dashboard_bp
     from router.admin_router import admin_bp
+    from router.documents_router import documents_bp
 
     # Register blueprints
     app.register_blueprint(auth_bp)
@@ -47,6 +48,7 @@ def create_app():
     app.register_blueprint(contract_bp)
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(documents_bp, url_prefix='/documents')
 
     return app
 

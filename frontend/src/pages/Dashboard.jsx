@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion'; 
 import { 
     FileText, TrendingUp, AlertCircle, MessageSquare, 
     ShieldAlert, ArrowRight 
@@ -16,6 +17,33 @@ const COLORS = [
     '#4A90E2', '#50E3C2', '#F5A623', '#D0021B', '#9B59B6', 
     '#FF6B6B', '#1DD1A1', '#54A0FF', '#5F27CD', '#FF9FF3'
 ];
+
+// Variantes de Animação (Container)
+const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1,
+            delayChildren: 0.1
+        }
+    }
+};
+
+// Variantes UNIFICADAS (Entrada + Hover)
+const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+        opacity: 1, 
+        y: 0,
+        transition: { type: "spring", stiffness: 100, damping: 12 }
+    },
+    hover: { 
+        y: -5, 
+        boxShadow: "0 10px 20px rgba(0,0,0,0.2)",
+        transition: { duration: 0.2 }
+    }
+};
 
 export default function Dashboard() {
     const navigate = useNavigate();
@@ -57,7 +85,14 @@ export default function Dashboard() {
         return (
             <div className="landing-root dashboard-root">
                 <main className="container dashboard-main center-loading">
-                    <p className="muted">Analisando dados...</p>
+                    <motion.p 
+                        className="muted"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: [0.5, 1, 0.5] }}
+                        transition={{ repeat: Infinity, duration: 1.5 }}
+                    >
+                        Analisando dados...
+                    </motion.p>
                 </main>
             </div>
         );
@@ -65,35 +100,40 @@ export default function Dashboard() {
 
     return (
         <div className="landing-root dashboard-root">
-            <main className="container dashboard-main">
+            <motion.main 
+                className="container dashboard-main"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+            >
                 
                 {/* 1. KPIs */}
-                <section className="kpi-grid">
-                    <div className="kpi-card">
+                <motion.section className="kpi-grid" variants={containerVariants}>
+                    <motion.div className="kpi-card" variants={itemVariants} whileHover="hover">
                         <div className="kpi-icon neutral"><MessageSquare size={24} /></div>
                         <div className="kpi-info">
                             <span className="kpi-title">Conversas</span>
                             <span className="kpi-value">{stats.kpis.active_cases}</span>
                             <span className="kpi-change">Ativos</span>
                         </div>
-                    </div>
-                    <div className="kpi-card">
+                    </motion.div>
+                    <motion.div className="kpi-card" variants={itemVariants} whileHover="hover">
                         <div className="kpi-icon positive"><FileText size={24} /></div>
                         <div className="kpi-info">
                             <span className="kpi-title">Mensagens</span>
                             <span className="kpi-value">{stats.kpis.docs_analyzed}</span>
                             <span className="kpi-change">Total enviado</span>
                         </div>
-                    </div>
-                    <div className="kpi-card">
+                    </motion.div>
+                    <motion.div className="kpi-card" variants={itemVariants} whileHover="hover">
                         <div className="kpi-icon warning"><AlertCircle size={24} /></div>
                         <div className="kpi-info">
                             <span className="kpi-title">Pontos de Risco</span>
                             <span className="kpi-value">{stats.kpis.risks_avoided}</span>
                             <span className="kpi-change">Termos críticos</span>
                         </div>
-                    </div>
-                    <div className="kpi-card">
+                    </motion.div>
+                    <motion.div className="kpi-card" variants={itemVariants} whileHover="hover">
                         <div className="kpi-icon success"><TrendingUp size={24} /></div>
                         <div className="kpi-info">
                             <span className="kpi-title">Dica Rápida</span>
@@ -101,27 +141,36 @@ export default function Dashboard() {
                                 {stats.insight?.text}
                             </span>
                         </div>
-                    </div>
-                </section>
+                    </motion.div>
+                </motion.section>
 
                 <hr className="dash-divider" style={{ border: 0, borderTop: '1px solid rgba(255,255,255,0.06)', margin: '20px 0 40px' }}/>
 
                 {/* 2. ALERTAS DE RISCO */}
                 {stats.risk_alerts && stats.risk_alerts.length > 0 && (
-                    <section style={{ marginBottom: 40 }}>
+                    <motion.section style={{ marginBottom: 40 }} variants={itemVariants}>
                         <div className="section-header">
                             <h4 style={{ color: '#ff6b6b', display: 'flex', alignItems: 'center', gap: 10 }}>
                                 <ShieldAlert size={20} /> Alertas de Contrato & Risco
                             </h4>
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16 }}>
+                        <motion.div 
+                            style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16 }}
+                            variants={containerVariants}
+                        >
                             {stats.risk_alerts.map((alert) => (
-                                <div key={alert.id} className="risk-alert-card" style={{
-                                    background: 'rgba(231, 76, 60, 0.08)',
-                                    border: '1px solid rgba(231, 76, 60, 0.25)',
-                                    borderRadius: '12px', padding: '20px',
-                                    display: 'flex', flexDirection: 'column', gap: '10px'
-                                }}>
+                                <motion.div 
+                                    key={alert.id} 
+                                    className="risk-alert-card" 
+                                    variants={itemVariants}
+                                    whileHover={{ scale: 1.02 }}
+                                    style={{
+                                        background: 'rgba(231, 76, 60, 0.08)',
+                                        border: '1px solid rgba(231, 76, 60, 0.25)',
+                                        borderRadius: '12px', padding: '20px',
+                                        display: 'flex', flexDirection: 'column', gap: '10px'
+                                    }}
+                                >
                                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                         <span style={{ 
                                             background: 'rgba(231, 76, 60, 0.2)', color: '#ff8a80', 
@@ -140,16 +189,16 @@ export default function Dashboard() {
                                             Ver <ArrowRight size={14} />
                                         </button>
                                     </div>
-                                </div>
+                                </motion.div>
                             ))}
-                        </div>
-                    </section>
+                        </motion.div>
+                    </motion.section>
                 )}
 
                 {/* 3. GRÁFICOS */}
                 <section className="charts-grid">
                     {/* Gráfico de Volume */}
-                    <div className="chart-container main-chart">
+                    <motion.div className="chart-container main-chart" variants={itemVariants}>
                         <div className="chart-header"><h4>Volume de Consultas (7 dias)</h4></div>
                         <div style={{ width: '100%', height: 350, minHeight: 350 }}>
                             <ResponsiveContainer width="100%" height="100%">
@@ -173,10 +222,10 @@ export default function Dashboard() {
                                 </AreaChart>
                             </ResponsiveContainer>
                         </div>
-                    </div>
+                    </motion.div>
                     
                     {/* Gráfico de Pizza */}
-                    <div className="chart-container pie-chart">
+                    <motion.div className="chart-container pie-chart" variants={itemVariants}>
                         <div className="chart-header"><h4>Áreas de Interesse</h4></div>
                         <div style={{ width: '100%', height: 380, minHeight: 380 }}> 
                             <ResponsiveContainer width="100%" height="100%">
@@ -208,20 +257,27 @@ export default function Dashboard() {
                                 </PieChart>
                             </ResponsiveContainer>
                         </div>
-                    </div>
+                    </motion.div>
                 </section>
 
                 {/* 4. HISTÓRICO & INSIGHTS */}
                 <section className="bottom-grid">
-                    <div className="history-list">
+                    <motion.div className="history-list" variants={itemVariants}>
                         <div className="section-header">
                             <h4>Atividade Recente</h4>
                             <button onClick={() => navigate('/app/chat')} className="btn tiny outline">Ver todos</button>
                         </div>
-                        <ul>
+                        <motion.ul variants={containerVariants}>
                             {stats.history.length === 0 ? <li className="muted">Nenhuma atividade.</li> : 
                                 stats.history.map((item) => (
-                                    <li key={item.id} className="history-item" onClick={() => navigate('/app/chat')} style={{ cursor: 'pointer' }}>
+                                    <motion.li 
+                                        key={item.id} 
+                                        className="history-item" 
+                                        onClick={() => navigate('/app/chat')} 
+                                        style={{ cursor: 'pointer' }}
+                                        variants={itemVariants}
+                                        whileHover={{ x: 5, backgroundColor: 'rgba(255,255,255,0.03)' }}
+                                    >
                                         <div className="history-group-details">
                                             <div className="history-icon"><MessageSquare size={18} /></div>
                                             <div className="history-details">
@@ -230,22 +286,30 @@ export default function Dashboard() {
                                             </div>
                                         </div>
                                         <span className="status-badge concluído">Ativo</span>
-                                    </li>
+                                    </motion.li>
                                 ))
                             }
-                        </ul>
-                    </div>
+                        </motion.ul>
+                    </motion.div>
 
-                    <div className="insights-panel">
+                    <motion.div className="insights-panel" variants={itemVariants}>
                         <h4>Sentry AI Insights</h4>
-                        <div className={`insight-card ${stats.insight?.type === 'warning' ? 'warning' : ''}`} style={{marginBottom: 10}}>
+                        <motion.div 
+                            className={`insight-card ${stats.insight?.type === 'warning' ? 'warning' : ''}`} 
+                            style={{marginBottom: 10}}
+                            whileHover={{ scale: 1.02 }}
+                        >
                             <TrendingUp className="accent-icon" size={24} />
                             <div>
                                 <strong>Dica Personalizada</strong>
                                 <p className="muted">{stats.insight?.text}</p>
                             </div>
-                        </div>
-                        <div className="insight-card" style={{ flexDirection: 'column', gap: '10px', borderLeft: '4px solid #50E3C2' }}>
+                        </motion.div>
+                        <motion.div 
+                            className="insight-card" 
+                            style={{ flexDirection: 'column', gap: '10px', borderLeft: '4px solid #50E3C2' }}
+                            whileHover={{ scale: 1.02 }}
+                        >
                             <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                                 <FileText className="accent-icon" size={24} style={{ color: '#50E3C2' }} />
                                 <strong>Seus Principais Focos</strong>
@@ -259,10 +323,10 @@ export default function Dashboard() {
                                     <li>Analisando histórico...</li>
                                 )}
                             </ul>
-                        </div>
-                    </div>
+                        </motion.div>
+                    </motion.div>
                 </section>
-            </main>
+            </motion.main>
             <FooterContent />
         </div>
     );

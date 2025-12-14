@@ -1,8 +1,42 @@
 import React, { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { 
+  Scale, 
+  BookOpen, 
+  Users, 
+  Bot, 
+  Shield, 
+  Zap, 
+  ArrowRight, 
+  CheckCircle, 
+  MessageSquare, 
+  Sparkles,
+  Layout
+} from 'lucide-react'
 import ChatPreview from '../components/ChatPreview'
 import AuthModal from '../components/AuthModal'
 import FooterContent from '../components/FooterComponent'
+
+// Variantes de animação
+const fadeInUp = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+}
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.2
+    }
+  }
+}
+
+const scaleOnHover = {
+  hover: { scale: 1.03, transition: { duration: 0.2 } }
+}
 
 export default function Home() {
   const navigate = useNavigate()
@@ -27,184 +61,380 @@ export default function Home() {
   }
 
   return (
-    <div className="landing-root">
-      <header className="landing-header container">
-        <div className="logo">
-          <div aria-hidden style={{ display: 'flex', alignItems: 'center' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-              viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-              style={{ color: "#fff" }}
-            >
-              <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path>
-              <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"></path>
-              <path d="M7 21h10"></path>
-              <path d="M12 3v18"></path>
-              <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"></path>
-            </svg>
+    <div className="landing-root" style={{ position: 'relative' }}>
+      
+      {/* HEADER EM FORMATO PÍLULA */}
+      {/* Removemos a classe 'container' para controlar a largura manualmente no style */}
+      <header 
+        className="landing-header" 
+        style={{
+            position: 'sticky',
+            top: 24, // Distância do topo
+            zIndex: 100,
+            margin: '0 auto 40px auto', // Centraliza horizontalmente
+            width: '90%',
+            maxWidth: '900px', // Largura máxima da pílula
+            height: '64px',
+            
+            // Estilização Visual da Pílula
+            background: 'rgba(17, 16, 17, 0.75)', // Fundo escuro semi-transparente
+            backdropFilter: 'blur(16px)', // Efeito de vidro (Glassmorphism)
+            WebkitBackdropFilter: 'blur(16px)',
+            borderRadius: '50px', // O segredo da pílula
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.25)',
+            
+            // Layout interno
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '8px 20px', // Padding interno ajustado
+        }}
+      >
+        <motion.div 
+          className="logo"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          style={{ display: 'flex', alignItems: 'center', gap: 12 }}
+        >
+          <div className="brand-logo" style={{ 
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            width: 36, height: 36, borderRadius: '50%', // Logo totalmente redonda
+            background: 'linear-gradient(135deg, #4A90E2 0%, #111011ff 100%)',
+            color: '#fff', boxShadow: '0 4px 12px rgba(74, 144, 226, 0.3)'
+          }}>
+            <Scale size={18} strokeWidth={2.5} />
           </div>
 
-          <div className="brand">
-            <strong>SentryAI</strong>
-            <span className="tag">IA Jurídica Avançada</span>
+          <div className="brand" style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
+            <strong style={{ fontSize: 18, letterSpacing: '-0.5px' }}>SentryAI</strong>
+            <span style={{ 
+              fontSize: 9, textTransform: 'uppercase', letterSpacing: '1px', 
+              color: 'rgba(255,255,255,0.5)', marginTop: 2
+            }}>
+              Beta
+            </span>
           </div>
-        </div>
+        </motion.div>
 
-        <nav className="top-nav">
-          <button className="btn ghost" onClick={() => openAuth('login')}>Entrar</button>
-          <button className="btn small" onClick={() => openAuth('register')}>Registrar</button>
-        </nav>
+        <motion.nav 
+          className="top-nav"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          style={{ display: 'flex', alignItems: 'center', gap: 12 }}
+        >
+          <button 
+            className="btn ghost" 
+            onClick={() => openAuth('login')}
+            style={{ fontSize: 14, padding: '8px 16px' }} // Botão mais discreto
+          >
+            Entrar
+          </button>
+          
+          <motion.button 
+            className="btn primary small" 
+            onClick={() => openAuth('register')} 
+            style={{ 
+                display: 'flex', gap: 6, alignItems: 'center',
+                borderRadius: '24px', // Botão interno também arredondado
+                padding: '8px 20px',
+                fontSize: 14
+            }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            Registrar
+          </motion.button>
+        </motion.nav>
       </header>
 
-      <main className="hero-section">
-        <div className="hero-inner container">
-          <div className="hero-left">
+      {/* HERO SECTION */}
+      <main className="hero-section" style={{ paddingTop: 40 }}> {/* Ajuste de padding top para compensar o header */}
+        <div className="hero-inner container" style={{ alignItems: 'center' }}>
+          <motion.div 
+            className="hero-left" 
+            style={{ paddingRight: 40 }}
+            initial="hidden"
+            animate="visible"
+            variants={staggerContainer}
+          >
+            <motion.div variants={fadeInUp} className="badge-pill" style={{ 
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              padding: '6px 12px', borderRadius: 20, 
+              background: 'rgba(74, 144, 226, 0.1)', border: '1px solid rgba(74, 144, 226, 0.2)',
+              color: '#4A90E2', fontSize: 13, fontWeight: 500, marginBottom: 24
+            }}>
+              <Sparkles size={14} /> Gemini 3 Pro
+            </motion.div>
 
-            <h1>SentryAI — IA Jurídica Avançada</h1>
-            <h2 className="subtitle">Orientação jurídica acessível e confiável para trabalhadores brasileiros</h2>
-            <p className="hero-desc">Uma plataforma social que usa IA especializada para interpretar legislação trabalhista e constitucional e oferecer orientações práticas.</p>
+            <motion.h1 variants={fadeInUp} style={{ fontSize: '3.5rem', lineHeight: 1.1, marginBottom: 20 }}>
+              SentryAI <br />
+              <span style={{ 
+                background: 'linear-gradient(90deg, #fff, #a0a0a0)', 
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' 
+              }}>
+                Justiça Acessível
+              </span>
+            </motion.h1>
+            
+            <motion.h2 variants={fadeInUp} className="subtitle" style={{ fontSize: '1.25rem', maxWidth: 540, lineHeight: 1.6 }}>
+              Orientação jurídica confiável para trabalhadores brasileiros. 
+              Interpretação precisa da CLT e Constituição com Inteligência Artificial.
+            </motion.h2>
 
-            <div className="hero-ctas">
-              <button className="btn primary" onClick={() => openAuth('register')}>Experimentar Agora</button>
-              <button className="btn outline" onClick={handleDemo}>Ver Demo</button>
-            </div>
-            <p className="micro">Acesso demo sem login. <strong>Faça login</strong> para salvar seu histórico.</p>
-          </div>
+            <motion.div variants={fadeInUp} className="hero-ctas" style={{ marginTop: 32 }}>
+              <motion.button 
+                className="btn primary" 
+                onClick={() => openAuth('register')} 
+                style={{ padding: '12px 24px', fontSize: 15 }}
+                whileHover={{ scale: 1.05, boxShadow: "0 10px 20px rgba(0,0,0,0.2)" }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Começar Agora
+              </motion.button>
+              <motion.button 
+                className="btn outline" 
+                onClick={handleDemo} 
+                style={{ padding: '12px 24px', fontSize: 15, display: 'flex', gap: 8, alignItems: 'center' }}
+                whileHover={{ scale: 1.05, background: "rgba(255,255,255,0.05)" }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Bot size={18} /> Ver Demonstração
+              </motion.button>
+            </motion.div>
+            
+            <motion.p variants={fadeInUp} className="micro" style={{ marginTop: 24, display: 'flex', alignItems: 'center', gap: 8, opacity: 0.6 }}>
+              <Shield size={14} color="#50E3C2" /> Seus dados estão seguros e criptografados.
+            </motion.p>
+          </motion.div>
+          
         </div>
       </main>
       
+      {/* FEATURES SECTION */}
       <section className="features container">
-        <h3 style={{ color: 'var(--text)' }}>Como podemos te ajudar</h3>
-        <p className="muted">Nossa plataforma oferece orientação jurídica acessível e confiável para todos</p>
+        <motion.div 
+          style={{ textAlign: 'center', marginBottom: 50 }}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+        >
+          <h3 style={{ fontSize: 28, marginBottom: 12, color: 'var(--text)' }}>Como podemos te ajudar</h3>
+          <p className="muted" style={{ maxWidth: 600, margin: '0 auto', fontSize: 16 }}>
+            Nossa plataforma combina tecnologia avançada com conhecimento jurídico especializado para democratizar o acesso à justiça.
+          </p>
+        </motion.div>
 
-        <div className="cards">
-          <article className="card" aria-labelledby="card1-title">
-            <div className="card-icon" aria-hidden>
-              <svg xmlns="http://www.w3.org/2000/svg"
-                width="20" height="20" viewBox="0 0 24 24"
-                fill="none" stroke="currentColor" strokeWidth="2"
-                strokeLinecap="round" strokeLinejoin="round"
-              >
-                <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"></path>
-                <path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"></path>
-                <path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"></path>
-                <path d="M17.599 6.5a3 3 0 0 0 .399-1.375"></path>
-                <path d="M6.003 5.125A3 3 0 0 0 6.401 6.5"></path>
-                <path d="M3.477 10.896a4 4 0 0 1 .585-.396"></path>
-                <path d="M19.938 10.5a4 4 0 0 1 .585.396"></path>
-                <path d="M6 18a4 4 0 0 1-1.967-.516"></path>
-                <path d="M19.967 17.484A4 4 0 0 1 18 18"></path>
-              </svg>
-            </div>
+        <motion.div 
+          className="cards"
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+        >
+          <motion.article className="card" variants={fadeInUp} whileHover="hover">
+            <motion.div variants={scaleOnHover} className="card-icon" style={{ color: '#4A90E2', background: 'rgba(74, 144, 226, 0.1)' }}>
+              <Bot size={24} />
+            </motion.div>
+            <h4 style={{ fontSize: 18, marginTop: 4 }}>Análise Jurídica IA</h4>
+            <p>Nossa IA analisa seu caso com base na legislação vigente (CLT, CF) e oferece orientações práticas e personalizadas em segundos.</p>
+            <button className="btn tiny ghost" onClick={() => navigate('/app')} style={{ marginTop: 'auto', alignSelf: 'flex-start' }}>Saiba mais</button>
+          </motion.article>
 
-            <h4 id="card1-title" style={{ color: 'var(--text)' }}>IA Jurídica Avançada</h4>
-            <p className="muted">Orientação personalizada para análise de casos trabalhistas. Nossa IA analisa sua situação e oferece orientações baseadas na legislação vigente.</p>
-            <button className="btn tiny" onClick={() => navigate('/app')}>Saiba mais</button>
-          </article>
+          <motion.article className="card" variants={fadeInUp} whileHover="hover">
+            <motion.div variants={scaleOnHover} className="card-icon" style={{ color: '#50E3C2', background: 'rgba(80, 227, 194, 0.1)' }}>
+              <BookOpen size={24} />
+            </motion.div>
+            <h4 style={{ fontSize: 18, marginTop: 4 }}>Explorar Direitos</h4>
+            <p>Acesse guias interativos sobre Direitos Trabalhistas, Constitucionais e do Consumidor. Informação clara e acessível.</p>
+            <button className="btn tiny ghost" style={{ marginTop: 'auto', alignSelf: 'flex-start' }}>Explorar</button>
+          </motion.article>
 
-          <article className="card" aria-labelledby="card2-title">
-            <div className="card-icon" aria-hidden>
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                className="lucide lucide-book-open h-6 w-6 text-primary">
-                <path d="M12 7v14"></path>
-                <path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"></path>
-              </svg>
-            </div>
-
-            <h4 id="card2-title" style={{ color: 'var(--text)' }}>Explorar Direitos</h4>
-            <p className="muted">Guias interativos e acesso livre: Direitos Trabalhistas; Direitos Constitucionais; Direitos da Mulher; Direitos do Consumidor. Conteúdo prático e sem necessidade de login.</p>
-            <button className="btn tiny ghost">Explorar</button>
-          </article>
-
-          <article className="card" aria-labelledby="card3-title">
-            <div className="card-icon" aria-hidden>
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                className="lucide lucide-users h-6 w-6 text-primary">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-              </svg>
-            </div>
-
-            <h4 id="card3-title" style={{ color: 'var(--text)' }}>Acesso Democrático</h4>
-            <p className="muted">Orientação jurídica gratuita para todos os trabalhadores. Quebrando barreiras e democratizando o acesso ao conhecimento jurídico.</p>
-            <button className="btn tiny">Nossa Missão</button>
-          </article>
-        </div>
+          <motion.article className="card" variants={fadeInUp} whileHover="hover">
+            <motion.div variants={scaleOnHover} className="card-icon" style={{ color: '#F5A623', background: 'rgba(245, 166, 35, 0.1)' }}>
+              <Users size={24} />
+            </motion.div>
+            <h4 style={{ fontSize: 18, marginTop: 4 }}>Acesso Democrático</h4>
+            <p>Quebrando barreiras financeiras e técnicas. Orientação jurídica de qualidade disponível para todos os trabalhadores.</p>
+            <button className="btn tiny ghost" style={{ marginTop: 'auto', alignSelf: 'flex-start' }}>Nossa Missão</button>
+          </motion.article>
+        </motion.div>
       </section>
 
-      <section className="tech-advanced container">
-        <div className="tech-left">
-          <span className="eyebrow">Tecnologia Avançada</span>
-          <h3 style={{ color: 'var(--text)' }}>IA que entende direito trabalhista</h3>
-          <p className="muted">Nossa inteligência artificial foi treinada especificamente em legislação trabalhista e constitucional brasileira, oferecendo respostas precisas e atualizadas.</p>
+      {/* TECH / EXAMPLE SECTION */}
+      <section className="tech-advanced container" style={{ alignItems: 'center', margin: '80px auto' }}>
+        <motion.div 
+          className="tech-left"
+          initial={{ opacity: 0, x: -50 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <span className="eyebrow" style={{ color: '#4A90E2', fontWeight: 600, letterSpacing: '1px' }}>TECNOLOGIA AVANÇADA</span>
+          <h3 style={{ fontSize: 32, marginTop: 12, marginBottom: 16, color: 'var(--text)' }}>IA treinada na legislação brasileira</h3>
+          <p className="muted" style={{ fontSize: 16, lineHeight: 1.7 }}>
+            Utilizamos modelos de linguagem de última geração, ajustados especificamente com as leis brasileiras e jurisprudência atualizada para garantir precisão.
+          </p>
 
-          <div className="two-col">
-            <ul>
-              <li className="muted"><strong style={{ color: 'var(--text)' }}>Análise de Contratos</strong> — Identifica cláusulas abusivas automaticamente</li>
-              <li className="muted"><strong style={{ color: 'var(--text)' }}>Orientação Personalizada</strong> — Respostas baseadas no seu caso específico</li>
+          <div className="two-col" style={{ gap: 20 }}>
+            <ul style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <li className="muted" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                <CheckCircle size={18} color="#50E3C2" strokeWidth={3} /> <strong style={{color: 'var(--text)'}}>Análise de Contratos</strong>
+              </li>
+              <li className="muted" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                <CheckCircle size={18} color="#50E3C2" strokeWidth={3} /> <strong style={{color: 'var(--text)'}}>Orientação Personalizada</strong>
+              </li>
             </ul>
-            <ul>
-              <li className="muted"><strong style={{ color: 'var(--text)' }}>Histórico Salvo</strong> — Mantenha suas consultas sempre acessíveis</li>
-              <li className="muted"><strong style={{ color: 'var(--text)' }}>Treinamento Localizado</strong> — Modelo treinado com legislação brasileira</li>
+            <ul style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <li className="muted" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                <CheckCircle size={18} color="#50E3C2" strokeWidth={3} /> <strong style={{color: 'var(--text)'}}>Histórico Seguro</strong>
+              </li>
+              <li className="muted" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                <CheckCircle size={18} color="#50E3C2" strokeWidth={3} /> <strong style={{color: 'var(--text)'}}>Jurisprudência Atual</strong>
+              </li>
             </ul>
           </div>
 
-          <div className="tech-ctas">
-            <button className="btn small primary" onClick={() => navigate('/login')}>Fazer Login e Testar</button>
+          <div className="tech-ctas" style={{ marginTop: 36 }}>
+            <motion.button 
+              className="btn primary" 
+              onClick={() => openAuth('login')} 
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Fazer Login e Testar <ArrowRight size={16} />
+            </motion.button>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="tech-right">
-          <div className="example-card" role="region" aria-label="Exemplo de consulta">
-            <h4 style={{ color: 'var(--text)' }}>Meu empregador não está pagando horas extras. O que posso fazer?</h4>
-            <p className="muted">Baseado na CLT, art. 59, você tem direito ao pagamento de horas extras com adicional mínimo de 50%. Recomendamos documentar as horas e procurar orientação no sindicato.</p>
+        <motion.div 
+          className="tech-right"
+          initial={{ opacity: 0, x: 50 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
+          <div className="example-card" role="region" aria-label="Exemplo de consulta" style={{
+            background: 'var(--bg-800)', border: '1px solid rgba(255,255,255,0.08)',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.4)', borderRadius: 16
+          }}>
+            <div style={{ display: 'flex', gap: 12, marginBottom: 20, alignItems: 'center' }}>
+              <div style={{ padding: 10, background: 'rgba(74, 144, 226, 0.1)', borderRadius: '50%' }}>
+                <MessageSquare size={20} color="#4A90E2" />
+              </div>
+              <div>
+                <strong style={{ fontSize: 14, color: '#fff', display: 'block' }}>Exemplo Real</strong>
+                <span style={{ fontSize: 12, color: 'var(--muted)' }}>Consulta Trabalhista</span>
+              </div>
+            </div>
+            <h4 style={{ color: '#fff', fontSize: 17, marginBottom: 12 }}>"Meu empregador não está pagando horas extras..."</h4>
+            <p className="muted" style={{ fontSize: 14, lineHeight: 1.6, background: 'rgba(255,255,255,0.03)', padding: 12, borderRadius: 8 }}>
+              <strong style={{color: '#50E3C2'}}>SentryAI:</strong> Baseado no Art. 59 da CLT, você tem direito ao pagamento com adicional mínimo de 50%. A IA sugere documentar as horas e buscar o sindicato.
+            </p>
             <div className="example-ctas">
               <button className="btn tiny primary" onClick={() => navigate('/app')}>Experimentar Chat</button>
-              <button className="btn tiny ghost" onClick={() => setDemoMode(true)}>Ver Detalhes</button>
+              <button className="btn tiny ghost" onClick={() => setDemoMode(true)}>Ver no Preview</button>
             </div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
-      <section className="preview-section container" ref={previewRef}>
+      {/* PREVIEW SECTION */}
+      <motion.section 
+        className="preview-section container" 
+        ref={previewRef} 
+        style={{ 
+          padding: '60px 40px', 
+          background: 'linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 100%)', 
+          borderRadius: 24, 
+          marginBottom: 60,
+          border: '1px solid rgba(255,255,255,0.04)'
+        }}
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.7 }}
+      >
         <div className="preview-left">
-          <h3 style={{ color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span className="galaxy" style={{ display: 'flex' }}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" /></svg>
-            </span>
-            Veja o chat em ação
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 28, color: 'var(--text)' }}>
+            <div style={{ background: 'rgba(245, 166, 35, 0.1)', padding: 8, borderRadius: 8, display: 'flex' }}>
+              <Zap size={24} color="#F5A623" />
+            </div>
+            Veja o SentryAI em ação
           </h3>
 
-          <p className="muted">Experimente uma demonstração interativa de como nossa IA jurídica responde às suas dúvidas. Respostas claras, práticas e baseadas na legislação brasileira.</p>
+          <p className="muted" style={{ fontSize: 16, marginTop: 16, lineHeight: 1.6 }}>
+            Experimente uma demonstração interativa de como nossa IA jurídica responde às suas dúvidas. Respostas claras, práticas e baseadas na legislação brasileira.
+          </p>
 
-          <div style={{ marginTop: 12 }}>
-            <p className="muted"><strong style={{ color: 'var(--text)' }}>Respostas Instantâneas</strong> — Orientação em tempo real, 24/7</p>
-            <p className="muted"><strong style={{ color: 'var(--text)' }}>IA Especializada</strong> — Treinada em direito trabalhista e constitucional</p>
-            <p className="muted"><strong style={{ color: 'var(--text)' }}>Orientação Personalizada</strong> — Passos práticos conforme seu caso</p>
-            <p className="muted"><strong style={{ color: 'var(--text)' }}>Privacidade</strong> — Suas consultas ficam protegidas (quando logado)</p>
+          <div style={{ marginTop: 32, display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <motion.div 
+              style={{ display: 'flex', gap: 16 }}
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+            >
+              <div style={{ marginTop: 2 }}><Layout size={20} color="#4A90E2" /></div>
+              <div>
+                <strong style={{ color: '#fff', fontSize: 15 }}>Interface Simples</strong>
+                <p className="muted" style={{ margin: '4px 0 0', fontSize: 14 }}>Design focado na sua dúvida, sem complicações desnecessárias.</p>
+              </div>
+            </motion.div>
+            <motion.div 
+              style={{ display: 'flex', gap: 16 }}
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.4 }}
+            >
+              <div style={{ marginTop: 2 }}><Shield size={20} color="#50E3C2" /></div>
+              <div>
+                <strong style={{ color: '#fff', fontSize: 15 }}>Privacidade Total</strong>
+                <p className="muted" style={{ margin: '4px 0 0', fontSize: 14 }}>Suas consultas e dados pessoais ficam protegidos (quando logado).</p>
+              </div>
+            </motion.div>
           </div>
 
-          <div className="preview-ctas" style={{ marginTop: 16 }}>
-            <button className="btn primary" onClick={() => navigate('/app')}>Experimentar Agora</button>
-            <button className="btn outline" onClick={handleDemo}>Ver Demo</button>
+          <div className="preview-ctas" style={{ marginTop: 40 }}>
+            <motion.button 
+              className="btn primary" 
+              onClick={() => navigate('/app')} 
+              style={{ padding: '12px 24px' }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Experimentar Agora
+            </motion.button>
+            <motion.button 
+              className="btn outline" 
+              onClick={handleDemo} 
+              style={{ padding: '12px 24px' }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Reiniciar Demo
+            </motion.button>
           </div>
-
-          <p className="hint muted" style={{ marginTop: 12 }}>Dica: Faça login para salvar seu histórico e acompanhar suas consultas</p>
         </div>
 
-        <div className="preview-right">
-          <div className="preview-card" role="region" aria-label="Preview do chat">
-            <h4 style={{ color: 'var(--text)' }}>Chat Sentry AI — Preview</h4>
+        <motion.div 
+          className="preview-right" 
+          style={{ minHeight: 400 }}
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          <div className="preview-card" style={{ padding: 0, border: 'none', background: 'transparent', boxShadow: 'none' }}>
             <ChatPreview demo={demoMode} allowInput={false} onDemoComplete={onDemoComplete} />
           </div>
-        </div>
-      </section>
+        </motion.div>
+      </motion.section>
 
       <FooterContent />
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} initialTab={initialTab} />

@@ -11,7 +11,7 @@ async function request(path, method = "GET", body = null, auth = true, isFormDat
   const token = localStorage.getItem("token");
   if (auth && token) headers["Authorization"] = `Bearer ${token}`;
 
-  // Garante que não haja barras duplas na URL (ex: //api)
+  // Garante que não haja barras duplas na URL (ex: //api), exceto no protocolo http://
   const url = `${BASE}${path}`.replace(/([^:]\/)\/+/g, "$1");
 
   const response = await fetch(url, {
@@ -160,7 +160,6 @@ export default {
   // ---------- CONTRACT ANALYSIS ----------
   analyzeContract: (formData) => request("/contract/analyze", "POST", formData, true, true),
   
-  // AQUI ESTAVA FALTANDO ESTA LINHA:
   getContract: (id) => request(`/contract/${id}`, "GET"), 
   
   chatContract: (data) => request("/contract/chat", "POST", data),
@@ -169,6 +168,10 @@ export default {
   // ---------- DASHBOARD & USER ----------
   getDashboardStats: () => request("/dashboard/stats", "GET"),
   updateUser: (userId, data) => request(`/users/${userId}`, "PUT", data),
+
+  // ---------- DOCUMENTS (JusBrasil Mock/API) ----------
+  // Adicionado para suportar a página RightsExplorer.jsx
+  searchDocuments: (query) => request(`/documents/search?q=${encodeURIComponent(query)}`, "GET"),
 
   // ---------- STREAMING ----------
   streamChatMessage,

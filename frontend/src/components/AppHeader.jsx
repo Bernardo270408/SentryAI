@@ -1,7 +1,31 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { FiUser, FiSettings, FiLogOut } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion"; // Importação adicionada
 import "../styles/AppHeader.css";
+
+// Variantes de Animação
+const headerVariants = {
+  hidden: { opacity: 0, y: -20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
+};
+
+const menuVariants = {
+  hidden: { opacity: 0, scale: 0.95, y: -10, pointerEvents: "none" },
+  visible: { 
+    opacity: 1, 
+    scale: 1, 
+    y: 0, 
+    pointerEvents: "auto",
+    transition: { type: "spring", stiffness: 300, damping: 25 } 
+  },
+  exit: { opacity: 0, scale: 0.95, y: -10, transition: { duration: 0.2 } }
+};
+
+const itemVariants = {
+  hover: { x: 5, backgroundColor: "rgba(255, 255, 255, 0.05)", color: "#fff" },
+  tap: { scale: 0.98 }
+};
 
 export default function AppHeader({ user, onLogout }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -80,14 +104,21 @@ export default function AppHeader({ user, onLogout }) {
   }, [isOpen, closeMenu]);
 
   return (
-    <header className="app-header-pill">
+    <motion.header 
+        className="app-header-pill"
+        variants={headerVariants}
+        initial="hidden"
+        animate="visible"
+    >
       {/* Lado Esquerdo: Logo */}
-      <div 
+      <motion.div 
         className="header-left" 
         onClick={() => navigate("/app")}
         role="button"
         tabIndex={0}
         onKeyDown={(e) => e.key === 'Enter' && navigate("/app")}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
       >
         <div className="header-logo" aria-hidden>
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" 
@@ -105,7 +136,7 @@ export default function AppHeader({ user, onLogout }) {
           <span className="brand-title">Sentry AI</span>
           <span className="brand-subtitle">Democratizando o acesso jurídico</span>
         </div>
-      </div>
+      </motion.div>
 
       {/* Lado Direito: User Wrapper */}
       <div className="header-user-wrap" ref={wrapRef}>
@@ -122,55 +153,75 @@ export default function AppHeader({ user, onLogout }) {
           <span className="username">{user?.name?.split(' ')[0] || "Usuário"}</span>
         </button>
 
-        <div 
-          id="user-dropdown-panel"
-          className={`user-dropdown-panel ${isOpen ? 'open' : ''}`}
-          ref={menuRef}
-          role="dialog"
-          aria-label="Menu do usuário"
-        >
-          <button
-            ref={firstBtnRef}
-            onClick={() => goTo("/app/profile")}
-            className="dropdown-option"
-            type="button"
-          >
-            <FiUser size={16} /> Perfil
-          </button>
+        <AnimatePresence>
+        {isOpen && (
+            <motion.div 
+              id="user-dropdown-panel"
+              className="user-dropdown-panel open" // Mantém a classe base para estilos estáticos
+              ref={menuRef}
+              role="dialog"
+              aria-label="Menu do usuário"
+              variants={menuVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              <motion.button
+                ref={firstBtnRef}
+                onClick={() => goTo("/app/profile")}
+                className="dropdown-option"
+                type="button"
+                variants={itemVariants}
+                whileHover="hover"
+                whileTap="tap"
+              >
+                <FiUser size={16} /> Perfil
+              </motion.button>
 
-          <button
-            onClick={() => goTo("/app/dashboard")}
-            className="dropdown-option"
-            type="button"
-          >
-            <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" height="18" width="18" xmlns="http://www.w3.org/2000/svg">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="3" y1="9" x2="21" y2="9"></line>
-                <line x1="9" y1="21" x2="9" y2="9"></line>
-            </svg>
-            Dashboard
-          </button>
+              <motion.button
+                onClick={() => goTo("/app/dashboard")}
+                className="dropdown-option"
+                type="button"
+                variants={itemVariants}
+                whileHover="hover"
+                whileTap="tap"
+              >
+                <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" height="18" width="18" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="3" y1="9" x2="21" y2="9"></line>
+                    <line x1="9" y1="21" x2="9" y2="9"></line>
+                </svg>
+                Dashboard
+              </motion.button>
 
-          <button
-            onClick={() => goTo("/app/settings")}
-            className="dropdown-option"
-            type="button"
-          >
-            <FiSettings size={16} /> Configurações
-          </button>
+              <motion.button
+                onClick={() => goTo("/app/settings")}
+                className="dropdown-option"
+                type="button"
+                variants={itemVariants}
+                whileHover="hover"
+                whileTap="tap"
+              >
+                <FiSettings size={16} /> Configurações
+              </motion.button>
 
-          <div className="divider" />
+              <div className="divider" />
 
-          <button
-            ref={lastBtnRef}
-            onClick={handleLogoutClick}
-            className="dropdown-option logout"
-            type="button"
-          >
-            <FiLogOut size={16} /> Sair
-          </button>
-        </div>
+              <motion.button
+                ref={lastBtnRef}
+                onClick={handleLogoutClick}
+                className="dropdown-option logout"
+                type="button"
+                variants={itemVariants}
+                whileHover={{ x: 5, backgroundColor: "rgba(239, 68, 68, 0.1)", color: "#ef4444" }}
+                whileTap="tap"
+              >
+                <FiLogOut size={16} /> Sair
+              </motion.button>
+            </motion.div>
+        )}
+        </AnimatePresence>
       </div>
-    </header>
+    </motion.header>
   );
 }

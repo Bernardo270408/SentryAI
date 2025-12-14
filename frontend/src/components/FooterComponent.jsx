@@ -1,23 +1,78 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaGithub, FaTwitter, FaLinkedin } from 'react-icons/fa'; // Importando ícones
+import { FaGithub, FaTwitter, FaLinkedin } from 'react-icons/fa'; 
+import { motion } from 'framer-motion'; // Importação do Framer Motion
 import '../styles/footer.css';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2
+    }
+  }
+};
+
+const badgeVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { type: "spring", stiffness: 100 }
+  },
+  hover: { 
+    scale: 1.1, 
+    backgroundColor: "rgba(74, 144, 226, 0.2)",
+    borderColor: "#4A90E2",
+    color: "#4A90E2",
+    cursor: "default"
+  }
+};
+
+const socialVariants = {
+  hover: { x: 5, color: "#fff", transition: { duration: 0.2 } },
+  tap: { scale: 0.95 }
+};
 
 const FooterContent = () => (
     <>
-      <section className="tech-badges container">
+      <motion.section 
+        className="tech-badges container"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={containerVariants}
+      >
         <h4 style={{ color: 'var(--text)' }}>Tecnologias</h4>
         <div className="badges">
-          <span className="badge">React</span>
-          <span className="badge">Flask</span>
-          <span className="badge">MySQL</span>
-          <span className="badge">GPT-5</span>
-          <span className="badge">Gemini 2.5 Pro</span>
+          {['React', 'Flask', 'MySQL', 'GPT-5', 'Gemini 3 Pro'].map((tech) => (
+            <motion.span 
+              key={tech} 
+              className="badge" 
+              variants={badgeVariants}
+              whileHover="hover"
+            >
+              {tech}
+            </motion.span>
+          ))}
         </div>
-        <p className="muted small">Arquitetura moderna para desempenho, privacidade e escalabilidade.</p>
-      </section>
+        <motion.p 
+            className="muted small"
+            variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
+        >
+            Arquitetura moderna para desempenho, privacidade e escalabilidade.
+        </motion.p>
+      </motion.section>
   
-      <footer className="site-footer">
+      <motion.footer 
+        className="site-footer"
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+      >
         <div className="footer-inner">
           <div className="brand-block">
             <div className="logo-small" aria-hidden>
@@ -64,26 +119,45 @@ const FooterContent = () => (
               <div className="socials" role="list" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 
                 {/* Link do GitHub */}
-                <a 
+                <motion.a 
                     href="https://github.com/Bernardo270408/SentryAI" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     aria-label="GitHub" 
                     className="muted footer-link social-link-item"
+                    variants={socialVariants}
+                    whileHover="hover"
+                    whileTap="tap"
                 >
                     <FaGithub size={18} /> 
                     <span>GitHub</span>
-                </a>
+                </motion.a>
 
                 {/* Placeholders com ícones para manter o padrão */}
-                <a aria-label="Twitter" href="#" role="listitem" className="muted footer-link social-link-item">
+                <motion.a 
+                    aria-label="Twitter" 
+                    href="#" 
+                    role="listitem" 
+                    className="muted footer-link social-link-item"
+                    variants={socialVariants}
+                    whileHover="hover"
+                    whileTap="tap"
+                >
                     <FaTwitter size={18} />
                     <span>Twitter</span>
-                </a>
-                <a aria-label="LinkedIn" href="#" role="listitem" className="muted footer-link social-link-item">
+                </motion.a>
+                <motion.a 
+                    aria-label="LinkedIn" 
+                    href="#" 
+                    role="listitem" 
+                    className="muted footer-link social-link-item"
+                    variants={socialVariants}
+                    whileHover="hover"
+                    whileTap="tap"
+                >
                     <FaLinkedin size={18} />
                     <span>LinkedIn</span>
-                </a>
+                </motion.a>
               </div>
             </div>
           </div>
@@ -93,7 +167,7 @@ const FooterContent = () => (
           <small className="muted">© 2025 Sentry AI. Projeto social dedicado à democratização do conhecimento jurídico.</small>
           <small className="muted">Informação orientativa, não substitui advogado.</small>
         </div>
-      </footer>
+      </motion.footer>
     </>
 );
 

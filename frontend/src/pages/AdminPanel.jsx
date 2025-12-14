@@ -1,8 +1,31 @@
 import React, { useEffect, useState } from 'react';
 import { FiSearch, FiShield, FiUserX, FiCheckCircle, FiActivity, FiLock, FiInbox, FiX, FiCheck, FiRefreshCw } from 'react-icons/fi';
+import { motion, AnimatePresence } from 'framer-motion'; // Importação do Framer Motion
 import api from '../services/api';
 import '../styles/admin.css';
 import toast from 'react-hot-toast';
+
+// Variantes de animação
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05 // Efeito cascata para as linhas da tabela
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0 }
+};
+
+const modalVariants = {
+  hidden: { opacity: 0, scale: 0.9 },
+  visible: { opacity: 1, scale: 1, transition: { type: "spring", stiffness: 300, damping: 25 } },
+  exit: { opacity: 0, scale: 0.9, transition: { duration: 0.2 } }
+};
 
 export default function AdminPanel() {
   const [tab, setTab] = useState("users"); // 'users' ou 'appeals'
@@ -35,12 +58,8 @@ export default function AdminPanel() {
   async function fetchAppeals() {
     setLoading(true);
     try {
-      // Chama a rota corrigida do backend
       const res = await api.getAppeals();
-      
-      // Log para depuração: Abra o console (F12) para ver isso
       console.log("Recursos recebidos do backend:", res);
-      
       setAppeals(res || []);
     } catch (err) {
       console.error("Erro ao buscar recursos:", err);
@@ -93,7 +112,7 @@ export default function AdminPanel() {
       try {
           await api.resolveAppeal(userId, action);
           toast.success(action === 'approve' ? "Recurso aceito." : "Recurso negado.", { id: toastId });
-          fetchAppeals(); // Atualiza lista
+          fetchAppeals(); 
       } catch (err) {
           toast.error("Erro ao processar.", { id: toastId });
       }
@@ -118,27 +137,35 @@ export default function AdminPanel() {
         <div>
           <h1><FiShield /> Painel Administrativo</h1>
           <div style={{display:'flex', gap: 15, marginTop: 15}}>
-              <button 
+              <motion.button 
+                whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                 className={`btn tiny ${tab === 'users' ? 'primary' : 'outline'}`}
                 onClick={() => setTab('users')}
               >
                   Gerenciar Usuários
-              </button>
-              <button 
+              </motion.button>
+              <motion.button 
+                whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                 className={`btn tiny ${tab === 'appeals' ? 'primary' : 'outline'}`}
                 onClick={() => setTab('appeals')}
               >
                   <FiInbox /> Recursos Pendentes
-              </button>
+              </motion.button>
           </div>
         </div>
       </header>
 
       <div className="admin-table-container">
         
-        {/* TAB USUÁRIOS */}
+        <AnimatePresence mode="wait">
         {tab === "users" && (
-            <>
+            <motion.div
+                key="users-tab"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.3 }}
+            >
                 <div className="admin-toolbar">
                   <div className="search-box">
                     <FiSearch className="search-icon" />
@@ -157,9 +184,13 @@ export default function AdminPanel() {
                         <th>Ações</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <motion.tbody
+                        variants={containerVariants}
+                        initial="hidden"
+                        animate="visible"
+                    >
                       {users.map(u => (
-                        <tr key={u.id}>
+                        <motion.tr key={u.id} variants={itemVariants}>
                           <td>
                             <div style={{fontWeight:'600', color: '#fff'}}>{u.name}</div>
                             <div className="muted small" style={{fontSize: '0.8rem'}}>{u.email}</div>
@@ -190,17 +221,24 @@ export default function AdminPanel() {
                               )}
                             </div>
                           </td>
-                        </tr>
+                        </motion.tr>
                       ))}
-                    </tbody>
+                    </motion.tbody>
                   </table>
                 )}
-            </>
+            </motion.div>
         )}
 
         {/* TAB RECURSOS */}
         {tab === "appeals" && (
-            <div style={{padding: 0}}>
+            <motion.div
+                key="appeals-tab"
+                style={{padding: 0}}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+            >
                 <div className="admin-toolbar" style={{borderBottom: '1px solid #27272a', justifyContent: 'flex-end'}}>
                     <button className="btn tiny outline" onClick={fetchAppeals} disabled={loading}>
                         <FiRefreshCw className={loading ? 'spin' : ''} /> Atualizar Lista
@@ -222,9 +260,13 @@ export default function AdminPanel() {
                                 <th>Decisão</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <motion.tbody
+                            variants={containerVariants}
+                            initial="hidden"
+                            animate="visible"
+                        >
                             {appeals.map(a => (
-                                <tr key={a.user_id}>
+                                <motion.tr key={a.user_id} variants={itemVariants}>
                                     <td>
                                         <div style={{fontWeight:'600', color: '#fff'}}>{a.user_name}</div>
                                         <div className="muted small">{a.user_email}</div>
@@ -246,21 +288,35 @@ export default function AdminPanel() {
                                             </button>
                                         </div>
                                     </td>
-                                </tr>
+                                </motion.tr>
                             ))}
-                        </tbody>
+                        </motion.tbody>
                     </table>
                 )}
-            </div>
+            </motion.div>
         )}
+        </AnimatePresence>
 
       </div>
 
-      {/* MODAL DE BANIMENTO */}
+      {/* MODAL DE BANIMENTO ANIMADO */}
+      <AnimatePresence>
       {selectedUser && actionType === 'ban' && (
         <>
-          <div className="modal-overlay" onClick={closeModal} />
-          <div className="admin-modal">
+          <motion.div 
+            className="modal-overlay" 
+            onClick={closeModal} 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          />
+          <motion.div 
+            className="admin-modal"
+            variants={modalVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+          >
             <h3 style={{color:'#fff', marginBottom:10}}>Banir {selectedUser.name}</h3>
             <div style={{marginBottom: 15}}>
                 <label style={{fontSize:'12px', color:'#a1a1aa', display:'block', marginBottom:5}}>Motivo (Obrigatório)</label>
@@ -278,9 +334,10 @@ export default function AdminPanel() {
               <button className="btn danger" onClick={() => handleBan(selectedUser.id, null)}>Banir Permanentemente</button>
               <button className="btn ghost" onClick={closeModal}>Cancelar</button>
             </div>
-          </div>
+          </motion.div>
         </>
       )}
+      </AnimatePresence>
     </div>
   );
 }

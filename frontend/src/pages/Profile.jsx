@@ -5,11 +5,35 @@ import {
   FiActivity, FiFileText, FiMessageSquare, FiCpu, 
   FiStar
 } from "react-icons/fi";
+import { motion, AnimatePresence } from "framer-motion"; // Importação do Framer Motion
 import api from "../services/api";
 import FooterContent from "../components/FooterComponent";
 import toast from "react-hot-toast";
 import "../styles/profile.css";
 
+// Variantes de animação
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { 
+    opacity: 1, 
+    transition: { staggerChildren: 0.1 } 
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { type: "spring", stiffness: 100, damping: 15 } 
+  }
+};
+
+const tabContentVariants = {
+  hidden: { opacity: 0, x: 20 },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.3 } },
+  exit: { opacity: 0, x: -20, transition: { duration: 0.2 } }
+};
 
 function groupByTime(grouping) {
   const now = new Date();
@@ -63,7 +87,14 @@ function groupByTime(grouping) {
 
 function Conta({ user, setUser, handleSave, saving }) {
   return (
-    <form onSubmit={handleSave} className="profile-form">
+    <motion.form 
+      onSubmit={handleSave} 
+      className="profile-form"
+      variants={tabContentVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+    >
       <div className="form-group">
         <label>Nome Completo</label>
         <input 
@@ -98,11 +129,17 @@ function Conta({ user, setUser, handleSave, saving }) {
       </div>
 
       <div className="form-actions">
-        <button type="submit" className="btn outline" disabled={saving}>
+        <motion.button 
+            type="submit" 
+            className="btn outline" 
+            disabled={saving}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+        >
           {saving ? "Salvando..." : <><FiSave /> Salvar Alterações</>}
-        </button>
+        </motion.button>
       </div>
-    </form>
+    </motion.form>
   );
 }
 
@@ -135,7 +172,7 @@ function Chats({ chats }) {
     if (chats.length > 0) loadPreviews();
   }, [chats]);
 
-  if (!chats.length) return <p>Nenhum chat encontrado.</p>;
+  if (!chats.length) return <motion.p variants={tabContentVariants} initial="hidden" animate="visible">Nenhum chat encontrado.</motion.p>;
 
   const grouped = groupByTime(chats);
 
@@ -143,11 +180,16 @@ function Chats({ chats }) {
     if (!list.length) return null;
 
     return (
-      <>
+      <div key={title}>
         <h4 className="chat-group-title">{title}</h4>
         <div className="stats-list">
           {list.map(chat => (
-            <a key={chat.id} className="stat-item" href="#">
+            <motion.a 
+                key={chat.id} 
+                className="stat-item" 
+                href="#"
+                whileHover={{ x: 5, backgroundColor: "rgba(255,255,255,0.03)" }}
+            >
               <div className="stat-icon blue">
                 <FiMessageSquare />
               </div>
@@ -158,39 +200,50 @@ function Chats({ chats }) {
                   {new Date(chat.created_at).toLocaleDateString('pt-BR')}
                 </span>
               </div>
-            </a>
+            </motion.a>
           ))}
         </div>
-      </>
+      </div>
     );
   }
 
   return (
-    <div className="chat-groups">
+    <motion.div 
+        className="chat-groups"
+        variants={tabContentVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+    >
       {renderGroup("Hoje: ", grouped.hoje)}
       {renderGroup("Ontem: ", grouped.ontem)}
       {renderGroup("Esta semana: ", grouped.semana)}
       {renderGroup("Este mês: ", grouped.mes)}
       {renderGroup("Este ano: ", grouped.ano)}
       {renderGroup("Há muito tempo: ", grouped.antigo)}
-    </div>
+    </motion.div>
   );
 }
 
 function Avaliações() {
   return (
-    <div>
+    <motion.div
+        variants={tabContentVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+    >
       <h2>Avaliações</h2>
       <p>Sinto muito, mas ainda não é possível realizar avaliações, então esta sessão não faria sentido :p</p>
       <p> Quando o recurso for adicionado ao frontend, liberaremos esta página!</p>
-    </div>
+    </motion.div>
   );
 }
 
 function Contratos({ contracts }) {
   const navigate = useNavigate();
   
-  if (!contracts.length) return <p>Nenhum contrato analisado encontrado.</p>;
+  if (!contracts.length) return <motion.p variants={tabContentVariants} initial="hidden" animate="visible">Nenhum contrato analisado encontrado.</motion.p>;
 
   const grouped = groupByTime(contracts);
 
@@ -198,43 +251,48 @@ function Contratos({ contracts }) {
     if (!list.length) return null;
 
     return (
-      <>
+      <div key={title}>
         <h4 className="chat-group-title">{title}</h4>
         <div className="stats-list">
           {list.map(contract => (
-            <div 
+            <motion.div 
               key={contract.id} 
               className="stat-item clickable"
-              // Assumindo que você tem uma rota para visualizar um contrato específico
               onClick={() => navigate(`/app/contract/${contract.id}`)} 
+              whileHover={{ x: 5, backgroundColor: "rgba(255,255,255,0.03)" }}
+              whileTap={{ scale: 0.98 }}
             >
               <div className="stat-icon green">
                 <FiFileText />
               </div>
               <div className="stat-data">
-                {/* O nome do contrato pode vir do backend, mas o pedido foi por um strong fixo */}
                 <strong>{contract.name || "Análise de Contrato"}</strong>
-                {/* A data é o span principal */}
                 <span>
                   Criado em: {new Date(contract.created_at).toLocaleDateString('pt-BR')}
                 </span>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
-      </>
+      </div>
     );
   }
 
   return (
-    <div className="chat-groups">
+    <motion.div 
+        className="chat-groups"
+        variants={tabContentVariants}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+    >
       {renderGroup("Hoje: ", grouped.hoje)}
       {renderGroup("Ontem: ", grouped.ontem)}
       {renderGroup("Esta semana: ", grouped.semana)}
       {renderGroup("Este mês: ", grouped.mes)}
       {renderGroup("Este ano: ", grouped.ano)}
       {renderGroup("Há muito tempo: ", grouped.antigo)}
-    </div>
+    </motion.div>
   );
 }
 
@@ -373,9 +431,17 @@ export default function Profile() {
 
   return (
     <div className="landing-root profile-root">
-      <main className="container profile-main">
+      <motion.main 
+        className="container profile-main"
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+      >
         
-        <header className="profile-header-card">
+        <motion.header 
+            className="profile-header-card"
+            variants={itemVariants}
+        >
           <div className="profile-avatar-large">
             {user.name.charAt(0).toUpperCase()}
           </div>
@@ -389,116 +455,104 @@ export default function Profile() {
               <span className={`profile-status status-${user.status.toLowerCase() || 'active'}`}>
                 {user.status}
               </span>
-              <span>
-                •
-              </span>
+              <span>•</span>
               <span className={`profile-score score-${user.risk_profile?.score > 70 ? 'high' : user.risk_profile?.score > 40 ? 'medium' : 'low'}`}>
                 {user.risk_profile?.score}%
               </span>
             </div>
           </div>
-        </header>
+        </motion.header>
 
         <div className="profile-grid">
           
           <section className="profile-col-main">
 
-            <div className="profile-card">
+            <motion.div className="profile-card" variants={itemVariants}>
 
             <div className="card-header">
-              <button 
-                className={`btn ${section === 'conta' ? 'active' : ''}`}
-                onClick={() => setSection("conta")}
-              >
-                <FiUser /> Conta
-              </button>
-
-              <button 
-                className={`btn ${section === 'chats' ? 'active' : ''}`}
-                onClick={() => setSection("chats")}
-              >
-                <FiMessageSquare /> Chats
-              </button>
-
-              <button 
-                className={`btn ${section === 'contratos' ? 'active' : ''}`}
-                onClick={() => setSection("contratos")}
-              >
-                <FiFileText /> Contratos
-              </button>
-
-              <button 
-                className={`btn ${section === 'avaliacoes' ? 'active' : ''}`}
-                onClick={() => setSection("avaliacoes")}
-              >
-                <FiStar /> Avaliações
-              </button>
+              {['conta', 'chats', 'contratos', 'avaliacoes'].map((tab) => (
+                  <button 
+                    key={tab}
+                    className={`btn ${section === tab ? 'active' : ''}`}
+                    onClick={() => setSection(tab)}
+                  >
+                    {tab === 'conta' && <FiUser />}
+                    {tab === 'chats' && <FiMessageSquare />}
+                    {tab === 'contratos' && <FiFileText />}
+                    {tab === 'avaliacoes' && <FiStar />}
+                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                  </button>
+              ))}
             </div>
 
             <div className="profile-section-content">
-              <SectionComponent 
-                user={user}
-                setUser={setUser}
-                handleSave={handleSave}
-                saving={saving}
-                chats={chats}
-                contracts={contracts}
-              />
+              <AnimatePresence mode="wait">
+                  <SectionComponent 
+                    key={section} // A chave muda, forçando a remontagem e animação
+                    user={user}
+                    setUser={setUser}
+                    handleSave={handleSave}
+                    saving={saving}
+                    chats={chats}
+                    contracts={contracts}
+                  />
+              </AnimatePresence>
             </div>
-            </div>
+            </motion.div>
           </section>
 
 
           <section className="profile-col-side">
-            <div className="profile-card stats-card">
+            <motion.div className="profile-card stats-card" variants={itemVariants}>
               <h3><FiActivity /> Sua Atividade</h3>
 
               <div className="stats-list">
 
-                <div className="stat-item">
+                <motion.div className="stat-item" whileHover={{ x: 3 }}>
                   <div className="stat-icon blue"><FiMessageSquare /></div>
                   <div className="stat-data">
                     <strong>{stats.chats}</strong>
                     <span>Conversas</span>
                   </div>
-                </div>
+                </motion.div>
 
-                <div className="stat-item">
+                <motion.div className="stat-item" whileHover={{ x: 3 }}>
                   <div className="stat-icon green"><FiFileText /></div>
                   <div className="stat-data">
                     <strong>{stats.messages}</strong>
                     <span>Mensagens Analisadas</span>
                   </div>
-                </div>
+                </motion.div>
 
-                <div className="stat-item">
+                <motion.div className="stat-item" whileHover={{ x: 3 }}>
                   <div className="stat-icon orange"><FiShield /></div>
                   <div className="stat-data">
                     <strong>{stats.risks}</strong>
                     <span>Alertas de Risco</span>
                   </div>
-                </div>
+                </motion.div>
                 
               </div>
-            </div>
+            </motion.div>
 
-            <div className="profile-card info-card">
+            <motion.div className="profile-card info-card" variants={itemVariants}>
               <h4><FiCpu /> Sentry AI</h4>
               <p className="muted small">
                 Seus dados são processados de forma segura para gerar insights jurídicos.
                 Para configurações de privacidade ou senha, acesse as configurações.
               </p>
-              <button 
+              <motion.button 
                 className="btn tiny outline full-width" 
                 onClick={() => navigate('/app/settings')}
+                whileTap={{ scale: 0.95 }}
               >
                 Ir para Configurações
-              </button>
-            </div>
+              </motion.button>
+            </motion.div>
           </section>
 
         </div>
-      </main>
+      </motion.main>
       <FooterContent />
     </div>
   );

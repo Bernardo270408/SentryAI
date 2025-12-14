@@ -5,6 +5,7 @@ import {
     FiArrowUp, FiPlus, FiTrash2, FiSearch, 
     FiMenu, FiPaperclip, FiUser, FiStopCircle, FiX, FiChevronRight 
 } from "react-icons/fi";
+import { motion, AnimatePresence } from "framer-motion"; // Importação do Framer Motion
 import api from "../services/api";
 import "../styles/chatpage.css";
 import ChatHeader from "../components/ChatHeader";
@@ -20,6 +21,17 @@ function useLocalUser() {
     }
 }
 
+// Variantes de Animação
+const msgVariants = {
+    hidden: { opacity: 0, y: 20, scale: 0.98 },
+    visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.3 } }
+};
+
+const sidebarVariants = {
+    closed: { x: "-100%", opacity: 0 },
+    open: { x: 0, opacity: 1, transition: { type: "spring", stiffness: 300, damping: 30 } }
+};
+
 // Ícone SVG do Gemini
 const GeminiIcon = () => (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -27,22 +39,32 @@ const GeminiIcon = () => (
     </svg>
 );
 
-// Componente de Skeleton para Mensagens
+// Componente de Skeleton para Mensagens (Animado)
 const MessagesSkeleton = () => (
-    <div className="messages-content fade-in">
+    <motion.div 
+        className="messages-content fade-in"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+    >
         <div className="msg-row user" style={{ opacity: 0.5 }}>
             <div className="msg-avatar skeleton"></div>
-            <div className="skeleton" style={{ height: 40, width: '40%', borderRadius: 12 }}></div>
+            <motion.div 
+                className="skeleton" 
+                style={{ height: 40, width: '40%', borderRadius: 12 }}
+                animate={{ opacity: [0.5, 0.8, 0.5] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+            />
         </div>
         <div className="msg-row assistant" style={{ opacity: 0.5 }}>
             <div className="msg-avatar skeleton"></div>
             <div style={{ width: '60%' }}>
-                <div className="skeleton skeleton-text"></div>
-                <div className="skeleton skeleton-text"></div>
-                <div className="skeleton skeleton-text short"></div>
+                <motion.div className="skeleton skeleton-text" animate={{ opacity: [0.5, 0.8, 0.5] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.1 }}></motion.div>
+                <motion.div className="skeleton skeleton-text" animate={{ opacity: [0.5, 0.8, 0.5] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}></motion.div>
+                <motion.div className="skeleton skeleton-text short" animate={{ opacity: [0.5, 0.8, 0.5] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.3 }}></motion.div>
             </div>
         </div>
-    </div>
+    </motion.div>
 );
 
 export default function ChatPage() {
@@ -81,7 +103,6 @@ export default function ChatPage() {
         function handleResize() {
             const mobile = window.innerWidth <= 768;
             setIsMobile(mobile);
-            // Se for para desktop, garante que a sidebar abre. Se for mobile, fecha por padrão.
             if (!mobile) setIsSidebarOpen(true);
             else setIsSidebarOpen(false);
         }
@@ -148,7 +169,10 @@ export default function ChatPage() {
 
     const scrollToBottom = () => {
         if (listRef.current) {
-            listRef.current.scrollTop = listRef.current.scrollHeight;
+            listRef.current.scrollTo({
+                top: listRef.current.scrollHeight,
+                behavior: 'smooth'
+            });
         }
     };
 
@@ -251,12 +275,12 @@ export default function ChatPage() {
     const handleNewChatClick = () => {
         setActiveChat(null);
         setMessages([]);
-        if (isMobile) setIsSidebarOpen(false); // Fecha sidebar no mobile
+        if (isMobile) setIsSidebarOpen(false);
     };
 
     const handleChatSelect = (chat) => {
         setActiveChat(chat);
-        if (isMobile) setIsSidebarOpen(false); // Fecha sidebar no mobile
+        if (isMobile) setIsSidebarOpen(false);
     };
 
     const handleDelete = async (id) => {
@@ -277,7 +301,14 @@ export default function ChatPage() {
     const renderMessage = (msg) => {
         const isUser = msg.role === 'user';
         return (
-            <div key={msg.id} className={`msg-row ${isUser ? 'user' : 'assistant'}`}>
+            <motion.div 
+                key={msg.id} 
+                className={`msg-row ${isUser ? 'user' : 'assistant'}`}
+                variants={msgVariants}
+                initial="hidden"
+                animate="visible"
+                layout="position" // Suaviza o reposicionamento quando novas msgs chegam
+            >
                 <div className="msg-avatar">
                     {isUser ? <FiUser size={18} /> : <GeminiIcon />}
                 </div>
@@ -290,7 +321,7 @@ export default function ChatPage() {
                         </div>
                     )}
                 </div>
-            </div>
+            </motion.div>
         );
     };
 
@@ -299,48 +330,62 @@ export default function ChatPage() {
     return (
         <div className="chat-root">
             {/* OVERLAY PARA MOBILE */}
-            <div 
-                className={`sidebar-overlay ${isMobile && isSidebarOpen ? 'visible' : ''}`} 
-                onClick={() => setIsSidebarOpen(false)}
-            />
+            <AnimatePresence>
+                {isMobile && isSidebarOpen && (
+                    <motion.div 
+                        className="sidebar-overlay visible"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setIsSidebarOpen(false)}
+                    />
+                )}
+            </AnimatePresence>
 
             {/* SIDEBAR */}
-            <aside className={`fixed-sidebar ${isMobile && isSidebarOpen ? 'mobile-open' : ''} ${!isSidebarOpen && !isMobile ? 'collapsed' : ''}`}>
+            {/* Usamos motion.aside para animar a entrada no mobile */}
+            <motion.aside 
+                className={`fixed-sidebar ${!isSidebarOpen && !isMobile ? 'collapsed' : ''}`}
+                // No mobile controlamos via transform X, no desktop deixamos CSS class controlar width
+                style={isMobile ? { left: 0 } : {}} 
+                variants={isMobile ? sidebarVariants : {}}
+                initial={isMobile ? "closed" : false}
+                animate={isMobile ? (isSidebarOpen ? "open" : "closed") : false}
+            >
                 <div className="sidebar-header">
                     {(isSidebarOpen || isMobile) && <span style={{fontWeight:'600'}}>Sentry AI</span>}
                     
-                    {/* Botão de Fechar no Mobile (X) - Fica dentro da sidebar */}
                     {isMobile && (
-                        <button 
+                        <motion.button 
                             className="btn-toggle-sidebar" 
                             onClick={() => setIsSidebarOpen(false)}
-                            style={{
-                                position: 'static', 
-                                background: 'transparent', 
-                                marginLeft: 'auto', 
-                                padding: 4
-                            }}
+                            whileTap={{ scale: 0.9 }}
+                            style={{ position: 'static', background: 'transparent', marginLeft: 'auto', padding: 4 }}
                         >
                             <FiX size={20} />
-                        </button>
+                        </motion.button>
                     )}
 
-                    {/* Botão de Colapso no Desktop (Hamburguer) */}
                     {!isMobile && (
-                        <button className="btn-toggle-sidebar" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
+                        <motion.button 
+                            className="btn-toggle-sidebar" 
+                            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                            whileTap={{ scale: 0.9 }}
+                        >
                             <FiMenu size={20} />
-                        </button>
+                        </motion.button>
                     )}
                 </div>
 
-                <button 
+                <motion.button 
                     className="btn-new" 
                     onClick={handleNewChatClick} 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     title="Novo Chat"
-                    aria-label="Nova conversa"
                 >
                     <FiPlus /> {(isSidebarOpen || isMobile) && <span>Nova Conversa</span>}
-                </button>
+                </motion.button>
 
                 {(isSidebarOpen || isMobile) && (
                     <div className="sidebar-search">
@@ -350,94 +395,114 @@ export default function ChatPage() {
                             value={search} 
                             onChange={e => setSearch(e.target.value)}
                             style={{background:'transparent', border:'none', color:'white', width:'100%', outline:'none', marginLeft:8}}
-                            aria-label="Buscar conversas"
                         />
                     </div>
                 )}
 
                 <div className="sidebar-list">
-                    {filteredChats.map(chat => (
-                        <div 
-                            key={chat.id} 
-                            className={`chat-item ${activeChat?.id === chat.id ? 'active' : ''}`}
-                            onClick={() => handleChatSelect(chat)}
-                            role="button"
-                            tabIndex={0}
-                            aria-selected={activeChat?.id === chat.id}
-                        >
-                            <span className="ci-title">{chat.name}</span>
-                            <button 
-                                className="ci-del" 
-                                onClick={(e) => { e.stopPropagation(); handleDelete(chat.id); }}
-                                aria-label="Excluir conversa"
+                    <AnimatePresence initial={false}>
+                        {filteredChats.map(chat => (
+                            <motion.div 
+                                key={chat.id} 
+                                className={`chat-item ${activeChat?.id === chat.id ? 'active' : ''}`}
+                                onClick={() => handleChatSelect(chat)}
+                                layout // Anima a lista quando item é removido
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20, height: 0 }}
+                                transition={{ duration: 0.2 }}
                             >
-                                <FiTrash2 size={14} />
-                            </button>
-                        </div>
-                    ))}
+                                <span className="ci-title">{chat.name}</span>
+                                <button 
+                                    className="ci-del" 
+                                    onClick={(e) => { e.stopPropagation(); handleDelete(chat.id); }}
+                                >
+                                    <FiTrash2 size={14} />
+                                </button>
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
                 </div>
-            </aside>
+            </motion.aside>
 
-            {/* BOTÃO FLUTUANTE LATERAL (SÓ VISÍVEL SE SIDEBAR FECHADA E MOBILE) */}
-            {isMobile && !isSidebarOpen && (
-                <button 
-                    className="mobile-sidebar-toggle"
-                    onClick={() => setIsSidebarOpen(true)}
-                    aria-label="Abrir menu lateral"
-                >
-                    <FiChevronRight size={20} />
-                </button>
-            )}
+            {/* BOTÃO FLUTUANTE LATERAL (MOBILE) */}
+            <AnimatePresence>
+                {isMobile && !isSidebarOpen && (
+                    <motion.button 
+                        className="mobile-sidebar-toggle"
+                        onClick={() => setIsSidebarOpen(true)}
+                        initial={{ x: -50 }}
+                        animate={{ x: 0 }}
+                        exit={{ x: -50 }}
+                        whileTap={{ scale: 0.9 }}
+                    >
+                        <FiChevronRight size={20} />
+                    </motion.button>
+                )}
+            </AnimatePresence>
 
             {/* MAIN AREA */}
             <main className="chat-main">
                 <ChatHeader user={user} onLogout={handleLogout} />
                 <header className="chat-header-centered">
-                    
-                    {/* Botão antigo de menu no header foi removido em favor do botão lateral */}
-                    
                     <div className="ch-info">
                         <h2>{activeChat ? activeChat.name : "Nova Conversa"}</h2>
-                        {activeChat && <span className="ch-status">Gemini 2.5 Pro • Online</span>}
+                        {activeChat && <span className="ch-status">Gemini 3 Pro • Online</span>}
                     </div>
                 </header>
 
                 <div className="messages-container" ref={listRef}>
                     <div className="messages-content">
-                        {loadingMessages && messages.length === 0 ? (
-                            <MessagesSkeleton />
-                        ) : (
-                            <>
-                                {(!activeChat || (activeChat && messages.length === 0)) && (
-                                    <div className="empty-state fade-in">
-                                        <div className="empty-logo-wrap"><GeminiIcon /></div>
-                                        <h2>Como posso ajudar hoje?</h2>
-                                        <p>Sou especializado em legislação brasileira. Pergunte sobre CLT, contratos ou direitos.</p>
-                                    </div>
-                                )}
-                                {messages.map(renderMessage)}
-                            </>
-                        )}
+                        <AnimatePresence mode="wait">
+                            {loadingMessages && messages.length === 0 ? (
+                                <MessagesSkeleton key="skeleton" />
+                            ) : (
+                                <>
+                                    {(!activeChat || (activeChat && messages.length === 0)) && (
+                                        <motion.div 
+                                            key="empty-state"
+                                            className="empty-state"
+                                            initial={{ opacity: 0, scale: 0.95 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            transition={{ duration: 0.5 }}
+                                        >
+                                            <div className="empty-logo-wrap"><GeminiIcon /></div>
+                                            <h2>Como posso ajudar hoje?</h2>
+                                            <p>Sou especializado em legislação brasileira. Pergunte sobre CLT, contratos ou direitos.</p>
+                                        </motion.div>
+                                    )}
+                                    {messages.map(renderMessage)}
+                                </>
+                            )}
+                        </AnimatePresence>
                     </div>
                 </div>
 
                 <div className="input-area-wrapper">
                     <div className="input-container">
-                        {attachedFile && (
-                            <div className="attach-badge">
-                                <FiPaperclip /> {attachedFile}
-                                <button onClick={() => setAttachedFile(null)} aria-label="Remover anexo">x</button>
-                            </div>
-                        )}
+                        <AnimatePresence>
+                            {attachedFile && (
+                                <motion.div 
+                                    className="attach-badge"
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.8 }}
+                                >
+                                    <FiPaperclip /> {attachedFile}
+                                    <button onClick={() => setAttachedFile(null)}>x</button>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                         
                         <div className="input-row">
-                            <button 
+                            <motion.button 
                                 className="btn-action attach" 
                                 onClick={() => document.getElementById('file-up').click()}
-                                aria-label="Anexar arquivo"
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
                             >
                                 <FiPaperclip size={20} />
-                            </button>
+                            </motion.button>
                             <input 
                                 id="file-up" type="file" hidden 
                                 onChange={(e) => e.target.files[0] && setAttachedFile(e.target.files[0].name)} 
@@ -452,18 +517,18 @@ export default function ChatPage() {
                                 onKeyDown={handleKeyDown} 
                                 rows={1} 
                                 disabled={sending} 
-                                aria-label="Mensagem"
                             />
 
-                            <button 
+                            <motion.button 
                                 className={`btn-action ${sending ? 'stop' : 'send'}`}
                                 onClick={sending ? stopStreaming : handleSend}
                                 disabled={(!text.trim() && !attachedFile) && !sending}
-                                aria-label={sending ? "Parar resposta" : "Enviar mensagem"}
                                 style={sending ? { opacity: 1 } : (!text.trim() && !attachedFile ? { opacity: 0.5, cursor: 'not-allowed' } : {})}
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
                             >
                                 {sending ? <FiStopCircle size={18} /> : <FiArrowUp size={20} />}
-                            </button>
+                            </motion.button>
                         </div>
                     </div>
                     <p className="disclaimer-text">A IA pode cometer erros. Consulte um advogado.</p>

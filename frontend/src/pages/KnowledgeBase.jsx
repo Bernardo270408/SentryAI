@@ -1,8 +1,9 @@
 import React from "react";
 import FooterContent from "../components/FooterComponent";
-import { FiArrowLeft, FiDatabase, FiBook } from "react-icons/fi";
+import { FiArrowLeft, FiDatabase, FiBook, FiCheckCircle, FiAlertTriangle, FiMessageSquare } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
-import "../styles/staticPages.css";
+import { motion } from "framer-motion";
+import "../styles/knowledgeBase.css";
 
 const kbData = {
     "Papel": "Sentry AI, um assistente jurídico virtual especializado na legislação brasileira.",
@@ -40,62 +41,145 @@ const kbData = {
     ]
 };
 
+// Variantes de Animação
+const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+        opacity: 1, 
+        transition: { staggerChildren: 0.1, delayChildren: 0.1 }
+    }
+};
+
+const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+        opacity: 1, 
+        y: 0, 
+        transition: { type: "spring", stiffness: 100, damping: 15 } 
+    }
+};
+
 export default function KnowledgeBase() {
   const navigate = useNavigate();
 
   return (
-    <div className="static-page-root">
-      <header className="landing-header container">
-        <div className="logo" style={{cursor:'pointer'}} onClick={() => navigate('/')}>
-           <strong>SentryAI</strong>
-        </div>
-        <button className="btn ghost" onClick={() => navigate(-1)}><FiArrowLeft/> Voltar</button>
-      </header>
-
-      <main className="static-content">
-        <h1 className="static-title">Base de Conhecimento</h1>
-        <p className="static-subtitle">Como nossa IA é instruída e quais leis ela prioriza.</p>
-
-        <div className="text-block">
-            <h2>Diretrizes da IA</h2>
-            <div className="kb-grid">
-                <div className="kb-card">
-                    <span className="kb-tag">Persona</span>
-                    <p><strong>{kbData.Papel}</strong></p>
-                    <p>{kbData.Personalidade}</p>
-                </div>
+    <div className="kb-page-root">
+      {/* HEADER CORRIGIDO: Removida a classe 'container' e ajustado layout */}
+      <motion.header 
+        className="kb-header"
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="kb-header-inner">
+            <div className="kb-logo" onClick={() => navigate('/')}>
+               <FiDatabase className="logo-icon" /> 
+               <span>SentryAI</span>
+               <span className="badge">KNOWLEDGE</span>
             </div>
+            
+            <motion.button 
+                className="btn-back" 
+                onClick={() => navigate(-1)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+            >
+                <FiArrowLeft/> Voltar
+            </motion.button>
+        </div>
+      </motion.header>
 
-            <h3>Instruções de Comportamento</h3>
-            <ul>
-                {kbData.Instruções.map((inst, i) => <li key={i}>{inst}</li>)}
-            </ul>
+      <motion.main 
+        className="kb-content container"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <motion.div className="kb-hero" variants={itemVariants}>
+            <h1>Base de Conhecimento</h1>
+            <p>Entenda como nossa IA é instruída, suas diretrizes éticas e as fontes legislativas priorizadas.</p>
+        </motion.div>
 
-            <h3>Restrições de Segurança</h3>
-            <ul>
-                {kbData.Restrições.map((res, i) => <li key={i}>{res}</li>)}
-            </ul>
+        {/* CARTÃO DE PERSONA */}
+        <motion.div className="kb-section" variants={itemVariants}>
+            <div className="persona-card">
+                <div className="persona-header">
+                    <span className="tag-persona">PERSONA</span>
+                    <h3>{kbData.Papel}</h3>
+                </div>
+                <p className="persona-desc">{kbData.Personalidade}</p>
+            </div>
+        </motion.div>
 
-            <h2>Escopo Legislativo</h2>
-            <p>Fontes primárias de consulta do modelo:</p>
-            <div className="kb-grid">
+        {/* GRID DE INSTRUÇÕES E RESTRIÇÕES */}
+        <div className="kb-grid-2col">
+            <motion.div className="kb-card info-card" variants={itemVariants}>
+                <div className="card-header">
+                    <FiCheckCircle className="icon-success" />
+                    <h3>Diretrizes & Comportamento</h3>
+                </div>
+                <ul className="kb-list success">
+                    {kbData.Instruções.map((inst, i) => (
+                        <li key={i}>{inst}</li>
+                    ))}
+                </ul>
+            </motion.div>
+
+            <motion.div className="kb-card info-card" variants={itemVariants}>
+                <div className="card-header">
+                    <FiAlertTriangle className="icon-warning" />
+                    <h3>Restrições de Segurança</h3>
+                </div>
+                <ul className="kb-list warning">
+                    {kbData.Restrições.map((res, i) => (
+                        <li key={i}>{res}</li>
+                    ))}
+                </ul>
+            </motion.div>
+        </div>
+
+        {/* ESCOPO LEGISLATIVO */}
+        <motion.div className="kb-section" variants={itemVariants}>
+            <h2 className="section-title"><FiBook /> Fontes Oficiais</h2>
+            <p className="section-desc">A IA prioriza consultas diretas às seguintes bases governamentais:</p>
+            
+            <div className="sources-grid">
                 {kbData.Escopo_Legislativo.map((lei, i) => (
-                    <a key={i} href={lei.Link} target="_blank" rel="noopener noreferrer" className="kb-card" style={{textDecoration:'none', color:'inherit', display:'flex', alignItems:'center', gap: 10}}>
-                        <FiBook color="#4A90E2"/> <span>{lei.Nome}</span>
-                    </a>
+                    <motion.a 
+                        key={i} 
+                        href={lei.Link} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="source-card"
+                        whileHover={{ y: -5, borderColor: 'var(--kb-accent)' }}
+                        whileTap={{ scale: 0.98 }}
+                    >
+                        <div className="source-icon"><FiBook /></div>
+                        <span>{lei.Nome}</span>
+                    </motion.a>
                 ))}
             </div>
+        </motion.div>
 
-            <h2>Exemplos de Interação</h2>
-            {kbData.Exemplos.map((ex, i) => (
-                <div key={i} className="kb-card" style={{marginTop: 15}}>
-                    <p style={{color: '#a0a0a0'}}><strong>Usuário:</strong> {ex.Pergunta}</p>
-                    <hr style={{borderColor:'rgba(255,255,255,0.1)', margin:'10px 0'}}/>
-                    <p style={{whiteSpace: 'pre-line'}}><strong>Sentry AI:</strong> {ex.Resposta}</p>
-                </div>
-            ))}
-        </div>
-      </main>
+        {/* EXEMPLOS DE CHAT */}
+        <motion.div className="kb-section" variants={itemVariants}>
+            <h2 className="section-title"><FiMessageSquare /> Simulação de Respostas</h2>
+            <div className="chat-examples">
+                {kbData.Exemplos.map((ex, i) => (
+                    <div key={i} className="chat-example-card">
+                        <div className="chat-bubble user">
+                            <strong>Usuário:</strong> {ex.Pergunta}
+                        </div>
+                        <div className="chat-bubble ai">
+                            <div className="ai-label">Sentry AI</div>
+                            <p style={{whiteSpace: 'pre-line'}}>{ex.Resposta}</p>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </motion.div>
+
+      </motion.main>
       <FooterContent />
     </div>
   );

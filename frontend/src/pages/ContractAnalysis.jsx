@@ -3,11 +3,31 @@ import { FiZap, FiPlay, FiArrowUp, FiPaperclip, FiArrowUpCircle, FiClock, FiFile
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import toast from "react-hot-toast";
+import { motion, AnimatePresence } from "framer-motion"; // Importação Framer Motion
 import FooterContent from "../components/FooterComponent";
 import "../styles/contractAnalysis.css";
-import api from "../services/api"; // Certifique-se que o caminho está correto
+import api from "../services/api"; 
 
-// --- Subcomponente RiskMeter (Mantido igual) ---
+// Variantes de Animação
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { 
+    opacity: 1, 
+    transition: { staggerChildren: 0.1 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } }
+};
+
+const msgVariants = {
+  hidden: { opacity: 0, scale: 0.95, y: 10 },
+  visible: { opacity: 1, scale: 1, y: 0 }
+};
+
+// --- Subcomponente RiskMeter ---
 function RiskMeter({ score }) {
   let level = "safe";
   if (score > 30) level = "warning";
@@ -15,14 +35,28 @@ function RiskMeter({ score }) {
 
   const segments = Array.from({ length: 20 }, (_, i) => {
     const isActive = i < (score / 5); 
-    return <div key={i} className={`risk-segment ${isActive ? "active" : ""}`} />;
+    return (
+        <motion.div 
+            key={i} 
+            className={`risk-segment ${isActive ? "active" : ""}`} 
+            initial={{ scaleY: 0 }}
+            animate={{ scaleY: 1 }}
+            transition={{ delay: i * 0.02 }}
+        />
+    );
   });
 
   return (
     <div className="risk-meter-container">
       <div className="risk-header">
         <span>Nível de Risco</span>
-        <span>{score}/100</span>
+        <motion.span
+            key={score}
+            initial={{ scale: 1.2, color: '#fff' }}
+            animate={{ scale: 1, color: 'var(--text-muted)' }}
+        >
+            {score}/100
+        </motion.span>
       </div>
       <div className={`risk-bar ${level}`}>
         {segments}
@@ -36,13 +70,13 @@ export default function ContractAnalysis() {
   const navigate = useNavigate();
   const [file, setFile] = useState(null);
   const [textPreview, setTextPreview] = useState("");
-  const [status, setStatus] = useState("idle"); // idle, processing, done
+  const [status, setStatus] = useState("idle"); 
   const [analysis, setAnalysis] = useState(null);
   const [messages, setMessages] = useState([]);
   const [history, setHistory] = useState([]);
   
   const fileRef = useRef(null);
-  const pollingRef = useRef(null); // Ref para guardar o ID do timer
+  const pollingRef = useRef(null); 
   const [isDragging, setIsDragging] = useState(false);
 
   const user = JSON.parse(localStorage.getItem("user"));
@@ -50,7 +84,6 @@ export default function ContractAnalysis() {
   // Carregar histórico ao montar
   useEffect(() => {
     loadHistory();
-    // Cleanup: Se o usuário sair da página, para o polling
     return () => {
       if (pollingRef.current) clearTimeout(pollingRef.current);
     };
@@ -77,7 +110,7 @@ export default function ContractAnalysis() {
   function processFile(f) {
     setFile(f);
     setAnalysis(null);
-    setStatus("idle"); // Reseta status ao trocar arquivo
+    setStatus("idle"); 
     if (f.type.startsWith("text/") || /\.(txt|md|csv|json)$/i.test(f.name)) {
       const reader = new FileReader();
       reader.onload = e => setTextPreview(String(e.target.result));
@@ -92,25 +125,18 @@ export default function ContractAnalysis() {
   const pollAnalysisStatus = async (contractId) => {
     try {
         const updatedContract = await api.getContract(contractId);
-        
-        // Verifica o label definido no Python (initial_json vs updated_json)
         const currentLabel = updatedContract.json?.risk?.label;
 
         if (currentLabel === "Processando") {
-            // Se ainda está processando, chama a si mesmo daqui a 2 segundos
             pollingRef.current = setTimeout(() => pollAnalysisStatus(contractId), 2000);
         } else {
-            // Análise finalizada (ou erro capturado no backend)
             setAnalysis(updatedContract.json);
             setStatus("done");
             toast.success("Análise finalizada!");
-            loadHistory(); // Atualiza a lista lateral para mostrar o status novo
+            loadHistory(); 
         }
     } catch (error) {
         console.error("Erro no polling:", error);
-        // Não paramos o loading imediatamente em caso de erro de rede transiente,
-        // mas se for 404 ou algo grave, deveríamos parar.
-        // Por segurança, vamos tentar mais uma vez ou parar se falhar muito (simplificado aqui):
         toast.error("Erro ao verificar status. Tente recarregar o histórico.");
         setStatus("done");
     }
@@ -120,7 +146,6 @@ export default function ContractAnalysis() {
     if (!file && !textPreview.trim()) return toast.error("Envie um arquivo ou cole texto.");
     if (!user?.id) return toast.error("Faça login para analisar.");
 
-    // Limpa polling anterior se existir
     if (pollingRef.current) clearTimeout(pollingRef.current);
 
     setStatus("processing");
@@ -133,24 +158,17 @@ export default function ContractAnalysis() {
       if (file) form.append("file", file);
       else form.append("text", textPreview);
 
-      // 1. Envia para o backend (recebe 202 Accepted)
       const res = await api.analyzeContract(form);
-      
-      // O endpoint retorna { message, contract, status }
       const contractData = res.contract;
 
       if (!contractData || !contractData.id) {
           throw new Error("Resposta inválida do servidor");
       }
 
-      // Define estado inicial (que mostra "A IA está analisando..." na UI se o skeleton não cobrir)
       setAnalysis(contractData.json);
-
-      // 2. Inicia o monitoramento (Polling)
       pollAnalysisStatus(contractData.id);
 
       toast.dismiss(toastId);
-      // Nota: Não damos setStatus("done") aqui. O polling fará isso.
 
     } catch (err) {
       console.error(err);
@@ -160,7 +178,6 @@ export default function ContractAnalysis() {
   }
 
   function loadFromHistory(contract) {
-      // Se clicar no histórico em um item que ainda está "Processando", retomamos o polling
       if (contract.json?.risk?.label === "Processando") {
           setStatus("processing");
           setAnalysis(contract.json);
@@ -169,10 +186,8 @@ export default function ContractAnalysis() {
           return;
       }
 
-      // Carregamento normal
       if (contract.json) {
           setAnalysis(contract.json);
-          // O backend Python salva o texto original? Se sim, mostre. Se não, mostre aviso.
           setTextPreview(contract.text_content || contract.content_to_analyze || "Visualização carregada do histórico.");
           setMessages([]); 
           setStatus("done");
@@ -188,7 +203,7 @@ export default function ContractAnalysis() {
       if (api?.chatContract && analysis) {
         const res = await api.chatContract({ 
             message: msg, 
-            context: analysis.summary, // Passa o resumo como contexto
+            context: analysis.summary, 
             user_id: user.id 
         });
         setMessages(prev => [...prev, { id: Date.now()+1, role: "assistant", text: res.reply }]);
@@ -203,7 +218,6 @@ export default function ContractAnalysis() {
 
   const getRiskClass = () => {
     if (!analysis) return "";
-    // Se estiver processando, pode retornar neutro
     if (status === "processing") return "";
     
     const s = analysis.risk?.score || 0;
@@ -215,111 +229,135 @@ export default function ContractAnalysis() {
   return (
     <div className="contract-page-root">
       
-      <div className="ca-wrapper">
-        <header className="ca-header">
+      <motion.div 
+        className="ca-wrapper"
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+      >
+        <motion.header className="ca-header" variants={itemVariants}>
           <div className="ca-header-left">
             <FiZap size={22} />
             <span>Análise de Contrato</span>
           </div>
-        </header>
+        </motion.header>
 
         <main className="ca-main">
           {/* COLUNA ESQUERDA */}
           <section className="ca-col">
-            <div className="ca-card">
+            <motion.div className="ca-card" variants={itemVariants}>
               <h3>1. Novo Documento</h3>
-              <div
+              <motion.div
                 className={`ca-upload ${isDragging ? "dragover" : ""}`}
                 onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
                 onDragLeave={() => setIsDragging(false)}
                 onDrop={handleDrop}
                 onClick={() => fileRef.current?.click()}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => e.key==='Enter' && fileRef.current?.click()}
-                aria-label="Upload de arquivo"
+                whileHover={{ scale: 1.01, borderColor: "var(--accent)" }}
+                whileTap={{ scale: 0.99 }}
               >
                 <div>
                   <FiArrowUpCircle size={32} style={{ marginBottom: 8, opacity: 0.7 }} />
                   <p>{file ? file.name : "Arraste ou clique"}</p>
                 </div>
                 <input type="file" ref={fileRef} onChange={(e) => processFile(e.target.files[0])} hidden />
-              </div>
+              </motion.div>
 
-              <button
+              <motion.button
                 className="ca-btn primary full ca-send-btn"
                 onClick={handleAnalyze}
                 disabled={status === "processing"}
                 style={status === "processing" ? {opacity: 0.7, cursor: 'not-allowed'} : {}}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
                 <FiPlay /> {status === "processing" ? "Analisando..." : "Analisar e Salvar"}
-              </button>
-            </div>
+              </motion.button>
+            </motion.div>
 
             {/* LISTA DE HISTÓRICO */}
+            <AnimatePresence>
             {history.length > 0 && (
-                <div className="ca-card">
+                <motion.div 
+                    className="ca-card" 
+                    variants={itemVariants}
+                    layout // Anima se o tamanho mudar
+                >
                     <h3><FiClock style={{marginRight: 8}}/> Histórico Recente</h3>
                     <div className="ca-highlight-list" style={{maxHeight: '200px', overflowY: 'auto'}}>
                         {history.map(contract => (
-                            <div 
+                            <motion.div 
                                 key={contract.id} 
                                 className="ca-highlight-item" 
                                 style={{cursor: 'pointer', padding: '10px'}}
                                 onClick={() => loadFromHistory(contract)}
-                                role="button"
-                                tabIndex={0}
+                                whileHover={{ x: 5, backgroundColor: "rgba(255,255,255,0.03)" }}
                             >
                                 <div style={{display:'flex', alignItems:'center', gap: 8}}>
                                     <FiFileText size={14} color="var(--accent)"/>
                                     <span className="snippet" style={{margin:0, fontSize: '13px'}}>
                                         {new Date(contract.created_at).toLocaleDateString()} - 
-                                        {/* Mostra label ou '...' se estiver processando */}
                                         <strong> {contract.json?.risk?.label || "..."}</strong>
                                     </span>
                                 </div>
-                            </div>
+                            </motion.div>
                         ))}
                     </div>
-                </div>
+                </motion.div>
             )}
+            </AnimatePresence>
 
-            <div className="ca-card">
+            <motion.div className="ca-card" variants={itemVariants}>
               <h3>Pré-visualização</h3>
               <textarea
                 className="ca-textarea"
                 value={textPreview}
                 onChange={e => setTextPreview(e.target.value)}
                 placeholder="Cole o texto do contrato aqui..."
-                aria-label="Editor de texto do contrato"
               />
-            </div>
+            </motion.div>
           </section>
 
           {/* COLUNA DIREITA */}
           <section className="ca-col">
-            <div className={`ca-card ${getRiskClass()}`}>
+            <motion.div 
+                className={`ca-card ${getRiskClass()}`}
+                variants={itemVariants}
+                animate={status === "done" ? { scale: [1, 1.02, 1] } : {}}
+                transition={{ duration: 0.4 }}
+            >
               <h3>Resultado da Análise</h3>
 
               {status === "idle" && !analysis && <p className="muted small">Aguardando documento ou selecione do histórico...</p>}
               
               {/* Exibe Skeleton Loading ENQUANTO status === processing */}
+              <AnimatePresence>
               {status === "processing" && (
-                  <div className="fade-in">
+                  <motion.div 
+                    className="fade-in"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                  >
                       <p className="small muted">A IA está lendo o contrato (isso leva ~10s)...</p>
                       <div className="skeleton skeleton-text" style={{width: '50%', marginBottom: 20}}></div>
                       <div className="skeleton skeleton-text"></div>
                       <div className="skeleton skeleton-text"></div>
                       <div className="skeleton skeleton-text short"></div>
-                  </div>
+                  </motion.div>
               )}
+              </AnimatePresence>
 
               {/* Exibe Resultado APENAS SE status === done E analysis existe */}
+              <AnimatePresence>
               {status === "done" && analysis && (
-                <div className="fade-in">
+                <motion.div 
+                    className="fade-in"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                >
                   <RiskMeter score={analysis.risk?.score || 0} />
                   
-                  {/* Verifica se deu erro no backend (baseado no seu código Python de exceção) */}
                   {analysis.risk?.label === "Erro" ? (
                       <div style={{color: 'red', marginTop: 10}}>
                           <p>Falha ao processar: {analysis.error || analysis.summary}</p>
@@ -331,35 +369,50 @@ export default function ContractAnalysis() {
                         {(!analysis.highlights || analysis.highlights.length === 0) && <p className="small muted">Nenhum risco crítico encontrado.</p>}
                         <ul className="ca-highlight-list">
                             {analysis.highlights?.map((h, i) => (
-                            <li key={i} className="ca-highlight-item">
+                            <motion.li 
+                                key={i} 
+                                className="ca-highlight-item"
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: i * 0.1 }}
+                            >
                                 <div className="tag">{h.tag}</div>
                                 <div className="snippet">"{h.snippet}"</div>
                                 <div className="line muted small">{h.explanation}</div>
-                            </li>
+                            </motion.li>
                             ))}
                         </ul>
                       </>
                   )}
-                </div>
+                </motion.div>
               )}
-            </div>
+              </AnimatePresence>
+            </motion.div>
 
-            <div className="ca-card">
+            <motion.div className="ca-card" variants={itemVariants}>
               <h3>Dúvidas sobre o contrato</h3>
               <div className="ca-chat-box">
                 {messages.length === 0 && <p className="muted small" style={{textAlign:'center', marginTop: 20}}>Faça perguntas sobre o contrato analisado.</p>}
+                <AnimatePresence>
                 {messages.map(m => (
-                  <div key={m.id} className={`ca-msg ${m.role}`}>
+                  <motion.div 
+                    key={m.id} 
+                    className={`ca-msg ${m.role}`}
+                    variants={msgVariants}
+                    initial="hidden"
+                    animate="visible"
+                  >
                     <ReactMarkdown>{m.text}</ReactMarkdown>
-                  </div>
+                  </motion.div>
                 ))}
+                </AnimatePresence>
               </div>
               {/* Desabilita chat se não tiver análise pronta */}
               <ChatInput onSend={sendChat} disabled={status !== "done" || !analysis} />
-            </div>
+            </motion.div>
           </section>
         </main>
-      </div>
+      </motion.div>
 
       <FooterContent />
     </div>
@@ -377,16 +430,15 @@ function ChatInput({ onSend, disabled }) {
         onChange={e => setVal(e.target.value)} 
         placeholder={disabled ? "Aguarde a análise..." : "Pergunte sobre multas, prazos..."} 
         disabled={disabled}
-        aria-label="Input de chat do contrato"
       />
-      <button 
+      <motion.button 
         type="submit" 
         className="ca-chat-send active" 
         disabled={!val.trim() || disabled}
-        aria-label="Enviar mensagem"
+        whileTap={{ scale: 0.9 }}
       >
         <FiArrowUp />
-      </button>
+      </motion.button>
     </form>
   );
 }
