@@ -145,9 +145,9 @@ function Chats({ chats }) {
     return (
       <>
         <h4 className="chat-group-title">{title}</h4>
-        <a className="stats-list" href="">
+        <div className="stats-list">
           {list.map(chat => (
-            <div key={chat.id} className="stat-item">
+            <a key={chat.id} className="stat-item" href="#">
               <div className="stat-icon blue">
                 <FiMessageSquare />
               </div>
@@ -158,9 +158,9 @@ function Chats({ chats }) {
                   {new Date(chat.created_at).toLocaleDateString('pt-BR')}
                 </span>
               </div>
-            </div>
+            </a>
           ))}
-        </a>
+        </div>
       </>
     );
   }
@@ -251,26 +251,23 @@ export default function Profile() {
   const [saving, setSaving] = useState(false);
   const [section, setSection] = useState("conta");
   const SectionComponent = sections[section];
-  
+  const [chats, setChats] = useState([]);
+  const [contracts, setContracts] = useState([]);
   const [user, setUser] = useState({
     id: null,
     name: "",
     email: "",
-    extra_data: "", // Contexto para a IA
-    is_admin: false
+    extra_data: "",
+    is_admin: false,
+    status: "Undefined",
+    risk_profile: { score: 0 }
   });
-
-  const [chats, setChats] = useState([]);
-  const [contracts, setContracts] = useState([]);
-
-  // Estado das Estatísticas (KPIs)
   const [stats, setStats] = useState({
     chats: 0,
     messages: 0,
     risks: 0
   });
 
-  // Carregar dados ao montar
   useEffect(() => {
     loadAccountData();
     loadChatData();
@@ -282,10 +279,7 @@ export default function Profile() {
     try {
       const localUser = JSON.parse(localStorage.getItem("user"));
       if (localUser && localUser.id) {
-        // 1. Busca dados frescos da API
         const freshUser = await api.request(`/users/${localUser.id}`, "GET");
-        
-        // 2. Busca estatísticas do dashboard para popular os cards
         const dashData = await api.getDashboardStats();
 
         setUser({
@@ -377,8 +371,6 @@ export default function Profile() {
 
   if (loading) return <div className="profile-loading">Carregando perfil...</div>;
 
-  console.log("Contratos carregados:", contracts);
-
   return (
     <div className="landing-root profile-root">
       <main className="container profile-main">
@@ -394,6 +386,15 @@ export default function Profile() {
                 {user.is_admin ? <><FiShield /> Administrador</> : <><FiUser /> Membro</>}
               </span>
               <span className="profile-email"><FiMail /> {user.email}</span>
+              <span className={`profile-status status-${user.status.toLowerCase() || 'active'}`}>
+                {user.status}
+              </span>
+              <span>
+                •
+              </span>
+              <span className={`profile-score score-${user.risk_profile?.score > 70 ? 'high' : user.risk_profile?.score > 40 ? 'medium' : 'low'}`}>
+                {user.risk_profile?.score}%
+              </span>
             </div>
           </div>
         </header>

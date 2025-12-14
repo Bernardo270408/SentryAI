@@ -55,7 +55,8 @@ class User(db.Model):
             "risk_profile": {
                 "score": self.risk_profile_score,
                 "summary": self.risk_profile_summary
-            }
+            },
+            "status": "Banned" if self.is_banned else "Active"
         }
 
     def update_from_dict(self, data):
