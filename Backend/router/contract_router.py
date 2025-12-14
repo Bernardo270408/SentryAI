@@ -120,27 +120,37 @@ def analyze():
         logger.exception("Erro ao iniciar análise")
         return jsonify({"error": str(e)}), 500
 
+# ...
 @contract_bp.route("/", methods=["GET"])
 @token_required
 def get_contracts():
     current_user = request.user
     data = request.args
-    user_id = data.get("user_id")
-
-    if user_id:
+    user_id_filter = data.get("user_id")
+    
+    target_user_id = None
+    
+    if user_id_filter:
         try:
-            user_id = int(user_id)
-            if current_user.id != user_id and not current_user.is_admin:
+            target_user_id = int(user_id_filter)
+            if current_user.id != target_user_id and not current_user.is_admin:
                 return jsonify({"error": "Acesso negado"}), 403
-        except:
-            pass
+        except ValueError:
+            return jsonify({"error": "user_id inválido"}), 400
+    
+    if not current_user.is_admin and not target_user_id:
+        target_user_id = current_user.id
 
-    if not current_user.is_admin:
-        pass
+    if target_user_id is not None:
+        contracts = ContractDAO.get_contracts_by_user(target_user_id)
 
-    contracts = ContractDAO.get_all_contracts()
+    elif current_user.is_admin and target_user_id is None:
+        contracts = ContractDAO.get_all_contracts()
+
+    else:
+        contracts = ContractDAO.get_contracts_by_user(current_user.id)
+        
     return jsonify([c.to_dict() for c in contracts])
-
 
 @contract_bp.route("/<int:contract_id>", methods=["GET"])
 @token_required
