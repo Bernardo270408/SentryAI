@@ -17,6 +17,7 @@ import {
 import ChatPreview from '../components/ChatPreview'
 import AuthModal from '../components/AuthModal'
 import FooterContent from '../components/FooterComponent'
+import NavigationBar from '../components/NavigationBar'
 
 // Variantes de animação
 const fadeInUp = {
@@ -44,6 +45,13 @@ export default function Home() {
   const [authOpen, setAuthOpen] = useState(false)
   const [initialTab, setInitialTab] = useState('login')
   const previewRef = useRef(null)
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  function handleLogout() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/");
+  }
 
   async function handleDemo() {
     previewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -60,96 +68,29 @@ export default function Home() {
     setAuthOpen(true)
   }
 
+  function shouldOpenAuth(user, param){
+    if(!user){
+      openAuth(param);
+    }
+    else{
+      navigate('/app');
+    }
+  }
+
   return (
     <div className="landing-root" style={{ position: 'relative' }}>
       
       {/* HEADER EM FORMATO PÍLULA */}
       {/* Removemos a classe 'container' para controlar a largura manualmente no style */}
-      <header 
-        className="landing-header" 
-        style={{
-            position: 'sticky',
-            top: 24, // Distância do topo
-            zIndex: 100,
-            margin: '0 auto 40px auto', // Centraliza horizontalmente
-            width: '90%',
-            maxWidth: '900px', // Largura máxima da pílula
-            height: '64px',
-            
-            // Estilização Visual da Pílula
-            background: 'rgba(17, 16, 17, 0.75)', // Fundo escuro semi-transparente
-            backdropFilter: 'blur(16px)', // Efeito de vidro (Glassmorphism)
-            WebkitBackdropFilter: 'blur(16px)',
-            borderRadius: '50px', // O segredo da pílula
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.25)',
-            
-            // Layout interno
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '8px 20px', // Padding interno ajustado
-        }}
-      >
-        <motion.div 
-          className="logo"
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-          style={{ display: 'flex', alignItems: 'center', gap: 12 }}
-        >
-          <div className="brand-logo" style={{ 
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            width: 36, height: 36, borderRadius: '50%', // Logo totalmente redonda
-            background: 'linear-gradient(135deg, #4A90E2 0%, #111011ff 100%)',
-            color: '#fff', boxShadow: '0 4px 12px rgba(74, 144, 226, 0.3)'
-          }}>
-            <Scale size={18} strokeWidth={2.5} />
-          </div>
 
-          <div className="brand" style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
-            <strong style={{ fontSize: 18, letterSpacing: '-0.5px' }}>SentryAI</strong>
-            <span style={{ 
-              fontSize: 9, textTransform: 'uppercase', letterSpacing: '1px', 
-              color: 'rgba(255,255,255,0.5)', marginTop: 2
-            }}>
-              Beta
-            </span>
-          </div>
-        </motion.div>
-
-        <motion.nav 
-          className="top-nav"
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-          style={{ display: 'flex', alignItems: 'center', gap: 12 }}
-        >
-          <button 
-            className="btn ghost" 
-            onClick={() => openAuth('login')}
-            style={{ fontSize: 14, padding: '8px 16px' }} // Botão mais discreto
-          >
-            Entrar
-          </button>
-          
-          <motion.button 
-            className="btn primary small" 
-            onClick={() => openAuth('register')} 
-            style={{ 
-                display: 'flex', gap: 6, alignItems: 'center',
-                borderRadius: '24px', // Botão interno também arredondado
-                padding: '8px 20px',
-                fontSize: 14
-            }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            Registrar
-          </motion.button>
-        </motion.nav>
-      </header>
-
+      
+      <NavigationBar
+        onLogin={() => openAuth("login")}
+        onRegister={() => openAuth("register")}
+        sticky                    // Propriedade para manter o estilo 'pílula' fixo (se implementado no NavigationBar)
+        user={user}
+        onLogout={handleLogout}
+      />
       {/* HERO SECTION */}
       <main className="hero-section" style={{ paddingTop: 40 }}> {/* Ajuste de padding top para compensar o header */}
         <div className="hero-inner container" style={{ alignItems: 'center' }}>
@@ -187,7 +128,7 @@ export default function Home() {
             <motion.div variants={fadeInUp} className="hero-ctas" style={{ marginTop: 32 }}>
               <motion.button 
                 className="btn primary" 
-                onClick={() => openAuth('register')} 
+                onClick={() => shouldOpenAuth(user,'register')} 
                 style={{ padding: '12px 24px', fontSize: 15 }}
                 whileHover={{ scale: 1.05, boxShadow: "0 10px 20px rgba(0,0,0,0.2)" }}
                 whileTap={{ scale: 0.95 }}

@@ -1,6 +1,6 @@
 import React from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import AppHeader from "./components/AppHeader";
+import NavigationBar from "./components/NavigationBar";
 
 export default function App() {
   const navigate = useNavigate();
@@ -19,7 +19,7 @@ export default function App() {
   return (
     <div className="app-root">
       {/* Renderiza AppHeader APENAS se NÃO for a página de chat */}
-      {!isChatPage && <AppHeader user={user} onLogout={handleLogout} />}
+      {!isChatPage && <NavigationBar user={user} onLogout={handleLogout} />}
 
       <main className="main-wrapper">
         <Outlet />
