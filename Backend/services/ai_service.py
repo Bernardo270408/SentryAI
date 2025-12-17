@@ -348,7 +348,7 @@ def generate_chat_title(message_content: str) -> str:
         return "Nova Conversa"
 
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-2.0-pro-exp")
+    model = genai.GenerativeModel("gemini-2.5-flash")
 
     prompt = f"""
     Analise a seguinte mensagem inicial de um usuário em um chat jurídico:

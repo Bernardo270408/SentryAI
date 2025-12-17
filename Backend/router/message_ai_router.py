@@ -40,14 +40,18 @@ def check_and_update_title(chat_id, user_content, history):
     Se o histórico estiver vazio (primeira mensagem), gera um título
     com IA e atualiza o chat.
     """
+    print("* check_and_update_title called")
     if not history:
         try:
+            print("* Generating new title for chat")
             if user_content and isinstance(user_content, str):
                 new_title = generate_chat_title(user_content)
                 ChatDAO.update_chat(chat_id, {"name": new_title})
                 logger.info(f"Chat {chat_id} renomeado para: {new_title}")
+                print(f"* Chat {chat_id} renamed to: {new_title}")
         except Exception as e:
             logger.error(f"Falha ao renomear chat: {e}")
+            print(f"* Failed to rename chat: {e}")
 
 
 @message_ai_bp.route("/send", methods=["POST"])
@@ -62,7 +66,7 @@ def send_message():
     chat_id = data.get("chat_id")
     content = data.get("content")
 
-    model = data.get("model", "gemini-2.5-flash-preview-09-2025")
+    model = data.get("model", "gemini-2.5-flash")
 
     if not content or not chat_id:
         return jsonify({"error": "content e chat_id são obrigatórios"}), 400

@@ -59,7 +59,7 @@ async function request(path, method = "GET", body = null, auth = true, isFormDat
 // 2. STREAMING: Fetch com ReadableStream
 async function streamChatMessage({ chatId, content, onChunk, onEnd, onError }) {
   const token = localStorage.getItem("token");
-  const model = "gemini-2.5-flash-lite";
+  const model = "gemini-2.5-flash";
 
   const url = `${BASE}/ai-messages/send-stream`;
 

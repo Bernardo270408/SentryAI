@@ -23,6 +23,8 @@ def create_chat():
         name = "Nova Conversa"
 
     chat = ChatDAO.create_chat(user_id=current_user.id, name=name)
+    print(f"* Default name setted to chat {chat.id}")
+    
     return jsonify(chat.to_dict()), 201
 
 
