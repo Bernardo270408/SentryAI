@@ -7,10 +7,6 @@ export default function Disclaimer() {
   const navigate = useNavigate();
   return (
     <div className="static-page-root">
-      <header className="landing-header container">
-        <div className="logo" onClick={() => navigate('/')} style={{cursor:'pointer'}}><strong>SentryAI</strong></div>
-        <button className="btn ghost" onClick={() => navigate(-1)}>Voltar</button>
-      </header>
       <main className="static-content">
         <h1 className="static-title">Aviso Legal (Disclaimer)</h1>
         <div className="text-block">

@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 // import { FiUser, FiSettings, FiLogOut } from "react-icons/fi"; // Ícones FIs não são mais necessários
 
 // Removendo a importação do CSS, já que estamos usando estilos inline
-// import "../styles/AppHeader.css"; 
+// import "../stylesHeader.css"; 
 
 // Variantes de Animação (Mantidas)
 const menuVariants = {
@@ -237,7 +237,7 @@ export default function NavigationBar({
               </motion.button>
               <motion.button
                 ref={firstBtnRef}
-                onClick={() => goTo("/app/profile")}
+                onClick={() => goTo("/profile")}
                 className="dropdown-option"
                 type="button"
                 variants={itemVariants}
@@ -249,7 +249,7 @@ export default function NavigationBar({
               </motion.button>
 
               <motion.button
-                onClick={() => goTo("/app/dashboard")}
+                onClick={() => goTo("/dashboard")}
                 className="dropdown-option"
                 type="button"
                 variants={itemVariants}
@@ -276,7 +276,7 @@ export default function NavigationBar({
               )}
 
               <motion.button
-                onClick={() => goTo("/app/settings")}
+                onClick={() => goTo("/settings")}
                 className="dropdown-option"
                 type="button"
                 variants={itemVariants}

@@ -15,9 +15,7 @@ import {
   Layout
 } from 'lucide-react'
 import ChatPreview from '../components/ChatPreview'
-import AuthModal from '../components/AuthModal'
 import FooterContent from '../components/FooterComponent'
-import NavigationBar from '../components/NavigationBar'
 
 // Variantes de animação
 const fadeInUp = {
@@ -42,16 +40,10 @@ const scaleOnHover = {
 export default function Home() {
   const navigate = useNavigate()
   const [demoMode, setDemoMode] = useState(false)
-  const [authOpen, setAuthOpen] = useState(false)
-  const [initialTab, setInitialTab] = useState('login')
+  const [setAuthOpen] = useState(false)
+  const [setInitialTab] = useState('login')
   const previewRef = useRef(null)
   const user = JSON.parse(localStorage.getItem("user"));
-
-  function handleLogout() {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/");
-  }
 
   async function handleDemo() {
     previewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
@@ -79,18 +71,7 @@ export default function Home() {
 
   return (
     <div className="landing-root" style={{ position: 'relative' }}>
-      
-      {/* HEADER EM FORMATO PÍLULA */}
-      {/* Removemos a classe 'container' para controlar a largura manualmente no style */}
 
-      
-      <NavigationBar
-        onLogin={() => openAuth("login")}
-        onRegister={() => openAuth("register")}
-        sticky                    // Propriedade para manter o estilo 'pílula' fixo (se implementado no NavigationBar)
-        user={user}
-        onLogout={handleLogout}
-      />
       {/* HERO SECTION */}
       <main className="hero-section" style={{ paddingTop: 40 }}> {/* Ajuste de padding top para compensar o header */}
         <div className="hero-inner container" style={{ alignItems: 'center' }}>
@@ -378,7 +359,7 @@ export default function Home() {
       </motion.section>
 
       <FooterContent />
-      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} initialTab={initialTab} />
+      
     </div>
   )
 }

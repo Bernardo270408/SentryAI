@@ -63,38 +63,32 @@ export default function KnowledgeBase() {
   const navigate = useNavigate();
 
   return (
-    <div className="kb-page-root">
-      {/* HEADER CORRIGIDO: Removida a classe 'container' e ajustado layout */}
-      <motion.header 
-        className="kb-header"
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5 }}
+    <div>
+      <motion.main 
+
+        className="kb-content container"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
       >
-        <div className="kb-header-inner">
-            <div className="kb-logo" onClick={() => navigate('/')}>
+        <motion.div>
+            <div className="kb-header-inner">
+            <div className="kb-logo">
                <FiDatabase className="logo-icon" /> 
                <span>SentryAI</span>
                <span className="badge">KNOWLEDGE</span>
             </div>
             
             <motion.button 
-                className="btn-back" 
+                className="btn " 
                 onClick={() => navigate(-1)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
             >
-                <FiArrowLeft/> Voltar
+                Voltar
             </motion.button>
         </div>
-      </motion.header>
-
-      <motion.main 
-        className="kb-content container"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
+        </motion.div>
         <motion.div className="kb-hero" variants={itemVariants}>
             <h1>Base de Conhecimento</h1>
             <p>Entenda como nossa IA é instruída, suas diretrizes éticas e as fontes legislativas priorizadas.</p>

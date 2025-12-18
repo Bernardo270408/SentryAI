@@ -469,9 +469,9 @@ export default function Documentation() {
                 onClick={() => navigate(-1)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="btn-back"
+                className="btn outline"
             >
-                <FiArrowLeft /> Voltar
+                Voltar
             </motion.button>
         </div>
       </motion.header>

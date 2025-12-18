@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 // Ícones
 import { FiBookOpen, FiZap, FiLayout, FiAlertTriangle, FiArrowRight, FiSettings } from 'react-icons/fi';
 import FooterContent from '../components/FooterComponent'
+
 import '../styles/Application.css';
 
 // Variantes de Container (para o efeito cascata/stagger)
@@ -110,7 +111,7 @@ export default function Aplication() {
       title: 'Alerta de Prazo!',
       description: 'Ação preventiva: Não esqueça de protocolar o aditivo contratual até o fim da semana.',
       ctaText: 'Ver Detalhes',
-      ctaLink: '/app/dashboard'
+      ctaLink: '/dashboard'
     },
     {
       type: 'info',
@@ -118,7 +119,7 @@ export default function Aplication() {
       title: 'Leitura Recomendada',
       description: 'Sugerimos o guia sobre Férias e Abonos para entender seus direitos anuais.',
       ctaText: 'Acessar Guia',
-      ctaLink: '/app/rights'
+      ctaLink: '/rights'
     },
     {
       type: 'tip',
@@ -142,7 +143,7 @@ export default function Aplication() {
       title: 'Dica da IA',
       description: 'Use o chat para analisar documentos. É mais rápido e seguro que buscar online.',
       ctaText: 'Testar Chat',
-      ctaLink: '/app/chat'
+      ctaLink: '/chat'
     }
   ];
 
@@ -199,7 +200,7 @@ export default function Aplication() {
             {/* 1. Chat (Container de destaque - LxA) */}
             <motion.article 
                 className="grid-item item-chat" 
-                onClick={() => navigate('/app/chat')}
+                onClick={() => navigate('/chat')}
                 variants={cardVariants} // CORRIGIDO: Usa a variante unificada
                 whileHover="hover"
                 whileTap="tap"
@@ -226,8 +227,8 @@ export default function Aplication() {
             {/* demais cards */}
             <motion.article 
               className="grid-item item-analysis" 
-              onClick={() => navigate('/app/contract-analysis')}
-              variants={cardVariants} // CORRIGIDO
+              onClick={() => navigate('/contract-analysis')}
+              variants={cardVariants}
               whileHover="hover"
               whileTap="tap"
             >
@@ -242,7 +243,7 @@ export default function Aplication() {
 
             <motion.article 
               className="grid-item item-dashboard" 
-              onClick={() => navigate('/app/dashboard')}
+              onClick={() => navigate('/dashboard')}
               variants={cardVariants}
               whileHover="hover"
               whileTap="tap"
@@ -257,7 +258,7 @@ export default function Aplication() {
 
               <motion.article 
               className="grid-item item-rights" 
-              onClick={() => navigate('/app/rights')}
+              onClick={() => navigate('/rights')}
               variants={cardVariants}
               whileHover="hover"
               whileTap="tap"
@@ -271,7 +272,7 @@ export default function Aplication() {
             </motion.article>
             <motion.article 
               className="grid-item item-settings" 
-              onClick={() => navigate('/app/settings')}
+              onClick={() => navigate('/settings')}
               variants={cardVariants} 
               whileHover="hover"
               whileTap="tap"

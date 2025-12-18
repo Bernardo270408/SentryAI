@@ -88,7 +88,7 @@ function PrivacyInfoModal({ open, onClose }) {
     );
 }
 
-export default function AuthModal({ open, onClose, initialTab = "login" }) {
+export default function AuthModal({ open, onClose, initialTab = "login", setUser }) {
   const [tab, setTab] = useState(initialTab); 
   const [step, setStep] = useState("form");   
   
@@ -126,7 +126,7 @@ export default function AuthModal({ open, onClose, initialTab = "login" }) {
   const handleAuthSuccess = (data, toastId) => {
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(data.user));
-    
+    setUser(data.user);
     toast.success(`Bem-vindo, ${data.user.name.split(' ')[0]}!`, { id: toastId });
     onClose?.();
 

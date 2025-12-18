@@ -1,6 +1,6 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { Toaster } from 'react-hot-toast';
 
@@ -23,96 +23,97 @@ import Privacy from "./pages/Privacy";
 import Disclaimer from "./pages/Disclaimer";
 import "./styles/global.css";
 
+
+
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
-// COMPONENTES DE PROTEÇÃO DE ROTA ---
+/* =========================
+   PROTEÇÕES DE ROTA
+   ========================= */
 
-// 1. Proteção Básica: Apenas verifica se está logado
-function Protected({ children }) {
+// Verifica apenas se está logado
+function Protected() {
   const token = localStorage.getItem("token");
   if (!token) return <Navigate to="/" replace />;
-  return children;
+  return <Outlet />;
 }
 
-// 2. Proteção de Admin: Verifica Login + Permissão de Admin
+// Verifica login + permissão de admin
 function AdminRoute({ children }) {
   const token = localStorage.getItem("token");
-  // Tenta ler o usuário com segurança, caso esteja vazio retorna objeto vazio
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-  // Se não tem token, volta pra home
-  if (!token) {
-    return <Navigate to="/" replace />;
-  }
+  if (!token) return <Navigate to="/" replace />;
+  if (!user.is_admin) return <Navigate to="/app" replace />;
 
-  // Se tem token mas NÃO é admin, manda para o painel de usuário comum
-  if (!user.is_admin) {
-    return <Navigate to="/app" replace />;
-  }
-
-  // Se passou por tudo, libera o Admin
   return children;
 }
+
+/* =========================
+   RENDER
+   ========================= */
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      {/* Configuração do Toaster (Notificações) */}
-      <Toaster 
-        position="bottom-right" 
+      <Toaster
+        position="bottom-right"
         toastOptions={{
           style: {
-            background: '#18181b',
-            color: '#fff',
-            border: '1px solid rgba(255,255,255,0.1)'
+            background: "#18181b",
+            color: "#fff",
+            border: "1px solid rgba(255,255,255,0.1)"
           }
-        }} 
+        }}
       />
-      
-      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+
+      <BrowserRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true
+        }}
+      >
         <Routes>
-          {/* --- ROTAS PÚBLICAS --- */}
-          <Route path="/" element={<Home />} />
-          <Route path="/knowledge-base" element={<KnowledgeBase />} />
-          <Route path="/docs" element={<Documentation />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/disclaimer" element={<Disclaimer />} />
 
-          {/* NOVAS ROTAS DE BANIMENTO */}
-          <Route path="/banned" element={<BannedPage />} />
-          <Route path="/appeal" element={<AppealPage />} />
+          {/* APP = LAYOUT GLOBAL (SEMPRE RENDERIZA) */}
+          <Route element={<App />}>
 
-          {/* --- ROTA DE ADMINISTRAÇÃO (Separada do App) --- */}
-          <Route 
-            path="/admin" 
-            element={
-              <AdminRoute>
-                <AdminPanel />
-              </AdminRoute>
-            } 
-          />
+            {/* ===== ROTAS PÚBLICAS ===== */}
+            <Route path="/" element={<Home />} />
+            <Route path="/knowledge-base" element={<KnowledgeBase />} />
+            <Route path="/docs" element={<Documentation />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/disclaimer" element={<Disclaimer />} />
+            <Route path="/banned" element={<BannedPage />} />
+            <Route path="/appeal" element={<AppealPage />} />
 
-          {/* --- ROTAS DA APLICAÇÃO (Usuário Comum) --- */}
-          <Route
-            path="/app"
-            element={
-              <Protected>
-                <App />
-              </Protected>
-            }
-          >
-            <Route index element={<Aplication />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="chat" element={<ChatPage />} />
-            <Route path="rights" element={<RightsExplorer />} />
-            <Route path="contract-analysis" element={<ContractAnalysis />} />
-            <Route path="profile" element={<Profile />} />
-            <Route path="settings" element={<Settings />} />
+            {/* ===== ROTAS PROTEGIDAS ===== */}
+            <Route element={<Protected />}>
+              <Route path="/app" element={<Aplication />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/chat" element={<ChatPage />} />
+              <Route path="/rights" element={<RightsExplorer />} />
+              <Route path="/contract-analysis" element={<ContractAnalysis />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/settings" element={<Settings />} />
+
+              {/* ===== ADMIN ===== */}
+              <Route
+                path="/admin"
+                element={
+                  <AdminRoute>
+                    <AdminPanel />
+                  </AdminRoute>
+                }
+              />
+            </Route>
+
           </Route>
 
-          {/* --- ROTA DE FALLBACK (Qualquer erro 404 volta pra home) --- */}
+          {/* ===== FALLBACK ===== */}
           <Route path="*" element={<Navigate to="/" replace />} />
+
         </Routes>
       </BrowserRouter>
     </GoogleOAuthProvider>
