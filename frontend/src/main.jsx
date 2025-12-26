@@ -84,6 +84,7 @@ createRoot(document.getElementById("root")).render(
               <Route path="/chat" element={<ChatPage />} />
               <Route path="/rights" element={<RightsExplorer />} />
               <Route path="/contract-analysis" element={<ContractAnalysis />} />
+              <Route path="/profile" element={<Profile />} />
               <Route path="/profile/:id" element={<Profile />} />
               <Route path="/settings" element={<Settings />} />
 

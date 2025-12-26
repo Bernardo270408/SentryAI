@@ -53,8 +53,13 @@ def create_user():
     }), 201
 
 @user_bp.route("/email/<email>", methods=["GET"])
+@token_required
 def get_user_by_email(email):
-    user = UserDAO.get_user_by_email(email)
+    current_user = request.user
+
+    user : User = UserDAO.get_user_by_email(email)
+    if current_user.id != user.id and not current_user.is_admin:
+        return jsonify({"error": "Permission denied"}), 403
 
     if not user:
         return jsonify({"error": "Usuário não encontrado."}), 404
@@ -63,7 +68,13 @@ def get_user_by_email(email):
 
 
 @user_bp.route("/<int:user_id>", methods=["GET"])
+@token_required
 def get_user(user_id):
+    current_user = request.user
+
+    if current_user.id != user_id and not current_user.is_admin:
+        return jsonify({"error": "Permission denied"}), 403
+
     user = UserDAO.get_user_by_id(user_id)
 
     if not user:
@@ -73,7 +84,12 @@ def get_user(user_id):
 
 
 @user_bp.route("/", methods=["GET"])
+@token_required
 def get_all_users():
+    current_user = request.user
+    if not current_user.is_admin:
+        return jsonify({"error": "Permission denied"}), 403
+    
     users = UserDAO.get_all_users()
     return jsonify([u.to_dict() for u in users])
 

@@ -3,9 +3,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { 
   FiUser, FiMail, FiSave, FiBriefcase, FiShield, 
   FiActivity, FiFileText, FiMessageSquare, FiCpu, 
-  FiStar
+  FiStar, FiAlertCircle
 } from "react-icons/fi";
-import { motion, AnimatePresence, color } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import api from "../services/api";
 import FooterContent from "../components/FooterComponent";
 import toast from "react-hot-toast";
@@ -37,14 +37,8 @@ function groupByTime(grouping) {
     const created = new Date(item.created_at);
     const diffMs = now - created;
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    const sameDay = now.toDateString() === created.toDateString();
-    const yesterday = new Date(now);
-    yesterday.setDate(now.getDate() - 1);
-
-    if (sameDay) groups.hoje.push(item);
-    else if (created.toDateString() === yesterday.toDateString()) groups.ontem.push(item);
+    if (now.toDateString() === created.toDateString()) groups.hoje.push(item);
     else if (diffDays < 7) groups.semana.push(item);
-    else if (created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear()) groups.mes.push(item);
     else if (created.getFullYear() === now.getFullYear()) groups.ano.push(item);
     else groups.antigo.push(item);
   });
@@ -78,7 +72,6 @@ function Conta({ user, setUser, handleSave, saving }) {
 
 function Chats({ chats }) {
   const [previews, setPreviews] = useState({});
-
   useEffect(() => {
     async function loadPreviews() {
       const result = {};
@@ -86,7 +79,7 @@ function Chats({ chats }) {
         try {
           const messages = await api.request(`/messages/chat/${chat.id}`, "GET");
           result[chat.id] = messages.length > 0 ? messages.at(-1).content.slice(0, 100) + "..." : "Sem mensagens";
-        } catch { result[chat.id] = "Erro ao carregar mensagens"; }
+        } catch { result[chat.id] = "Erro ao carregar"; }
       }
       setPreviews(result);
     }
@@ -94,32 +87,19 @@ function Chats({ chats }) {
   }, [chats]);
 
   if (!chats.length) return <motion.p variants={tabContentVariants}>Nenhum chat encontrado.</motion.p>;
-  const grouped = groupByTime(chats);
-
-  const renderGroup = (title, list) => {
-    if (!list.length) return null;
-    return (
-      <div key={title}>
-        <h4 className="chat-group-title">{title}</h4>
-        <div className="stats-list">
-          {list.map(chat => (
-            <motion.a key={chat.id} className="stat-item" href={`/chat/${chat.id}`} whileHover={{ x: 5, backgroundColor: "rgba(255,255,255,0.03)" }}>
-              <div className="stat-icon blue"><FiMessageSquare /></div>
-              <div className="stat-data">
-                <strong>{chat.name || "Chat sem nome"}</strong>
-                <span>{previews[chat.id] || "Carregando..."}</span>
-                <span>{new Date(chat.created_at).toLocaleDateString('pt-BR')}</span>
-              </div>
-            </motion.a>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
   return (
     <motion.div className="chat-groups" variants={tabContentVariants} initial="hidden" animate="visible" exit="exit">
-      {Object.entries(grouped).map(([key, list]) => renderGroup(key.charAt(0).toUpperCase() + key.slice(1), list))}
+      <div className="stats-list">
+        {chats.map(chat => (
+          <motion.a key={chat.id} className="stat-item" href={`/chat/${chat.id}`} whileHover={{ x: 5 }}>
+            <div className="stat-icon blue"><FiMessageSquare /></div>
+            <div className="stat-data">
+              <strong>{chat.name || "Chat sem nome"}</strong>
+              <span>{previews[chat.id] || "Carregando..."}</span>
+            </div>
+          </motion.a>
+        ))}
+      </div>
     </motion.div>
   );
 }
@@ -127,31 +107,19 @@ function Chats({ chats }) {
 function Contratos({ contracts }) {
   const navigate = useNavigate();
   if (!contracts.length) return <motion.p variants={tabContentVariants}>Nenhum contrato encontrado.</motion.p>;
-  const grouped = groupByTime(contracts);
-
-  const renderGroup = (title, list) => {
-    if (!list.length) return null;
-    return (
-      <div key={title}>
-        <h4 className="chat-group-title">{title}</h4>
-        <div className="stats-list">
-          {list.map(contract => (
-            <motion.div key={contract.id} className="stat-item clickable" onClick={() => navigate(`/app/contract/${contract.id}`)} whileHover={{ x: 5, backgroundColor: "rgba(255,255,255,0.03)" }} whileTap={{ scale: 0.98 }}>
-              <div className="stat-icon green"><FiFileText /></div>
-              <div className="stat-data">
-                <strong>{contract.name || "Análise de Contrato"}</strong>
-                <span>Criado em: {new Date(contract.created_at).toLocaleDateString('pt-BR')}</span>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
   return (
     <motion.div className="chat-groups" variants={tabContentVariants} initial="hidden" animate="visible" exit="exit">
-      {Object.entries(grouped).map(([key, list]) => renderGroup(key.charAt(0).toUpperCase() + key.slice(1), list))}
+      <div className="stats-list">
+        {contracts.map(contract => (
+          <motion.div key={contract.id} className="stat-item clickable" onClick={() => navigate(`/app/contract/${contract.id}`)} whileHover={{ x: 5 }}>
+            <div className="stat-icon green"><FiFileText /></div>
+            <div className="stat-data">
+              <strong>{contract.name || "Análise de Contrato"}</strong>
+              <span>{new Date(contract.created_at).toLocaleDateString('pt-BR')}</span>
+            </div>
+          </motion.div>
+        ))}
+      </div>
     </motion.div>
   );
 }
@@ -160,7 +128,7 @@ function Avaliacoes() {
   return (
     <motion.div variants={tabContentVariants} initial="hidden" animate="visible" exit="exit">
       <h2>Avaliações</h2>
-      <p>Sessão ainda em desenvolvimento. Em breve você poderá ver o histórico de feedbacks aqui!</p>
+      <p>Sessão ainda em desenvolvimento.</p>
     </motion.div>
   );
 }
@@ -171,9 +139,11 @@ const sections = { conta: Conta, chats: Chats, contratos: Contratos, avaliacoes:
 export default function Profile() {
   const { id } = useParams();
   const navigate = useNavigate();
+  
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [forbidden, setForbidden] = useState(false);
+  const [notFound, setNotFound] = useState(false);
   const [section, setSection] = useState("conta");
   const SectionComponent = sections[section];
 
@@ -185,27 +155,41 @@ export default function Profile() {
   const [stats, setStats] = useState({ chats: 0, messages: 0, risks: 0 });
 
   useEffect(() => {
-    if (id) fetchData();
-  }, [id]);
+    const localUser = JSON.parse(localStorage.getItem("user") || "{}");
 
-  async function fetchData() {
+    // REGRA: Se não digitar ID, vai para o próprio perfil
+    if (!id && localUser.id) {
+      navigate(`/profile/${localUser.id}`, { replace: true });
+      return;
+    }
+
+    if (id) fetchData(id);
+  }, [id, navigate]);
+
+  async function fetchData(targetId) {
     setLoading(true);
+    setNotFound(false);
+    setForbidden(false);
+
     const token = localStorage.getItem("token");
     const localUser = JSON.parse(localStorage.getItem("user") || "{}");
 
-    // Validação de Permissão (Frontend)
-    if (String(localUser.id) !== String(id) && !localUser.is_admin) {
+    // Validação de Permissão (Dono ou Admin)
+    if (String(localUser.id) !== String(targetId) && !localUser.is_admin) {
       setForbidden(true);
       setLoading(false);
       return;
     }
 
     try {
-      const [freshUser, dashData, freshChats, freshContracts] = await Promise.all([
-        api.request(`/users/${id}`, "GET", null, token),
-        api.getDashboardStats(id),
-        api.request(`/chats/user/${id}`, "GET", null, token),
-        api.request(`/contract/user/${id}`, "GET", null, token)
+      // 1. Tenta buscar o usuário (verifica existência)
+      const freshUser = await api.request(`/users/${targetId}`, "GET", null, token);
+      
+      // 2. Se existir, busca os dados relacionados
+      const [dashData, freshChats, freshContracts] = await Promise.all([
+        api.getDashboardStats(targetId),
+        api.request(`/chats/user/${targetId}`, "GET", null, token),
+        api.request(`/contract/user/${targetId}`, "GET", null, token)
       ]);
 
       setUser({ ...freshUser, extra_data: freshUser.extra_data || "" });
@@ -216,11 +200,10 @@ export default function Profile() {
       });
       setChats(freshChats);
       setContracts(freshContracts);
-      setForbidden(false);
     } catch (err) {
-      console.error("Erro ao carregar dados:", err);
-      if (err.status === 403) setForbidden(true);
-      else toast.error("Falha ao carregar perfil.");
+      if (err.status === 404) setNotFound(true);
+      else if (err.status === 403) setForbidden(true);
+      else toast.error("Erro ao carregar dados.");
     } finally {
       setLoading(false);
     }
@@ -231,40 +214,47 @@ export default function Profile() {
     setSaving(true);
     try {
       const updated = await api.updateUser(user.id, { name: user.name, extra_data: user.extra_data });
-      
-      // Atualiza localstorage apenas se estiver editando o próprio perfil
       const localUser = JSON.parse(localStorage.getItem("user") || "{}");
       if (String(localUser.id) === String(user.id)) {
         localStorage.setItem("user", JSON.stringify({ ...localUser, ...updated }));
       }
-
       setUser(prev => ({ ...prev, ...updated }));
-      toast.success("Perfil atualizado com sucesso!");
+      toast.success("Perfil atualizado!");
     } catch (err) {
-      toast.error("Erro ao salvar alterações.");
+      toast.error("Erro ao salvar.");
     } finally {
       setSaving(false);
     }
   }
 
-  if (forbidden) {
+
+  if (notFound) {
     return (
-      <div 
-      className="profile-loading forbidden-container"
-      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}
-      >
+      <div className="profile-loading forbidden-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '80vh' }}>
         <div style={{flexDirection: 'row', alignItems: 'center', display: 'flex'}}>
-        <FiShield size={32} /> &nbsp;
-        <h2>403 - Acesso Negado</h2>
+          <FiAlertCircle size={32} /> &nbsp;
+          <h2>404 - Perfil não encontrado</h2>
         </div>
-        <p>Você não tem permissão acessar esta página.</p>
-        <div>&nbsp;</div>
-        <button onClick={() => navigate('/app')} className="btn primary">Voltar ao Dashboard</button>
+        <p>O ID digitado não parece pertencer a nenhum usuário.</p>
+        <button onClick={() => navigate('/admin')} className="btn primary" style={{marginTop: '20px'}}>Voltar ao Painel</button>
       </div>
     );
   }
 
-  if (loading) return <div className="profile-loading">Carregando perfil...</div>; 
+  if (forbidden) {
+    return (
+      <div className="profile-loading forbidden-container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '80vh' }}>
+        <div style={{flexDirection: 'row', alignItems: 'center', display: 'flex'}}>
+          <FiShield size={32} /> &nbsp;
+          <h2>403 - Acesso Negado</h2>
+        </div>
+        <p>Você não tem permissão para acessar esta página.</p>
+        <button onClick={() => navigate('/app')} className="btn primary" style={{marginTop: '20px'}}>Voltar ao Dashboard</button>
+      </div>
+    );
+  }
+
+  if (loading) return <div className="profile-loading">Sincronizando perfil...</div>;
 
   return (
     <div className="landing-root profile-root">
@@ -322,9 +312,9 @@ export default function Profile() {
 
             <motion.div className="profile-card info-card" variants={itemVariants}>
               <h4><FiCpu /> Sentry AI Insight</h4>
-              <p className="muted small">Dados processados sob protocolos de segurança criptografada.</p>
+              <p className="muted small">Dados processados sob protocolos de segurança.</p>
               <motion.button className="btn tiny outline full-width" onClick={() => navigate('/app/settings')} whileTap={{ scale: 0.95 }}>
-                Configurações do Sistema
+                Configurações
               </motion.button>
             </motion.div>
           </section>
