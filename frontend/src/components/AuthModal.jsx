@@ -48,7 +48,7 @@ function PrivacyInfoModal({ open, onClose }) {
             position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
             background: 'rgba(0,0,0,0.6)', zIndex: 10001,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            borderRadius: '16px' // Segue o raio do modal pai se possível, ou ajusta visualmente
+            borderRadius: '16px'
         }}>
             <motion.div 
                 className="privacy-modal-content"

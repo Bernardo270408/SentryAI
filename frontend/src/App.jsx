@@ -28,7 +28,6 @@ export default function App() {
       }
     }
 
-    // Se quiser cobrir mudanças vindas de outras abas/janelas
     window.addEventListener("storage", handleStorageChange);
 
     return () => {

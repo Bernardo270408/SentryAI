@@ -69,7 +69,6 @@ export default function AdminPanel() {
     }
   }
 
-  // --- Ações de Usuário (Existentes) ---
   async function handleAnalyze(id) {
     const toastId = toast.loading("IA analisando...");
     try {
@@ -104,7 +103,6 @@ export default function AdminPanel() {
     }
   }
 
-  // --- Ações de Recurso (Novas) ---
   async function handleResolveAppeal(userId, action) {
       if(!confirm(action === 'approve' ? "Aceitar recurso e desbanir?" : "Rejeitar recurso e manter banimento?")) return;
       

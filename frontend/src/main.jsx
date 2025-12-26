@@ -27,18 +27,12 @@ import "./styles/global.css";
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
-/* =========================
-   PROTEÇÕES DE ROTA
-   ========================= */
-
-// Verifica apenas se está logado
 function Protected() {
   const token = localStorage.getItem("token");
   if (!token) return <Navigate to="/" replace />;
   return <Outlet />;
 }
 
-// Verifica login + permissão de admin
 function AdminRoute({ children }) {
   const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -48,10 +42,6 @@ function AdminRoute({ children }) {
 
   return children;
 }
-
-/* =========================
-   RENDER
-   ========================= */
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
@@ -75,7 +65,6 @@ createRoot(document.getElementById("root")).render(
       >
         <Routes>
 
-          {/* APP = LAYOUT GLOBAL (SEMPRE RENDERIZA) */}
           <Route element={<App />}>
 
             {/* ===== ROTAS PÚBLICAS ===== */}
@@ -95,7 +84,7 @@ createRoot(document.getElementById("root")).render(
               <Route path="/chat" element={<ChatPage />} />
               <Route path="/rights" element={<RightsExplorer />} />
               <Route path="/contract-analysis" element={<ContractAnalysis />} />
-              <Route path="/profile" element={<Profile />} />
+              <Route path="/profile/:id" element={<Profile />} />
               <Route path="/settings" element={<Settings />} />
 
               {/* ===== ADMIN ===== */}
