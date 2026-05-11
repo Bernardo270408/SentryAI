@@ -643,7 +643,6 @@
         padding: 12px;
         padding-bottom: 16px;
         background: var(--bg-root);
-        border-top: 1px solid var(--border);
     }
 
     /* Botão Lateral */
@@ -687,3 +686,233 @@
 }
 .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
 .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+/* =========================================================
+   ÁREA DE INPUT (Input Wrapper & Container)
+   ========================================================= */
+
+.input-container {
+    background: rgba(30, 30, 32, 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    transition: border-color 0.2s ease;
+}
+
+.input-container:focus-within {
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* =========================================================
+   LINHA DE CONTEÚDO (Botão -> Textarea -> Botão)
+   ========================================================= */
+
+.input-row {
+    display: flex;
+    align-items: flex-end; /* Mantém os botões no fundo quando o textarea cresce */
+    gap: 12px;
+    width: 100%;
+}
+
+.chat-textarea {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 15px;
+    line-height: 1.5;
+    resize: none;
+    max-height: 150px;
+    padding: 8px 0;
+    outline: none;
+}
+
+.chat-textarea::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* Scrollbar customizada para o textarea */
+.chat-textarea::-webkit-scrollbar {
+    width: 4px;
+}
+.chat-textarea::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+/* =========================================================
+   BOTÕES DE AÇÃO
+   ========================================================= */
+
+.btn-action {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+/* Botão de Anexo */
+.btn-action.attach {
+    background: transparent;
+    color: rgba(255, 255, 255, 0.5);
+    padding-bottom: 2px; /* Ajuste óptico fino */
+}
+
+.btn-action.attach:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+/* Botão de Enviar */
+.btn-action.send {
+    background: #ffffff;
+    color: #111011;
+    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.2);
+}
+
+.btn-action.send:hover:not(:disabled) {
+    transform: scale(1.05);
+}
+
+.btn-action.send:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    background: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.5);
+    box-shadow: none;
+}
+
+/* Botão de Stop (Parar geração) */
+.btn-action.stop {
+    background: transparent;
+    color: #ef4444; /* Vermelho */
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.btn-action.stop:hover {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+/* =========================================================
+   BADGE DO ARQUIVO ANEXADO
+   ========================================================= */
+
+.attach-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+    width: fit-content;
+    margin-left: 48px; /* Alinha visualmente com o começo do texto */
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.attach-badge button {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 2px;
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+.attach-badge button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+}
+
+.text-truncate {
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* =========================================================
+   TEXTO DE AVISO (Disclaimer)
+   ========================================================= */
+
+.disclaimer-text {
+    text-align: center;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: 12px;
+}
+
+/* =========================================================
+   BARRA DE BUSCA (Sidebar)
+   ========================================================= */
+
+.sidebar-search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.03); /* Fundo quase transparente */
+    border: 1px solid rgba(255, 255, 255, 0.08); /* Borda sutil */
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin: 12px 16px; /* Espaçamento das laterais da sidebar */
+    transition: all 0.2s ease;
+}
+
+/* Efeito ao clicar/focar no input */
+.sidebar-search:focus-within {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.05);
+}
+
+/* Estilo do Ícone de Lupa */
+.sidebar-search svg {
+    color: rgba(255, 255, 255, 0.4);
+    flex-shrink: 0;
+    transition: color 0.2s ease;
+}
+
+/* Acende o ícone quando o usuário clica para digitar */
+.sidebar-search:focus-within svg {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Estilo do Input em si */
+.sidebar-search input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #ffffff;
+    font-size: 14px;
+    font-family: inherit;
+    width: 100%;
+}
+
+/* Cor do texto "Buscar..." */
+.sidebar-search input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* Ocultar o "X" padrão de limpar busca que alguns navegadores inserem */
+.sidebar-search input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+}

@@ -13,7 +13,7 @@ google-generativeai
 cryptography
 google-auth
 google-auth-oauthlib
-python-magic-bin
+python-magic
 pydantic
 
 #file_readers

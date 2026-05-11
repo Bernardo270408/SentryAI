@@ -1,17 +1,18 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { 
     FiArrowUp, FiPlus, FiTrash2, FiSearch, 
     FiMenu, FiPaperclip, FiUser, FiStopCircle, FiX, FiChevronRight 
 } from "react-icons/fi";
-import { motion, AnimatePresence } from "framer-motion"; // Importação do Framer Motion
+import { motion, AnimatePresence } from "framer-motion";
+import toast from "react-hot-toast";
+
 import api from "../services/api";
 import "../styles/chatpage.css";
 import ChatHeader from "../components/ChatHeader";
-import toast from "react-hot-toast";
 
-// Helper para obter usuário
+// Helper para obter usuário de forma segura
 function useLocalUser() {
     try {
         const raw = localStorage.getItem("user");
@@ -21,15 +22,15 @@ function useLocalUser() {
     }
 }
 
-// Variantes de Animação
+// Variantes de Animação otimizadas (sem 'layout' para evitar lag no streaming)
 const msgVariants = {
-    hidden: { opacity: 0, y: 20, scale: 0.98 },
-    visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.3 } }
+    hidden: { opacity: 0, y: 15 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.3 } }
 };
 
-const sidebarVariants = {
-    closed: { x: "-100%", opacity: 0 },
-    open: { x: 0, opacity: 1, transition: { type: "spring", stiffness: 300, damping: 30 } }
+const sidebarMobileVariants = {
+    closed: { x: "-100%", transition: { type: "tween", duration: 0.3 } },
+    open: { x: 0, transition: { type: "tween", duration: 0.3 } }
 };
 
 // Ícone SVG do Gemini
@@ -39,29 +40,18 @@ const GeminiIcon = () => (
     </svg>
 );
 
-// Componente de Skeleton para Mensagens (Animado)
+// Componente de Skeleton para Loading
 const MessagesSkeleton = () => (
-    <motion.div 
-        className="messages-content fade-in"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-    >
+    <motion.div className="messages-content fade-in" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
         <div className="msg-row user" style={{ opacity: 0.5 }}>
             <div className="msg-avatar skeleton"></div>
-            <motion.div 
-                className="skeleton" 
-                style={{ height: 40, width: '40%', borderRadius: 12 }}
-                animate={{ opacity: [0.5, 0.8, 0.5] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-            />
+            <motion.div className="skeleton" style={{ height: 40, width: '40%', borderRadius: 12 }} animate={{ opacity: [0.3, 0.7, 0.3] }} transition={{ duration: 1.5, repeat: Infinity }} />
         </div>
         <div className="msg-row assistant" style={{ opacity: 0.5 }}>
             <div className="msg-avatar skeleton"></div>
             <div style={{ width: '60%' }}>
-                <motion.div className="skeleton skeleton-text" animate={{ opacity: [0.5, 0.8, 0.5] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.1 }}></motion.div>
-                <motion.div className="skeleton skeleton-text" animate={{ opacity: [0.5, 0.8, 0.5] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}></motion.div>
-                <motion.div className="skeleton skeleton-text short" animate={{ opacity: [0.5, 0.8, 0.5] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.3 }}></motion.div>
+                <motion.div className="skeleton skeleton-text" animate={{ opacity: [0.3, 0.7, 0.3] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.1 }} />
+                <motion.div className="skeleton skeleton-text short" animate={{ opacity: [0.3, 0.7, 0.3] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }} />
             </div>
         </div>
     </motion.div>
@@ -71,13 +61,12 @@ export default function ChatPage() {
     const navigate = useNavigate();
     const user = useLocalUser();
     
-    // Estados de Dados
+    // Estados
     const [chats, setChats] = useState([]);
     const [activeChat, setActiveChat] = useState(null);
     const [messages, setMessages] = useState([]);
     const [loadingMessages, setLoadingMessages] = useState(false);
     
-    // Estados de UI e Responsividade
     const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     
@@ -92,96 +81,94 @@ export default function ChatPage() {
     const assistantMessageRef = useRef(null); 
     const ignoreFetchRef = useRef(false);
 
-    const handleLogout = () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
+    const handleLogout = useCallback(() => {
+        localStorage.clear();
         navigate("/");
-    };
+    }, [navigate]);
 
-    // Monitora redimensionamento da tela
+    // Monitora redimensionamento
     useEffect(() => {
-        function handleResize() {
-            const mobile = window.innerWidth <= 768;
-            setIsMobile(mobile);
-            if (!mobile) setIsSidebarOpen(true);
-            else setIsSidebarOpen(false);
-        }
+        let timeoutId;
+        const handleResize = () => {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                const mobile = window.innerWidth <= 768;
+                setIsMobile(mobile);
+                setIsSidebarOpen(!mobile);
+            }, 100);
+        };
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // 1. Carregar Chats
-    const loadChats = async () => {
-        const userId = user.id || localStorage.getItem("user_id");
-        if (userId) {
-            try {
-                const res = await api.getUserChats(userId);
-                const sorted = (res || []).sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
-                setChats(sorted);
-                return sorted;
-            } catch (err) { console.error(err); }
+    // Scroll automático suavizado
+    const scrollToBottom = useCallback(() => {
+        if (listRef.current) {
+            listRef.current.scrollTop = listRef.current.scrollHeight;
         }
-        return [];
-    };
+    }, []);
+
+    // Acompanha as mensagens para sempre rolar para baixo
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages, scrollToBottom]);
+
+    // Carregar Chats
+    const loadChats = useCallback(async () => {
+        const userId = user.id || localStorage.getItem("user_id");
+        if (!userId) return [];
+        try {
+            const res = await api.getUserChats(userId);
+            const sorted = (res || []).sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+            setChats(sorted);
+            return sorted;
+        } catch (err) { 
+            console.error(err); 
+            return [];
+        }
+    }, [user.id]);
 
     useEffect(() => {
         loadChats().then(sortedChats => {
-            if (sortedChats.length > 0 && !activeChat) {
-                setActiveChat(sortedChats[0]);
-            }
+            if (sortedChats.length > 0 && !activeChat) setActiveChat(sortedChats[0]);
         });
-    }, []);
+    }, [loadChats, activeChat]);
 
-    // 2. Carregar Mensagens ao trocar Chat
+    // Carregar Mensagens ao trocar Chat
     useEffect(() => {
         if (ignoreFetchRef.current) {
             ignoreFetchRef.current = false;
             return;
         }
-
         if (!activeChat) {
             setMessages([]);
             return;
         }
-        setLoadingMessages(true);
 
+        setLoadingMessages(true);
         Promise.all([
             api.getUserMessages(activeChat.id),
             api.getAIMessages(activeChat.id)
         ])
         .then(([userMsgs, aiMsgs]) => {
-            const formattedUserMsgs = (userMsgs || []).map(m => ({ 
-                ...m, role: 'user', timestamp: new Date(m.created_at) 
-            }));
-            const formattedAiMsgs = (aiMsgs || []).map(m => ({ 
-                ...m, role: 'assistant', timestamp: new Date(m.created_at) 
-            }));
-            const allMessages = [...formattedUserMsgs, ...formattedAiMsgs];
-            allMessages.sort((a, b) => a.timestamp - b.timestamp);
+            const formatted = [
+                ...(userMsgs || []).map(m => ({ ...m, role: 'user', timestamp: new Date(m.created_at) })),
+                ...(aiMsgs || []).map(m => ({ ...m, role: 'assistant', timestamp: new Date(m.created_at) }))
+            ].sort((a, b) => a.timestamp - b.timestamp);
 
-            setMessages(allMessages);
-            setTimeout(scrollToBottom, 50);
+            setMessages(formatted);
         })
-        .catch(err => toast.error("Erro ao carregar mensagens"))
+        .catch(() => toast.error("Erro ao carregar histórico."))
         .finally(() => setLoadingMessages(false));
 
     }, [activeChat?.id]);
 
-    const scrollToBottom = () => {
-        if (listRef.current) {
-            listRef.current.scrollTo({
-                top: listRef.current.scrollHeight,
-                behavior: 'smooth'
-            });
-        }
-    };
-
-    // 3. Auto-Resize do Input
+    // Auto-Resize do Input
     const handleInput = (e) => {
         setText(e.target.value);
         if (textareaRef.current) {
             textareaRef.current.style.height = 'auto'; 
-            textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
+            textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 150)}px`;
         }
     };
 
@@ -192,23 +179,22 @@ export default function ChatPage() {
         }
     };
 
-    // 4. Enviar Mensagem
+    // Enviar Mensagem
     const handleSend = async () => {
-        if (!text.trim() && !attachedFile) return;
-        if (sending) return;
+        if ((!text.trim() && !attachedFile) || sending) return;
 
         const contentToSend = text.trim();
         const fileToSend = attachedFile;
-        
+        const finalContent = fileToSend ? `${contentToSend} (Arquivo: ${fileToSend})` : contentToSend;
+
         setText("");
         setAttachedFile(null);
         if (textareaRef.current) textareaRef.current.style.height = 'auto';
         setSending(true);
 
-        const finalContent = fileToSend ? `${contentToSend} (Arquivo: ${fileToSend})` : contentToSend;
-
         let targetChatId = activeChat?.id;
 
+        // Se não tiver chat, cria um novo
         if (!activeChat) {
             try {
                 const newChat = await api.createChat("Nova Conversa");
@@ -217,19 +203,18 @@ export default function ChatPage() {
                 setActiveChat(newChat); 
                 targetChatId = newChat.id;
             } catch (e) {
-                toast.error("Erro ao iniciar conversa.");
+                toast.error("Erro ao criar conversa.");
                 setSending(false);
                 return;
             }
         }
 
-        const userMsg = { id: `u-${Date.now()}`, role: 'user', content: finalContent, created_at: new Date().toISOString() };
-        setMessages(prev => [...prev, userMsg]);
-        setTimeout(scrollToBottom, 50);
+        // Adiciona mensagem do usuário otimisticamente
+        setMessages(prev => [...prev, { id: `u-${Date.now()}`, role: 'user', content: finalContent }]);
 
+        // Prepara mensagem da IA (vazia e com streaming)
         const aiTempId = `a-${Date.now()}`;
-        const aiMsg = { id: aiTempId, role: 'assistant', content: '', streaming: true };
-        setMessages(prev => [...prev, aiMsg]);
+        setMessages(prev => [...prev, { id: aiTempId, role: 'assistant', content: '', streaming: true }]);
         assistantMessageRef.current = aiTempId;
 
         try {
@@ -237,15 +222,9 @@ export default function ChatPage() {
                 chatId: targetChatId,
                 content: finalContent,
                 onChunk: (token) => {
-                    setMessages(prev => {
-                        const list = [...prev];
-                        const idx = list.findIndex(m => m.id === assistantMessageRef.current);
-                        if (idx !== -1) {
-                            list[idx] = { ...list[idx], content: list[idx].content + token };
-                        }
-                        return list;
-                    });
-                    scrollToBottom();
+                    setMessages(prev => prev.map(m => 
+                        m.id === assistantMessageRef.current ? { ...m, content: m.content + token } : m
+                    ));
                 },
                 onEnd: async () => {
                     setMessages(prev => prev.map(m => 
@@ -254,169 +233,103 @@ export default function ChatPage() {
                     setSending(false);
                     assistantMessageRef.current = null;
                     
+                    // Atualiza o nome do chat caso a IA tenha renomeado no backend
                     const updatedChats = await loadChats();
                     const currentUpdated = updatedChats.find(c => c.id === targetChatId);
-                    if (currentUpdated) setActiveChat(currentUpdated);
+                    if (currentUpdated && currentUpdated.name !== activeChat?.name) {
+                        setActiveChat(currentUpdated);
+                    }
                 },
-                onError: (err) => {
-                    console.error(err);
-                    toast.error("Erro na comunicação com a IA");
+                onError: () => {
+                    toast.error("Conexão instável com a IA.");
                     setSending(false);
                 }
             });
-        } catch (error) {
+        } catch {
             setSending(false);
         }
     };
 
-    const stopStreaming = () => setSending(false);
-
-    // Handlers de Interface
     const handleNewChatClick = () => {
         setActiveChat(null);
         setMessages([]);
         if (isMobile) setIsSidebarOpen(false);
     };
 
-    const handleChatSelect = (chat) => {
-        setActiveChat(chat);
-        if (isMobile) setIsSidebarOpen(false);
-    };
-
     const handleDelete = async (id) => {
-        if (!confirm("Excluir conversa permanentemente?")) return;
+        if (!window.confirm("Excluir esta conversa?")) return;
         try {
             await api.deleteChat(id);
-            setChats(chats.filter(c => c.id !== id));
+            setChats(prev => prev.filter(c => c.id !== id));
             if (activeChat?.id === id) {
                 setActiveChat(null);
                 setMessages([]);
             }
             toast.success("Conversa excluída.");
-        } catch (e) {
+        } catch {
             toast.error("Erro ao excluir.");
         }
-    };
-
-    const renderMessage = (msg) => {
-        const isUser = msg.role === 'user';
-        return (
-            <motion.div 
-                key={msg.id} 
-                className={`msg-row ${isUser ? 'user' : 'assistant'}`}
-                variants={msgVariants}
-                initial="hidden"
-                animate="visible"
-                layout="position" // Suaviza o reposicionamento quando novas msgs chegam
-            >
-                <div className="msg-avatar">
-                    {isUser ? <FiUser size={18} /> : <GeminiIcon />}
-                </div>
-                <div className="msg-bubble">
-                    {msg.streaming && !msg.content ? (
-                        <div className="typing-indicator"><span></span><span></span><span></span></div>
-                    ) : (
-                        <div className="markdown-body">
-                            <ReactMarkdown>{msg.content}</ReactMarkdown>
-                        </div>
-                    )}
-                </div>
-            </motion.div>
-        );
     };
 
     const filteredChats = chats.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
 
     return (
         <div className="chat-root">
-            {/* OVERLAY PARA MOBILE */}
+            {/* OVERLAY MOBILE */}
             <AnimatePresence>
                 {isMobile && isSidebarOpen && (
                     <motion.div 
                         className="sidebar-overlay visible"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                         onClick={() => setIsSidebarOpen(false)}
                     />
                 )}
             </AnimatePresence>
 
             {/* SIDEBAR */}
-            {/* Usamos motion.aside para animar a entrada no mobile */}
             <motion.aside 
                 className={`fixed-sidebar ${!isSidebarOpen && !isMobile ? 'collapsed' : ''}`}
-                // No mobile controlamos via transform X, no desktop deixamos CSS class controlar width
-                style={isMobile ? { left: 0 } : {}} 
-                variants={isMobile ? sidebarVariants : {}}
+                variants={isMobile ? sidebarMobileVariants : {}}
                 initial={isMobile ? "closed" : false}
                 animate={isMobile ? (isSidebarOpen ? "open" : "closed") : false}
             >
                 <div className="sidebar-header">
-                    {(isSidebarOpen || isMobile) && <span style={{fontWeight:'600'}}>Sentry AI</span>}
+                    {(isSidebarOpen || isMobile) && <span className="brand-title">Histórico</span>}
                     
-                    {isMobile && (
-                        <motion.button 
-                            className="btn-toggle-sidebar" 
-                            onClick={() => setIsSidebarOpen(false)}
-                            whileTap={{ scale: 0.9 }}
-                            style={{ position: 'static', background: 'transparent', marginLeft: 'auto', padding: 4 }}
-                        >
-                            <FiX size={20} />
-                        </motion.button>
-                    )}
-
-                    {!isMobile && (
-                        <motion.button 
-                            className="btn-toggle-sidebar" 
-                            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                            whileTap={{ scale: 0.9 }}
-                        >
-                            <FiMenu size={20} />
-                        </motion.button>
-                    )}
+                    <button 
+                        className="btn-toggle-sidebar" 
+                        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                    >
+                        {isMobile ? <FiX size={20} /> : <FiMenu size={20} />}
+                    </button>
                 </div>
 
-                <motion.button 
-                    className="btn-new" 
-                    onClick={handleNewChatClick} 
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    title="Novo Chat"
-                >
+                <button className="btn-new" onClick={handleNewChatClick} title="Novo Chat">
                     <FiPlus /> {(isSidebarOpen || isMobile) && <span>Nova Conversa</span>}
-                </motion.button>
+                </button>
 
                 {(isSidebarOpen || isMobile) && (
                     <div className="sidebar-search">
-                        <FiSearch size={14} color="gray" />
+                        <FiSearch size={14} />
                         <input 
                             placeholder="Buscar..." 
                             value={search} 
                             onChange={e => setSearch(e.target.value)}
-                            style={{background:'transparent', border:'none', color:'white', width:'100%', outline:'none', marginLeft:8}}
                         />
                     </div>
                 )}
 
                 <div className="sidebar-list">
-                    <AnimatePresence initial={false}>
+                    <AnimatePresence>
                         {filteredChats.map(chat => (
                             <motion.div 
                                 key={chat.id} 
                                 className={`chat-item ${activeChat?.id === chat.id ? 'active' : ''}`}
-                                onClick={() => handleChatSelect(chat)}
-                                layout // Anima a lista quando item é removido
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -20, height: 0 }}
-                                transition={{ duration: 0.2 }}
+                                onClick={() => { setActiveChat(chat); if(isMobile) setIsSidebarOpen(false); }}
+                                initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, height: 0 }}
                             >
                                 <span className="ci-title">{chat.name}</span>
-                                <button 
-                                    className="ci-del" 
-                                    onClick={(e) => { e.stopPropagation(); handleDelete(chat.id); }}
-                                >
+                                <button className="ci-del" onClick={(e) => { e.stopPropagation(); handleDelete(chat.id); }}>
                                     <FiTrash2 size={14} />
                                 </button>
                             </motion.div>
@@ -425,16 +338,13 @@ export default function ChatPage() {
                 </div>
             </motion.aside>
 
-            {/* BOTÃO FLUTUANTE LATERAL (MOBILE) */}
+            {/* TOGGLE MOBILE FLUTUANTE */}
             <AnimatePresence>
                 {isMobile && !isSidebarOpen && (
                     <motion.button 
                         className="mobile-sidebar-toggle"
                         onClick={() => setIsSidebarOpen(true)}
-                        initial={{ x: -50 }}
-                        animate={{ x: 0 }}
-                        exit={{ x: -50 }}
-                        whileTap={{ scale: 0.9 }}
+                        initial={{ x: -50 }} animate={{ x: 0 }} exit={{ x: -50 }}
                     >
                         <FiChevronRight size={20} />
                     </motion.button>
@@ -444,12 +354,13 @@ export default function ChatPage() {
             {/* MAIN AREA */}
             <main className="chat-main">
                 <ChatHeader user={user} onLogout={handleLogout} />
-                <header className="chat-header-centered">
-                    <div className="ch-info">
-                        <h2>{activeChat ? activeChat.name : "Nova Conversa"}</h2>
-                        {activeChat && <span className="ch-status">Gemini 3 Pro • Online</span>}
+                
+                {/* Nome do chat movido para dentro da área de mensagens para evitar o "Duplo Header" */}
+                {activeChat && messages.length > 0 && (
+                    <div className="chat-context-banner">
+                        <span>{activeChat.name}</span>
                     </div>
-                </header>
+                )}
 
                 <div className="messages-container" ref={listRef}>
                     <div className="messages-content">
@@ -460,58 +371,68 @@ export default function ChatPage() {
                                 <>
                                     {(!activeChat || (activeChat && messages.length === 0)) && (
                                         <motion.div 
-                                            key="empty-state"
-                                            className="empty-state"
-                                            initial={{ opacity: 0, scale: 0.95 }}
-                                            animate={{ opacity: 1, scale: 1 }}
-                                            transition={{ duration: 0.5 }}
+                                            key="empty-state" className="empty-state"
+                                            initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
                                         >
                                             <div className="empty-logo-wrap"><GeminiIcon /></div>
                                             <h2>Como posso ajudar hoje?</h2>
-                                            <p>Sou especializado em legislação brasileira. Pergunte sobre CLT, contratos ou direitos.</p>
+                                            <p>Sou o SentryAI, seu assistente jurídico especializado.</p>
                                         </motion.div>
                                     )}
-                                    {messages.map(renderMessage)}
+
+                                    {messages.map((msg) => {
+                                        const isUser = msg.role === 'user';
+                                        return (
+                                            <motion.div 
+                                                key={msg.id} 
+                                                className={`msg-row ${isUser ? 'user' : 'assistant'}`}
+                                                variants={msgVariants}
+                                                initial="hidden" animate="visible"
+                                                // REMOVIDO: layout="position" -> Isso causava o lag massivo no streaming.
+                                            >
+                                                <div className="msg-avatar">
+                                                    {isUser ? <FiUser size={18} /> : <GeminiIcon />}
+                                                </div>
+                                                <div className="msg-bubble">
+                                                    {msg.streaming && !msg.content ? (
+                                                        <div className="typing-indicator"><span></span><span></span><span></span></div>
+                                                    ) : (
+                                                        <div className="markdown-body">
+                                                            <ReactMarkdown>{msg.content}</ReactMarkdown>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </motion.div>
+                                        );
+                                    })}
                                 </>
                             )}
                         </AnimatePresence>
                     </div>
                 </div>
 
+                {/* ÁREA DE INPUT */}
                 <div className="input-area-wrapper">
                     <div className="input-container">
                         <AnimatePresence>
                             {attachedFile && (
-                                <motion.div 
-                                    className="attach-badge"
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, scale: 0.8 }}
-                                >
-                                    <FiPaperclip /> {attachedFile}
-                                    <button onClick={() => setAttachedFile(null)}>x</button>
+                                <motion.div className="attach-badge" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.8 }}>
+                                    <FiPaperclip size={12} /> <span className="text-truncate">{attachedFile}</span>
+                                    <button onClick={() => setAttachedFile(null)}><FiX size={14}/></button>
                                 </motion.div>
                             )}
                         </AnimatePresence>
                         
                         <div className="input-row">
-                            <motion.button 
-                                className="btn-action attach" 
-                                onClick={() => document.getElementById('file-up').click()}
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                            >
+                            <button className="btn-action attach" onClick={() => document.getElementById('file-up').click()}>
                                 <FiPaperclip size={20} />
-                            </motion.button>
-                            <input 
-                                id="file-up" type="file" hidden 
-                                onChange={(e) => e.target.files[0] && setAttachedFile(e.target.files[0].name)} 
-                            />
+                            </button>
+                            <input id="file-up" type="file" hidden onChange={(e) => e.target.files[0] && setAttachedFile(e.target.files[0].name)} />
 
                             <textarea 
                                 ref={textareaRef} 
                                 className="chat-textarea" 
-                                placeholder="Digite sua dúvida jurídica..." 
+                                placeholder="Envie uma mensagem para o SentryAI..." 
                                 value={text} 
                                 onChange={handleInput} 
                                 onKeyDown={handleKeyDown} 
@@ -519,19 +440,16 @@ export default function ChatPage() {
                                 disabled={sending} 
                             />
 
-                            <motion.button 
+                            <button 
                                 className={`btn-action ${sending ? 'stop' : 'send'}`}
-                                onClick={sending ? stopStreaming : handleSend}
+                                onClick={sending ? () => setSending(false) : handleSend}
                                 disabled={(!text.trim() && !attachedFile) && !sending}
-                                style={sending ? { opacity: 1 } : (!text.trim() && !attachedFile ? { opacity: 0.5, cursor: 'not-allowed' } : {})}
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
                             >
-                                {sending ? <FiStopCircle size={18} /> : <FiArrowUp size={20} />}
-                            </motion.button>
+                                {sending ? <FiStopCircle size={20} /> : <FiArrowUp size={20} />}
+                            </button>
                         </div>
                     </div>
-                    <p className="disclaimer-text">A IA pode cometer erros. Consulte um advogado.</p>
+                    <p className="disclaimer-text">A IA pode cometer erros. Consulte as informações criticamente.</p>
                 </div>
             </main>
         </div>
