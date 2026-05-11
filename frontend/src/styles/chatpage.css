@@ -869,9 +869,9 @@
     gap: 10px;
     background: rgba(255, 255, 255, 0.03); /* Fundo quase transparente */
     border: 1px solid rgba(255, 255, 255, 0.08); /* Borda sutil */
-    border-radius: 12px;
+    border-radius: 8px;
     padding: 10px 14px;
-    margin: 12px 16px; /* Espaçamento das laterais da sidebar */
+    margin: 12px 0px; /* Espaçamento das laterais da sidebar */
     transition: all 0.2s ease;
 }
 

@@ -355,12 +355,7 @@ export default function ChatPage() {
             <main className="chat-main">
                 <ChatHeader user={user} onLogout={handleLogout} />
                 
-                {/* Nome do chat movido para dentro da área de mensagens para evitar o "Duplo Header" */}
-                {activeChat && messages.length > 0 && (
-                    <div className="chat-context-banner">
-                        <span>{activeChat.name}</span>
-                    </div>
-                )}
+
 
                 <div className="messages-container" ref={listRef}>
                     <div className="messages-content">
