@@ -9,7 +9,7 @@ dotenv
 pymysql
 requests
 email-validator
-google-generativeai
+google-genai
 cryptography
 google-auth
 google-auth-oauthlib

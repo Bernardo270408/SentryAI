@@ -1,5 +1,6 @@
 from openai import OpenAI
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from typing import List, Dict, Any, Generator
 import json
 import requests
@@ -11,35 +12,20 @@ logger = logging.getLogger(__name__)
 
 MODELS_WHITELIST = []
 
-# Configurações Gemini
-GEMINI_CONFIG = {
-    "temperature": 0.5, # Reduzido para ser mais factual
-    "top_p": 0.95,
-    "top_k": 64,
-    "max_output_tokens": 8192,
-    "response_mime_type": "text/plain",
-}
 
-# Configuração para JSON Mode (Contratos)
-GEMINI_JSON_CONFIG = {
-    "temperature": 0.2, # Baixa temperatura para precisão
-    "top_p": 0.95,
-    "top_k": 64,
-    "max_output_tokens": 8192,
-    "response_mime_type": "application/json", # FORÇA O JSON
-}
-
-
-def _format_history_for_gemini(history: List[Dict]) -> List[Dict]:
-    """Converte o histórico formatado para o padrão do Gemini."""
+def _format_history_for_gemini(history: List[Dict]) -> List[types.Content]:
+    """Converte o histórico formatado para o padrão de types.Content do Gemini."""
     gemini_history = []
     for msg in history:
-        role = msg.get("role", "user")
-        if role == "assistant":
-            role = "model"
+        role = "model" if msg.get("role") == "assistant" else "user"
         content = msg.get("content", "")
         if content:
-            gemini_history.append({"role": role, "parts": [content]})
+            gemini_history.append(
+                types.Content(
+                    role=role,
+                    parts=[types.Part.from_text(text=content)]
+                )
+            )
     return gemini_history
 
 
@@ -85,10 +71,8 @@ def get_rag_enhanced_prompt(user_name: str, user_query: str) -> str:
     """
     Constrói o prompt do sistema enriquecido com contexto recuperado (RAG).
     """
-    # 1. Recupera contexto relevante do ChromaDB
     retrieved_context = RAGService.search_context(user_query)
     
-    # 2. Carrega instruções base
     try:
         path = os.path.join(os.path.dirname(__file__), "data/sentryai.json")
         with open(path, "r", encoding="utf-8") as f:
@@ -114,35 +98,30 @@ def get_rag_enhanced_prompt(user_name: str, user_query: str) -> str:
     """
     return system_prompt
 
+
 # FUNÇÃO PRINCIPAL DE CHAT
 def generate_response(
     user_name: str, history: List[Dict], api_key: str, model: str, prompt: str
 ) -> str:
     
-    # Sanitização (da etapa de segurança)
     safe_prompt = prompt.replace("<user_input>", "").replace("</user_input>", "")
-    
-    # Gera prompt enriquecido com RAG apenas para a última mensagem
     system_instruction = get_rag_enhanced_prompt(user_name, safe_prompt)
     
     # Gemini Flow
     if "gemini" in model.lower():
         try:
-            genai.configure(api_key=api_key)
-            generative_model = genai.GenerativeModel(
-                model_name=model,
-                system_instruction=system_instruction, # Contexto RAG injetado aqui
-                generation_config=GEMINI_CONFIG,
+            client = genai.Client(api_key=api_key)
+            
+            config = types.GenerateContentConfig(
+                temperature=0.5,
+                top_p=0.95,
+                top_k=64,
+                max_output_tokens=8192,
+                system_instruction=system_instruction,
             )
             
-            # Converter histórico (mantendo apenas mensagens anteriores, não o prompt atual)
-            # O prompt atual já foi usado para buscar o RAG
-            gemini_history = []
-            for msg in history:
-                role = "model" if msg.get("role") == "assistant" else "user"
-                gemini_history.append({"role": role, "parts": [msg.get("content", "")]})
-
-            chat_session = generative_model.start_chat(history=gemini_history)
+            gemini_history = _format_history_for_gemini(history)
+            chat_session = client.chats.create(model=model, history=gemini_history, config=config)
             response = chat_session.send_message(safe_prompt)
             return response.text
         except Exception as e:
@@ -170,20 +149,23 @@ def generate_response_stream(
     """Gera resposta via Streaming."""
     system_instruction = get_context(user_name)
 
-    # Sanitização básica e Delimitação do Prompt
     safe_prompt = prompt.replace("<user_input>", "").replace("</user_input>", "")
     final_prompt = f"<user_input>{safe_prompt}</user_input>"
+    
     if "gemini" in model.lower():
         try:
-            genai.configure(api_key=api_key)
-            generative_model = genai.GenerativeModel(
-                model_name=model,
+            client = genai.Client(api_key=api_key)
+            config = types.GenerateContentConfig(
+                temperature=0.5,
+                top_p=0.95,
+                top_k=64,
+                max_output_tokens=8192,
                 system_instruction=system_instruction,
-                generation_config=GEMINI_CONFIG,
             )
             chat_history = _format_history_for_gemini(history)
-            chat_session = generative_model.start_chat(history=chat_history)
-            response_stream = chat_session.send_message(final_prompt, stream=True)
+            chat_session = client.chats.create(model=model, history=chat_history, config=config)
+            
+            response_stream = chat_session.send_message_stream(final_prompt)
             for chunk in response_stream:
                 if chunk.text:
                     yield chunk.text
@@ -227,15 +209,12 @@ def generate_response_stream(
         yield f"[ERROR] {str(e)}"
 
 
-# --- ANÁLISE DE CONTRATOS (COM JSON MODE ROBUSTO) ---
+# --- ANÁLISE DE CONTRATOS ---
 def analyze_contract_text(text: str) -> Dict:
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
         return {"summary": "Erro de configuração: API Key ausente.", "risk": {"score": 0}}
 
-    genai.configure(api_key=api_key)
-
-    # Prompt Otimizado para JSON
     system_prompt = """
     Você é um auditor jurídico robô. Sua tarefa é ler contratos e extrair riscos.
     SAÍDA OBRIGATÓRIA: Apenas JSON válido. Nada de markdown (```json), nada de texto antes ou depois.
@@ -256,37 +235,43 @@ def analyze_contract_text(text: str) -> Dict:
     }
     """
 
-    # 1. Tenta Gemini com native JSON Mode
     try:
-        model = genai.GenerativeModel(
-            model_name="gemini-2.5-flash-lite", # Modelo mais recente suporta JSON mode melhor
-            generation_config=GEMINI_JSON_CONFIG, # Force JSON
+        client = genai.Client(api_key=api_key)
+        config = types.GenerateContentConfig(
+            temperature=0.2,
+            top_p=0.95,
+            top_k=64,
+            max_output_tokens=8192,
+            response_mime_type="application/json",
             system_instruction=system_prompt,
         )
-        response = model.generate_content(f"Analise este contrato:\n\n{text[:30000]}") # Limite de chars
         
-        # Limpeza extra caso o modelo ainda coloque markdown
+        response = client.models.generate_content(
+            model="gemini-2.5-flash-lite",
+            contents=f"Analise este contrato:\n\n{text[:30000]}",
+            config=config,
+        )
+        
         clean_text = response.text.strip()
         if clean_text.startswith("```json"):
-            clean_text = clean_text[7:-3]
+            clean_text = clean_text[7:-3].strip()
             
         return json.loads(clean_text)
 
     except Exception as e:
         logger.error(f"Erro Gemini JSON: {e}")
         
-        # Fallback OpenAI com JSON Mode (se configurado)
         openai_key = os.getenv("OPENAI_TOKEN")
         if openai_key:
             try:
-                client = OpenAI(api_key=openai_key)
-                completion = client.chat.completions.create(
+                client_oa = OpenAI(api_key=openai_key)
+                completion = client_oa.chat.completions.create(
                     model="gpt-4-turbo-preview",
                     messages=[
                         {"role": "system", "content": system_prompt},
                         {"role": "user", "content": text[:30000]}
                     ],
-                    response_format={ "type": "json_object" } # FORCE JSON OPENAI
+                    response_format={ "type": "json_object" }
                 )
                 return json.loads(completion.choices[0].message.content)
             except Exception as openai_e:
@@ -301,9 +286,11 @@ def analyze_contract_text(text: str) -> Dict:
 
 def chat_about_contract(message: str, context: str) -> str:
     api_key = os.getenv("GEMINI_API_KEY")
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-2.0-pro-exp")
-    res = model.generate_content(f"Contexto: {context}\n\nPergunta: {message}")
+    client = genai.Client(api_key=api_key)
+    res = client.models.generate_content(
+        model="gemini-2.0-pro-exp",
+        contents=f"Contexto: {context}\n\nPergunta: {message}"
+    )
     return res.text
 
 
@@ -313,10 +300,12 @@ def generate_dashboard_insight(user_name: str, last_interaction: str) -> str:
         return "Configure sua chave de API."
     if os.getenv("GEMINI_API_KEY"):
         try:
-            genai.configure(api_key=api_key)
-            model = genai.GenerativeModel("gemini-2.5-flash-lite")
+            client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
             prompt = f"Com base na pergunta: '{last_interaction}', gere uma frase curta de conselho jurídico."
-            response = model.generate_content(prompt)
+            response = client.models.generate_content(
+                model="gemini-2.5-flash-lite",
+                contents=prompt
+            )
             return response.text.strip()
         except:
             return "Mantenha seus documentos organizados."
@@ -327,14 +316,18 @@ def analyze_user_doubts(messages_list: List[str]) -> List[str]:
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key or not messages_list:
         return ["Sem dados."]
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel(
-        "gemini-2.0-pro-exp", generation_config={"response_mime_type": "application/json"}
-    )
+    
+    client = genai.Client(api_key=api_key)
     recent = "\n".join(messages_list[-20:])
     prompt = f"Analise as perguntas: {recent}. Retorne JSON {{ 'doubts': ['Dúvida 1', 'Dúvida 2'] }}."
+    config = types.GenerateContentConfig(response_mime_type="application/json")
+    
     try:
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model="gemini-2.0-pro-exp",
+            contents=prompt,
+            config=config
+        )
         return json.loads(response.text).get("doubts", [])
     except:
         return ["Erro na análise."]
@@ -347,9 +340,7 @@ def generate_chat_title(message_content: str) -> str:
     if not api_key:
         return "Nova Conversa"
 
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-2.5-flash")
-
+    client = genai.Client(api_key=api_key)
     prompt = f"""
     Analise a seguinte mensagem inicial de um usuário em um chat jurídico:
     "{message_content}"
@@ -360,7 +351,10 @@ def generate_chat_title(message_content: str) -> str:
     """
 
     try:
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt
+        )
         title = response.text.strip().replace('"', "").replace("'", "")
         return title if title else "Nova Conversa"
     except Exception as e:
@@ -369,44 +363,46 @@ def generate_chat_title(message_content: str) -> str:
 
 
 # --- COLETA DE INFORMAÇÕES SOBRE OS MODELOS ---
-
 def get_available_models(api_key: str = "", openai_token: str = "") -> List[str]:
     available_models: List[str] = []
 
-    # Google Gemini (inalterado)
+    # Google Gemini
     if api_key:
-        client = genai.Client(api_key=api_key)
-        gemini_models = client.models.list()
+        try:
+            client = genai.Client(api_key=api_key)
+            gemini_models = client.models.list()
 
-        for model in gemini_models:
-            if "generateContent" in model.supported_generation_methods:
-                available_models.append(model.name)
+            for model in gemini_models:
+                methods = getattr(model, "supported_generation_methods", []) or getattr(model, "supported_actions", [])
+                if any("generateContent" in str(m) for m in methods) or "gemini" in model.name:
+                    available_models.append(model.name)
+        except Exception as e:
+            logger.error(f"Erro ao listar modelos Gemini: {e}")
 
     # OpenAI
     if openai_token:
-        openai_client = OpenAI(api_key=openai_token)
-        openai_models = openai_client.models.list()
-        
-        
-        # Dando uma limpada na lista enorme da OpenAI e pegando só o que me interessa
-        llm_prefixes = ("gpt-", "chatgpt-", "o1-", "o3-")
-        excluded_terms = ("embedding", "moderation", "tts", "audio", "image", "whisper", "preview")
+        try:
+            openai_client = OpenAI(api_key=openai_token)
+            openai_models = openai_client.models.list()
+            
+            llm_prefixes = ("gpt-", "chatgpt-", "o1-", "o3-")
+            excluded_terms = ("embedding", "moderation", "tts", "audio", "image", "whisper", "preview")
 
-        openai_models = []
-        for model in openai_models.data:
-            m = model.id
+            filtered_openai_models = []
+            for model in openai_models.data:
+                m = model.id
+                if not m.startswith(llm_prefixes):
+                    continue
+                if any(term in m for term in excluded_terms):
+                    continue
+                filtered_openai_models.append(m)
 
-            if not m.startswith(llm_prefixes):
-                continue
-
-            if any(term in m for term in excluded_terms):
-                continue
-
-            openai_models.append(m)
-
-        available_models.extend(openai_models)
+            available_models.extend(filtered_openai_models)
+        except Exception as e:
+            logger.error(f"Erro ao listar modelos OpenAI: {e}")
 
     return available_models
+
 
 def analyze_user_risk_profile(user_messages: List[str]) -> Dict:
     """
@@ -419,7 +415,6 @@ def analyze_user_risk_profile(user_messages: List[str]) -> Dict:
     if not user_messages:
         return {"score": 0, "summary": "Sem dados suficientes."}
 
-    # Pegar as últimas 50 mensagens para contexto
     context = "\n".join([f"- {msg}" for msg in user_messages[-50:]])
 
     prompt = f"""
@@ -443,12 +438,13 @@ def analyze_user_risk_profile(user_messages: List[str]) -> Dict:
     """
 
     try:
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel(
-            model_name="gemini-2.0-pro-exp",
-            generation_config={"response_mime_type": "application/json"}
+        client = genai.Client(api_key=api_key)
+        config = types.GenerateContentConfig(response_mime_type="application/json")
+        response = client.models.generate_content(
+            model="gemini-2.0-pro-exp",
+            contents=prompt,
+            config=config
         )
-        response = model.generate_content(prompt)
         return json.loads(response.text)
     except Exception as e:
         logger.error(f"Erro na análise de risco: {e}")
