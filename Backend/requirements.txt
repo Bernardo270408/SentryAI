@@ -4,16 +4,14 @@ flask_sqlalchemy
 flask_cors
 flask-Migrate
 PyJWT
-openai
-dotenv
+openai>=2.0,<4
+python-dotenv
 pymysql
 requests
 email-validator
-google-generativeai
 cryptography
 google-auth
 google-auth-oauthlib
-python-magic
 pydantic
 
 #file_readers
@@ -27,8 +25,6 @@ beautifulsoup4
 striprtf
 defusedxml
 
-# IA advanced tools
-chromadb
+# IA advanced tools (opcionais)
 pypdf
-tiktoken # for token counting
-sentence-transformers
+# RAG opcional: pip install -r requirements-rag.txt

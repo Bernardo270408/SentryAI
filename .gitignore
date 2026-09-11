@@ -155,3 +155,8 @@ vite.config.ts.timestamp-*
 CLI/data/defaults.json
 
 todo
+.venv/
+.pytest_cache/
+Backend/instance/
+Backend/data/chroma_db/
+*.db

@@ -1,4 +1,4 @@
-const BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const BASE = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://localhost:5000" : "");
 
 // 1. Função request centralizada
 async function request(path, method = "GET", body = null, auth = true, isFormData = false) {
@@ -32,10 +32,10 @@ async function request(path, method = "GET", body = null, auth = true, isFormDat
 
   if (!response.ok) {
     // --- LÓGICA DE EXPULSÃO ---
-    if (response.status === 401 || (response.status === 403 && data?.force_logout)) {
+    if ((auth && response.status === 401) || (response.status === 403 && data?.force_logout)) {
         
         // Se houver detalhes do banimento, salvamos para mostrar na tela
-        if (data.ban_details) {
+        if (data?.ban_details) {
             localStorage.setItem("ban_info", JSON.stringify(data.ban_details));
             window.location.href = "/banned"; // Redireciona para página de banido
         } else {
@@ -57,14 +57,15 @@ async function request(path, method = "GET", body = null, auth = true, isFormDat
 }
 
 // 2. STREAMING: Fetch com ReadableStream
-async function streamChatMessage({ chatId, content, onChunk, onEnd, onError }) {
+async function streamChatMessage({ chatId, content, onChunk, onEnd, onError, signal }) {
   const token = localStorage.getItem("token");
-  const model = "gemini-2.5-flash";
+  const model = import.meta.env.VITE_AI_MODEL;
 
   const url = `${BASE}/ai-messages/send-stream`;
 
   try {
     const response = await fetch(url, {
+      signal,
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -80,11 +81,11 @@ async function streamChatMessage({ chatId, content, onChunk, onEnd, onError }) {
 
     if (!response.ok) {
       // Verifica se o erro no stream também é de banimento
-      if (response.status === 401 || response.status === 403) {
+      if (response.status === 401) {
           localStorage.removeItem("token");
           localStorage.removeItem("user");
           window.location.href = "/";
-          return;
+          throw new Error("Sessão encerrada.");
       }
       const errText = await response.text();
       throw new Error(errText || response.statusText);
@@ -113,21 +114,14 @@ async function streamChatMessage({ chatId, content, onChunk, onEnd, onError }) {
             return;
           }
 
-          try {
-            const data = JSON.parse(dataStr);
-            if (data.token) {
-              onChunk && onChunk(data.token);
-            } else if (data.error) {
-              throw new Error(data.error);
-            }
-          } catch (e) {
-            console.warn("Erro ao fazer parse do chunk SSE:", e);
-          }
+          const data = JSON.parse(dataStr);
+          if (data.error) throw new Error(data.error);
+          if (data.token) onChunk?.(data.token);
         }
       }
     }
     
-    onEnd && onEnd();
+    throw new Error("A conexão terminou antes de concluir a resposta. Tente novamente.");
 
   } catch (err) {
     console.error("Stream error:", err);

@@ -2,7 +2,7 @@ import os
 
 # Define o caminho onde os arquivos ficarão
 # Ajuste se estiver rodando de dentro da pasta Backend ou da raiz
-BASE_DIR = os.path.join("Backend", "data", "laws_txt")
+BASE_DIR = os.path.join(os.path.dirname(__file__), "data", "laws_txt")
 
 # Garante que a pasta existe
 os.makedirs(BASE_DIR, exist_ok=True)

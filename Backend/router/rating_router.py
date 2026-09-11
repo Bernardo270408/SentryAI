@@ -29,7 +29,13 @@ def create_rating():
     if not chat:
         return jsonify({"error": "Chat not found"}), 404
 
-    rating = RatingDAO.create_rating(user_id, chat_id, score, feedback)
+    if chat.user_id != current_user.id and not current_user.is_admin:
+        return jsonify({"error": "Permission denied"}), 403
+    if type(score) is not int or not 1 <= score <= 5:
+        return jsonify({"error": "A nota deve ser um inteiro de 1 a 5."}), 400
+    if chat.rating_id:
+        return jsonify({"error": "Esta conversa já foi avaliada."}), 409
+    rating = RatingDAO.create_rating(user_id, score, feedback)
 
     ChatDAO.update_chat(chat_id, {"rating_id": rating.id})
 
@@ -78,7 +84,8 @@ def get_rating_by_chat(chat_id):
     if not current_user.is_admin:
         return jsonify({"error": "Permission denied"}), 403
 
-    ratings = [ChatDAO.get_rating_by_chat(chat_id)]
+    rating = ChatDAO.get_rating_by_chat(chat_id)
+    ratings = [rating] if rating else []
 
     return jsonify([r.to_dict() for r in ratings])
 

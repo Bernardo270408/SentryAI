@@ -1,8 +1,12 @@
-import chromadb
+try:
+    import chromadb
+    from chromadb.utils import embedding_functions
+except ImportError:
+    chromadb = None
 import os
-import google.generativeai as genai
-from openai import OpenAI
-from chromadb.utils import embedding_functions
+from pathlib import Path
+from dotenv import load_dotenv
+load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 import logging
 
 logger = logging.getLogger(__name__)
@@ -17,22 +21,29 @@ class RAGService:
     @classmethod
     def get_collection(cls):
         """Singleton para conexão com ChromaDB"""
-        if cls._collection:
+        if chromadb is None or os.getenv("RAG_ENABLED", "true").lower() != "true":
+            return None
+        if cls._collection is not None:
             return cls._collection
 
         try:
             # Inicializa cliente persistente
             cls._client = chromadb.PersistentClient(path=CHROMA_DATA_PATH)
-            
-            # Tenta usar função de embedding do Google ou OpenAI, senão usa default (all-MiniLM-L6-v2)
-            # Para simplificar neste MVP, usamos o embedding default do Chroma 
-            # (que baixa um modelo pequeno localmente) para evitar custos de API em cada indexação.
-            # Em produção, idealmente usaria: embedding_functions.GoogleGenerativeAiEmbeddingFunction
-            
-            emb_fn = embedding_functions.DefaultEmbeddingFunction()
-            
+
+            # OpenAI é o padrão; a opção local preserva compatibilidade com a coleção antiga.
+            embedding_model = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
+            if os.getenv("RAG_EMBEDDINGS_PROVIDER", "openai") == "openai":
+                key = os.getenv("OPENAI_API_KEY") or os.getenv("OPENAI_TOKEN")
+                if not key:
+                    raise ValueError("Configure OPENAI_API_KEY para os embeddings.")
+                emb_fn = embedding_functions.OpenAIEmbeddingFunction(api_key=key, model_name=embedding_model)
+                collection_name = "legislacao_" + embedding_model.replace("-", "_")
+            else:
+                emb_fn = embedding_functions.DefaultEmbeddingFunction()
+                collection_name = "legislacao_brasileira"
+
             cls._collection = cls._client.get_or_create_collection(
-                name="legislacao_brasileira",
+                name=collection_name,
                 embedding_function=emb_fn
             )
             return cls._collection
@@ -44,9 +55,10 @@ class RAGService:
     def add_document(cls, doc_id: str, text: str, metadata: dict):
         """Adiciona um trecho de lei/documento ao banco"""
         collection = cls.get_collection()
-        if not collection: return
+        if collection is None:
+            raise RuntimeError("RAG indisponível: instale requirements-rag.txt e habilite RAG_ENABLED.")
 
-        # Chroma lida com tokenização e embedding automaticamente com a função default
+        # Chroma vetoriza os trechos com o provedor configurado.
         collection.upsert(
             ids=[doc_id],
             documents=[text],
@@ -57,23 +69,26 @@ class RAGService:
     def search_context(cls, query: str, n_results=3) -> str:
         """Busca os trechos mais relevantes para a pergunta"""
         collection = cls.get_collection()
-        if not collection: 
+        if collection is None:
             return ""
 
         try:
+            count = collection.count()
+            if count == 0:
+                return ""
             results = collection.query(
                 query_texts=[query],
-                n_results=n_results
+                n_results=min(n_results, count)
             )
-            
+
             # Formata o resultado para injetar no prompt
             context_str = ""
             if results['documents']:
                 for i, doc in enumerate(results['documents'][0]):
-                    meta = results['metadatas'][0][i]
+                    meta = results['metadatas'][0][i] or {}
                     source = meta.get('source', 'Legislação')
                     context_str += f"\n--- FONTE: {source} ---\n{doc}\n"
-            
+
             return context_str
         except Exception as e:
             logger.error(f"Erro na busca RAG: {e}")
@@ -85,9 +100,9 @@ def ingest_text_file(filepath, source_name):
     try:
         with open(filepath, 'r', encoding='utf-8') as f:
             text = f.read()
-        
+
         # Split simples por parágrafos ou tamanho fixo
-        chunks = text.split('\n\n') 
+        chunks = text.split('\n\n')
         for idx, chunk in enumerate(chunks):
             if len(chunk.strip()) > 50: # Ignora linhas muito curtas
                 RAGService.add_document(
@@ -97,4 +112,4 @@ def ingest_text_file(filepath, source_name):
                 )
         print(f"Indexado: {source_name} ({len(chunks)} chunks)")
     except Exception as e:
-        print(f"Erro ao indexar {filepath}: {e}")
+        raise RuntimeError(f"Erro ao indexar {filepath}") from e

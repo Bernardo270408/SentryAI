@@ -5,9 +5,9 @@ from flask_cors import CORS
 documents_bp = Blueprint('documents', __name__)
 
 # --- CORREÇÃO AQUI ---
-# Habilita CORS especificamente para este blueprint. 
+# Habilita CORS especificamente para este blueprint.
 # Isso cria automaticamente a rota OPTIONS para /documents/search e responde com os headers corretos.
-CORS(documents_bp) 
+# CORS é configurado centralmente na aplicação.
 # ---------------------
 
 @documents_bp.route('/search', methods=['GET'])

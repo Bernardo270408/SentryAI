@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
-import { 
-    FiArrowUp, FiPlus, FiTrash2, FiSearch, 
-    FiMenu, FiPaperclip, FiUser, FiStopCircle, FiX, FiChevronRight 
+import {
+    FiArrowUp, FiPlus, FiTrash2, FiSearch,
+    FiMenu, FiPaperclip, FiUser, FiStopCircle, FiX, FiChevronRight
 } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
@@ -34,7 +34,7 @@ const sidebarMobileVariants = {
 };
 
 // Ícone SVG do Gemini
-const GeminiIcon = () => (
+const SentryIcon = () => (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M12 22C12 22 13.5 17.5 19 12C13.5 6.5 12 2 12 2C12 2 10.5 6.5 5 12C10.5 17.5 12 22 12 22Z" fill="currentColor" />
     </svg>
@@ -60,16 +60,16 @@ const MessagesSkeleton = () => (
 export default function ChatPage() {
     const navigate = useNavigate();
     const user = useLocalUser();
-    
+
     // Estados
     const [chats, setChats] = useState([]);
     const [activeChat, setActiveChat] = useState(null);
     const [messages, setMessages] = useState([]);
     const [loadingMessages, setLoadingMessages] = useState(false);
-    
+
     const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-    
+
     const [search, setSearch] = useState("");
     const [text, setText] = useState("");
     const [sending, setSending] = useState(false);
@@ -78,8 +78,10 @@ export default function ChatPage() {
     // Refs
     const listRef = useRef(null);
     const textareaRef = useRef(null);
-    const assistantMessageRef = useRef(null); 
+    const assistantMessageRef = useRef(null);
     const ignoreFetchRef = useRef(false);
+    const abortRef = useRef(null);
+    useEffect(() => () => abortRef.current?.abort(), []);
 
     const handleLogout = useCallback(() => {
         localStorage.clear();
@@ -98,7 +100,7 @@ export default function ChatPage() {
             }, 100);
         };
         window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
+        return () => { clearTimeout(timeoutId); window.removeEventListener('resize', handleResize); };
     }, []);
 
     // Scroll automático suavizado
@@ -122,17 +124,17 @@ export default function ChatPage() {
             const sorted = (res || []).sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
             setChats(sorted);
             return sorted;
-        } catch (err) { 
-            console.error(err); 
+        } catch (err) {
+            console.error(err);
             return [];
         }
     }, [user.id]);
 
     useEffect(() => {
         loadChats().then(sortedChats => {
-            if (sortedChats.length > 0 && !activeChat) setActiveChat(sortedChats[0]);
+            if (sortedChats.length > 0) setActiveChat(current => current ?? sortedChats[0]);
         });
-    }, [loadChats, activeChat]);
+    }, [loadChats]);
 
     // Carregar Mensagens ao trocar Chat
     useEffect(() => {
@@ -145,12 +147,14 @@ export default function ChatPage() {
             return;
         }
 
+        let cancelled = false;
         setLoadingMessages(true);
         Promise.all([
             api.getUserMessages(activeChat.id),
             api.getAIMessages(activeChat.id)
         ])
         .then(([userMsgs, aiMsgs]) => {
+            if (cancelled) return;
             const formatted = [
                 ...(userMsgs || []).map(m => ({ ...m, role: 'user', timestamp: new Date(m.created_at) })),
                 ...(aiMsgs || []).map(m => ({ ...m, role: 'assistant', timestamp: new Date(m.created_at) }))
@@ -158,8 +162,9 @@ export default function ChatPage() {
 
             setMessages(formatted);
         })
-        .catch(() => toast.error("Erro ao carregar histórico."))
-        .finally(() => setLoadingMessages(false));
+        .catch(() => { if (!cancelled) toast.error("Erro ao carregar histórico."); })
+        .finally(() => { if (!cancelled) setLoadingMessages(false); });
+        return () => { cancelled = true; };
 
     }, [activeChat?.id]);
 
@@ -167,7 +172,7 @@ export default function ChatPage() {
     const handleInput = (e) => {
         setText(e.target.value);
         if (textareaRef.current) {
-            textareaRef.current.style.height = 'auto'; 
+            textareaRef.current.style.height = 'auto';
             textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 150)}px`;
         }
     };
@@ -181,11 +186,13 @@ export default function ChatPage() {
 
     // Enviar Mensagem
     const handleSend = async () => {
-        if ((!text.trim() && !attachedFile) || sending) return;
+        if (!text.trim() || sending || abortRef.current) return;
 
         const contentToSend = text.trim();
         const fileToSend = attachedFile;
-        const finalContent = fileToSend ? `${contentToSend} (Arquivo: ${fileToSend})` : contentToSend;
+        const finalContent = contentToSend;
+        const controller = new AbortController();
+        abortRef.current = controller;
 
         setText("");
         setAttachedFile(null);
@@ -200,9 +207,10 @@ export default function ChatPage() {
                 const newChat = await api.createChat("Nova Conversa");
                 ignoreFetchRef.current = true;
                 setChats(prev => [newChat, ...prev]);
-                setActiveChat(newChat); 
+                setActiveChat(newChat);
                 targetChatId = newChat.id;
             } catch (e) {
+                abortRef.current = null;
                 toast.error("Erro ao criar conversa.");
                 setSending(false);
                 return;
@@ -221,42 +229,50 @@ export default function ChatPage() {
             await api.streamChatMessage({
                 chatId: targetChatId,
                 content: finalContent,
+                signal: controller.signal,
                 onChunk: (token) => {
-                    setMessages(prev => prev.map(m => 
-                        m.id === assistantMessageRef.current ? { ...m, content: m.content + token } : m
+                    setMessages(prev => prev.map(m =>
+                        m.id === aiTempId ? { ...m, content: m.content + token } : m
                     ));
                 },
                 onEnd: async () => {
-                    setMessages(prev => prev.map(m => 
-                        m.id === assistantMessageRef.current ? { ...m, streaming: false } : m
+                    setMessages(prev => prev.map(m =>
+                        m.id === aiTempId ? { ...m, streaming: false } : m
                     ));
                     setSending(false);
                     assistantMessageRef.current = null;
-                    
+
                     // Atualiza o nome do chat caso a IA tenha renomeado no backend
                     const updatedChats = await loadChats();
                     const currentUpdated = updatedChats.find(c => c.id === targetChatId);
                     if (currentUpdated && currentUpdated.name !== activeChat?.name) {
-                        setActiveChat(currentUpdated);
+                        setActiveChat(current => current?.id === targetChatId ? currentUpdated : current);
                     }
                 },
-                onError: () => {
-                    toast.error("Conexão instável com a IA.");
+                onError: (error) => {
+                    if (error.name !== 'AbortError') toast.error(error.message || "Falha na conexão com a IA.");
+                    setMessages(prev => prev.map(m => m.id === aiTempId
+                        ? { ...m, streaming: false, content: m.content || (error.name === 'AbortError' ? 'Resposta interrompida.' : 'Não foi possível gerar a resposta. Tente novamente.') }
+                        : m));
                     setSending(false);
                 }
             });
         } catch {
             setSending(false);
+        } finally {
+            if (abortRef.current === controller) abortRef.current = null;
         }
     };
 
     const handleNewChatClick = () => {
+        if (sending) return toast.error("Interrompa a resposta antes de abrir outra conversa.");
         setActiveChat(null);
         setMessages([]);
         if (isMobile) setIsSidebarOpen(false);
     };
 
     const handleDelete = async (id) => {
+        if (sending) return toast.error("Interrompa a resposta antes de excluir uma conversa.");
         if (!window.confirm("Excluir esta conversa?")) return;
         try {
             await api.deleteChat(id);
@@ -278,7 +294,7 @@ export default function ChatPage() {
             {/* OVERLAY MOBILE */}
             <AnimatePresence>
                 {isMobile && isSidebarOpen && (
-                    <motion.div 
+                    <motion.div
                         className="sidebar-overlay visible"
                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                         onClick={() => setIsSidebarOpen(false)}
@@ -287,7 +303,7 @@ export default function ChatPage() {
             </AnimatePresence>
 
             {/* SIDEBAR */}
-            <motion.aside 
+            <motion.aside
                 className={`fixed-sidebar ${!isSidebarOpen && !isMobile ? 'collapsed' : ''}`}
                 variants={isMobile ? sidebarMobileVariants : {}}
                 initial={isMobile ? "closed" : false}
@@ -295,9 +311,9 @@ export default function ChatPage() {
             >
                 <div className="sidebar-header">
                     {(isSidebarOpen || isMobile) && <span className="brand-title">Histórico</span>}
-                    
-                    <button 
-                        className="btn-toggle-sidebar" 
+
+                    <button
+                        className="btn-toggle-sidebar" aria-label="Alternar histórico"
                         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                     >
                         {isMobile ? <FiX size={20} /> : <FiMenu size={20} />}
@@ -311,25 +327,29 @@ export default function ChatPage() {
                 {(isSidebarOpen || isMobile) && (
                     <div className="sidebar-search">
                         <FiSearch size={14} />
-                        <input 
-                            placeholder="Buscar..." 
-                            value={search} 
+                        <input
+                            placeholder="Buscar conversa..." aria-label="Buscar no histórico"
+                            value={search}
                             onChange={e => setSearch(e.target.value)}
                         />
                     </div>
                 )}
 
                 <div className="sidebar-list">
+                    {(isSidebarOpen || isMobile) && filteredChats.length === 0 && <p className="sidebar-empty">{search ? 'Nenhuma conversa encontrada.' : 'Suas conversas aparecerão aqui.'}</p>}
                     <AnimatePresence>
                         {filteredChats.map(chat => (
-                            <motion.div 
-                                key={chat.id} 
+                            <motion.div
+                                key={chat.id}
                                 className={`chat-item ${activeChat?.id === chat.id ? 'active' : ''}`}
-                                onClick={() => { setActiveChat(chat); if(isMobile) setIsSidebarOpen(false); }}
+                                role="button" tabIndex={sending ? -1 : 0}
+                                aria-label={`Abrir conversa ${chat.name}`}
+                                onKeyDown={e => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); if (!sending) { setActiveChat(chat); if (isMobile) setIsSidebarOpen(false); } } }}
+                                onClick={() => { if (sending) return; setActiveChat(chat); if(isMobile) setIsSidebarOpen(false); }}
                                 initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, height: 0 }}
                             >
                                 <span className="ci-title">{chat.name}</span>
-                                <button className="ci-del" onClick={(e) => { e.stopPropagation(); handleDelete(chat.id); }}>
+                                <button className="ci-del" aria-label={`Excluir conversa ${chat.name}`} onClick={(e) => { e.stopPropagation(); handleDelete(chat.id); }}>
                                     <FiTrash2 size={14} />
                                 </button>
                             </motion.div>
@@ -341,8 +361,8 @@ export default function ChatPage() {
             {/* TOGGLE MOBILE FLUTUANTE */}
             <AnimatePresence>
                 {isMobile && !isSidebarOpen && (
-                    <motion.button 
-                        className="mobile-sidebar-toggle"
+                    <motion.button
+                        className="mobile-sidebar-toggle" aria-label="Abrir histórico"
                         onClick={() => setIsSidebarOpen(true)}
                         initial={{ x: -50 }} animate={{ x: 0 }} exit={{ x: -50 }}
                     >
@@ -354,7 +374,7 @@ export default function ChatPage() {
             {/* MAIN AREA */}
             <main className="chat-main">
                 <ChatHeader user={user} onLogout={handleLogout} />
-                
+
 
 
                 <div className="messages-container" ref={listRef}>
@@ -365,28 +385,31 @@ export default function ChatPage() {
                             ) : (
                                 <>
                                     {(!activeChat || (activeChat && messages.length === 0)) && (
-                                        <motion.div 
+                                        <motion.div
                                             key="empty-state" className="empty-state"
                                             initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
                                         >
-                                            <div className="empty-logo-wrap"><GeminiIcon /></div>
+                                            <div className="empty-logo-wrap"><SentryIcon /></div>
                                             <h2>Como posso ajudar hoje?</h2>
-                                            <p>Sou o SentryAI, seu assistente jurídico especializado.</p>
+                                            <p>Entenda termos, organize dúvidas e explore seus direitos.</p>
+                                            <div className="starter-prompts">
+                                                {['O que observar antes de assinar um contrato?', 'Explique o que significa uma cláusula de rescisão.', 'Como organizar minhas dúvidas para falar com um advogado?'].map(prompt => <button key={prompt} type="button" disabled={sending} onClick={() => { setText(prompt); textareaRef.current?.focus(); }}>{prompt}<FiArrowUp size={16} /></button>)}
+                                            </div>
                                         </motion.div>
                                     )}
 
                                     {messages.map((msg) => {
                                         const isUser = msg.role === 'user';
                                         return (
-                                            <motion.div 
-                                                key={msg.id} 
+                                            <motion.div
+                                                key={`${msg.role}-${msg.id}`}
                                                 className={`msg-row ${isUser ? 'user' : 'assistant'}`}
                                                 variants={msgVariants}
                                                 initial="hidden" animate="visible"
                                                 // REMOVIDO: layout="position" -> Isso causava o lag massivo no streaming.
                                             >
                                                 <div className="msg-avatar">
-                                                    {isUser ? <FiUser size={18} /> : <GeminiIcon />}
+                                                    {isUser ? <FiUser size={18} /> : <SentryIcon />}
                                                 </div>
                                                 <div className="msg-bubble">
                                                     {msg.streaming && !msg.content ? (
@@ -417,27 +440,27 @@ export default function ChatPage() {
                                 </motion.div>
                             )}
                         </AnimatePresence>
-                        
+
                         <div className="input-row">
-                            <button className="btn-action attach" onClick={() => document.getElementById('file-up').click()}>
+                            <button className="btn-action attach" title="Analisar um documento" aria-label="Ir para análise de documentos" onClick={() => { if (!sending) navigate("/contract-analysis"); }}>
                                 <FiPaperclip size={20} />
                             </button>
                             <input id="file-up" type="file" hidden onChange={(e) => e.target.files[0] && setAttachedFile(e.target.files[0].name)} />
 
-                            <textarea 
-                                ref={textareaRef} 
-                                className="chat-textarea" 
-                                placeholder="Envie uma mensagem para o SentryAI..." 
-                                value={text} 
-                                onChange={handleInput} 
-                                onKeyDown={handleKeyDown} 
-                                rows={1} 
-                                disabled={sending} 
+                            <textarea
+                                ref={textareaRef}
+                                className="chat-textarea" aria-label="Sua mensagem"
+                                placeholder="Envie uma mensagem para o SentryAI..."
+                                value={text}
+                                onChange={handleInput}
+                                onKeyDown={handleKeyDown}
+                                rows={1}
+                                disabled={sending}
                             />
 
-                            <button 
+                            <button
                                 className={`btn-action ${sending ? 'stop' : 'send'}`}
-                                onClick={sending ? () => setSending(false) : handleSend}
+                                aria-label={sending ? 'Interromper resposta' : 'Enviar mensagem'} onClick={sending ? () => abortRef.current?.abort() : handleSend}
                                 disabled={(!text.trim() && !attachedFile) && !sending}
                             >
                                 {sending ? <FiStopCircle size={20} /> : <FiArrowUp size={20} />}

@@ -74,7 +74,7 @@ export default function RightsExplorer() {
     const tags = doc.tags ? doc.tags.map(t => t.toLowerCase()) : [];
     
     // Header Padrão
-    let content = `DOCUMENTO: ${doc.title.toUpperCase()}\n`;
+    let content = `EXEMPLO SIMULADO PARA ESTUDO — NÃO É DOCUMENTO OFICIAL\nDOCUMENTO: ${doc.title.toUpperCase()}\n`;
     content += `TIPO: ${doc.type}\n`;
     content += `DATA: ${today}\n`;
     content += `FONTE: ${doc.source || 'SentryAI Knowledge Base'}\n`;
@@ -95,7 +95,7 @@ export default function RightsExplorer() {
     }
     
     content += `\n----------------------------------------------------------\n`;
-    content += `Este é um modelo gerado por IA para fins de estudo e referência.\n`;
+    content += `Este é um exemplo fixo de demonstração, sem geração por IA e sem validade como documento jurídico.\n`;
     
     return content;
   };
@@ -150,7 +150,7 @@ export default function RightsExplorer() {
             transition={{ delay: 0.3 }}
           >
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#50E3C2' }}></span>
-            Banco Local (Mock)
+            Exemplos para demonstração
           </motion.div>
           <motion.h1 
             className="rights-title"
@@ -166,8 +166,8 @@ export default function RightsExplorer() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
           >
-            Acesse modelos de petições, contratos e jurisprudência. 
-            Pesquisa semântica potencializada por IA.
+            Explore exemplos ilustrativos com busca por palavras.
+            Os exemplos locais não são documentos oficiais nem resultados de pesquisa em tempo real.
           </motion.p>
 
           <form onSubmit={handleSubmit} className="rights-search-form">

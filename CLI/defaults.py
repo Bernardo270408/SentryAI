@@ -1,7 +1,7 @@
 import json
 import os
 
-DEFAULTS_PATH = "data/defaults.json"
+DEFAULTS_PATH = os.path.join(os.path.dirname(__file__), "data", "defaults.json")
 
 defaults = {}
 

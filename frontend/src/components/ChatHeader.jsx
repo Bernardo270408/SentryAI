@@ -82,9 +82,9 @@ export default function ChatHeader({ user, onLogout }) {
               exit="exit"
               style={dropdownPanelStyle}
             >
-              <DropdownItem onClick={() => goTo("/app/profile")} icon={<FiUser />} label="Perfil" />
-              <DropdownItem onClick={() => goTo("/app/dashboard")} icon={<FiLayout />} label="Dashboard" />
-              <DropdownItem onClick={() => goTo("/app/settings")} icon={<FiSettings />} label="Configurações" />
+              <DropdownItem onClick={() => goTo("/profile")} icon={<FiUser />} label="Perfil" />
+              <DropdownItem onClick={() => goTo("/dashboard")} icon={<FiLayout />} label="Dashboard" />
+              <DropdownItem onClick={() => goTo("/settings")} icon={<FiSettings />} label="Configurações" />
               
               <div style={{ height: 1, background: 'rgba(255,255,255,0.1)', margin: '6px 0' }} />
               
@@ -148,7 +148,7 @@ const logoIconStyle = {
   width: 32,
   height: 32,
   borderRadius: '8px',
-  background: 'linear-gradient(135deg, #4A90E2 0%, #222 100%)',
+  background: 'linear-gradient(135deg, #878787 0%, #222 100%)',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -172,7 +172,7 @@ const avatarStyle = {
   width: 28,
   height: 28,
   borderRadius: '50%',
-  background: 'linear-gradient(135deg, #4A90E2 0%, #7B68EE 100%)',
+  background: 'linear-gradient(135deg, #878787 0%, #767676 100%)',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',

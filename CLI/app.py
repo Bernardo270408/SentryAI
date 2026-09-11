@@ -339,6 +339,8 @@ def breakdown_command(command: str):
 
     for arg in args:
 
+        if isinstance(args[arg], bool) or arg in {"password", "code", "token", "credential"}:
+            continue
         args[arg] = str(args[arg])
 
         if args[arg].lower() == "true":
@@ -346,11 +348,8 @@ def breakdown_command(command: str):
         elif args[arg].lower() == "false":
             args[arg] = False
 
-        if args[arg].isdigit():
+        elif args[arg].isdigit():
             args[arg] = int(args[arg])
-
-        if arg == "password":
-            args[arg] = str(args[arg])
 
     return {
         "command": command_name,

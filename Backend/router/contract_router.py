@@ -39,8 +39,8 @@ def background_analysis(app, contract_id, text_content):
             ContractDAO.update_contract(contract_id, {
                 "json": {
                     "summary": "Falha no processamento.", 
-                    "risk": {"score": 0, "label": "Erro"},
-                    "error": str(e)
+                    "risk": {"score": None, "label": "Erro"},
+                    "error": "Não foi possível concluir a análise. Verifique a configuração da IA."
                 }
             })
 
@@ -63,7 +63,7 @@ def analyze():
 
     try:
         user_id = int(user_id)
-    except ValueError:
+    except (ValueError, TypeError):
         return jsonify({"error": "user_id inválido"}), 400
 
     # Verifica permissão (apenas o dono ou admin pode analisar para aquele ID)
@@ -86,6 +86,11 @@ def analyze():
 
     else:
         return jsonify({"error": "Nenhum texto ou arquivo fornecido."}), 400
+
+    if not isinstance(content_to_analyze, str) or not content_to_analyze.strip():
+        return jsonify({"error": "Documento sem texto extraível. PDFs digitalizados precisam de OCR."}), 400
+    if len(content_to_analyze) > 30000:
+        return jsonify({"error": "Limite de 30.000 caracteres. Divida o documento em partes."}), 400
 
     # JSON Inicial (Placeholder enquanto processa)
     initial_json = {
@@ -118,7 +123,7 @@ def analyze():
 
     except Exception as e:
         logger.exception("Erro ao iniciar análise")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "Não foi possível concluir a análise. Verifique a configuração da IA."}), 500
 
 # ...
 @contract_bp.route("/", methods=["GET"])
@@ -135,7 +140,7 @@ def get_contracts():
             target_user_id = int(user_id_filter)
             if current_user.id != target_user_id and not current_user.is_admin:
                 return jsonify({"error": "Acesso negado"}), 403
-        except ValueError:
+        except (ValueError, TypeError):
             return jsonify({"error": "user_id inválido"}), 400
     
     if not current_user.is_admin and not target_user_id:
@@ -224,13 +229,25 @@ def chat_contract():
     user_id = data.get("user_id")
     message = data.get("message")
     context_summary = data.get("context", "")
+    contract_id = data.get("contract_id")
 
     current_user = request.user
 
-    if user_id and current_user.id != int(user_id) and not current_user.is_admin:
+    try:
+        user_id = int(user_id) if user_id is not None else current_user.id
+    except (ValueError, TypeError):
+        return jsonify({"error": "user_id inválido"}), 400
+    if current_user.id != user_id and not current_user.is_admin:
         return jsonify({"error": "Acesso negado"}), 403
 
-    if not message:
+    if contract_id:
+        contract = ContractDAO.get_contract_by_id(contract_id)
+        if not contract:
+            return jsonify({"error": "Contrato não encontrado"}), 404
+        if contract.user_id != current_user.id and not current_user.is_admin:
+            return jsonify({"error": "Acesso negado"}), 403
+        context_summary = contract.text
+    if not isinstance(message, str) or not message.strip():
         return jsonify({"error": "Mensagem obrigatória"}), 400
 
     try:
@@ -238,4 +255,4 @@ def chat_contract():
         return jsonify({"reply": reply})
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "Não foi possível concluir a análise. Verifique a configuração da IA."}), 500

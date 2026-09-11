@@ -1,16 +1,16 @@
 import React, { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { 
-  Scale, 
-  BookOpen, 
-  Users, 
-  Bot, 
-  Shield, 
-  Zap, 
-  ArrowRight, 
-  CheckCircle, 
-  MessageSquare, 
+import {
+  Scale,
+  BookOpen,
+  Users,
+  Bot,
+  Shield,
+  Zap,
+  ArrowRight,
+  CheckCircle,
+  MessageSquare,
   Sparkles,
   Layout
 } from 'lucide-react'
@@ -75,50 +75,50 @@ export default function Home() {
       {/* HERO SECTION */}
       <main className="hero-section" style={{ paddingTop: 40 }}> {/* Ajuste de padding top para compensar o header */}
         <div className="hero-inner container" style={{ alignItems: 'center' }}>
-          <motion.div 
-            className="hero-left" 
+          <motion.div
+            className="hero-left"
             style={{ paddingRight: 40 }}
             initial="hidden"
             animate="visible"
             variants={staggerContainer}
           >
-            <motion.div variants={fadeInUp} className="badge-pill" style={{ 
+            <motion.div variants={fadeInUp} className="badge-pill" style={{
               display: 'inline-flex', alignItems: 'center', gap: 6,
-              padding: '6px 12px', borderRadius: 20, 
+              padding: '6px 12px', borderRadius: 20,
               background: 'rgba(74, 144, 226, 0.1)', border: '1px solid rgba(74, 144, 226, 0.2)',
               color: '#4A90E2', fontSize: 13, fontWeight: 500, marginBottom: 24
             }}>
-              <Sparkles size={14} /> Gemini 3 Pro
+              <Sparkles size={14} /> OpenAI
             </motion.div>
 
             <motion.h1 variants={fadeInUp} style={{ fontSize: '3.5rem', lineHeight: 1.1, marginBottom: 20 }}>
               SentryAI <br />
-              <span style={{ 
-                background: 'linear-gradient(90deg, #fff, #a0a0a0)', 
-                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' 
+              <span style={{
+                background: 'linear-gradient(90deg, #fff, #a0a0a0)',
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'
               }}>
                 Justiça Acessível
               </span>
             </motion.h1>
-            
+
             <motion.h2 variants={fadeInUp} className="subtitle" style={{ fontSize: '1.25rem', maxWidth: 540, lineHeight: 1.6 }}>
-              Orientação jurídica confiável para trabalhadores brasileiros. 
-              Interpretação precisa da CLT e Constituição com Inteligência Artificial.
+              Informação jurídica em linguagem simples para trabalhadores brasileiros.
+              Explore dúvidas sobre a CLT e a Constituição com apoio de Inteligência Artificial.
             </motion.h2>
 
             <motion.div variants={fadeInUp} className="hero-ctas" style={{ marginTop: 32 }}>
-              <motion.button 
-                className="btn primary" 
-                onClick={() => shouldOpenAuth(user,'register')} 
+              <motion.button
+                className="btn primary"
+                onClick={() => shouldOpenAuth(user,'register')}
                 style={{ padding: '12px 24px', fontSize: 15 }}
                 whileHover={{ scale: 1.05, boxShadow: "0 10px 20px rgba(0,0,0,0.2)" }}
                 whileTap={{ scale: 0.95 }}
               >
                 Começar Agora
               </motion.button>
-              <motion.button 
-                className="btn outline" 
-                onClick={handleDemo} 
+              <motion.button
+                className="btn outline"
+                onClick={handleDemo}
                 style={{ padding: '12px 24px', fontSize: 15, display: 'flex', gap: 8, alignItems: 'center' }}
                 whileHover={{ scale: 1.05, background: "rgba(255,255,255,0.05)" }}
                 whileTap={{ scale: 0.95 }}
@@ -126,18 +126,18 @@ export default function Home() {
                 <Bot size={18} /> Ver Demonstração
               </motion.button>
             </motion.div>
-            
+
             <motion.p variants={fadeInUp} className="micro" style={{ marginTop: 24, display: 'flex', alignItems: 'center', gap: 8, opacity: 0.6 }}>
-              <Shield size={14} color="#50E3C2" /> Seus dados estão seguros e criptografados.
+              <Shield size={14} color="#50E3C2" /> Use dados fictícios nesta demonstração.
             </motion.p>
           </motion.div>
-          
+
         </div>
       </main>
-      
+
       {/* FEATURES SECTION */}
       <section className="features container">
-        <motion.div 
+        <motion.div
           style={{ textAlign: 'center', marginBottom: 50 }}
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -150,7 +150,7 @@ export default function Home() {
           </p>
         </motion.div>
 
-        <motion.div 
+        <motion.div
           className="cards"
           variants={staggerContainer}
           initial="hidden"
@@ -162,7 +162,7 @@ export default function Home() {
               <Bot size={24} />
             </motion.div>
             <h4 style={{ fontSize: 18, marginTop: 4 }}>Análise Jurídica IA</h4>
-            <p>Nossa IA analisa seu caso com base na legislação vigente (CLT, CF) e oferece orientações práticas e personalizadas em segundos.</p>
+            <p>Converse com a IA e consulte trechos selecionados de referência. Confira as fontes antes de tomar decisões.</p>
             <button className="btn tiny ghost" onClick={() => navigate('/app')} style={{ marginTop: 'auto', alignSelf: 'flex-start' }}>Saiba mais</button>
           </motion.article>
 
@@ -188,7 +188,7 @@ export default function Home() {
 
       {/* TECH / EXAMPLE SECTION */}
       <section className="tech-advanced container" style={{ alignItems: 'center', margin: '80px auto' }}>
-        <motion.div 
+        <motion.div
           className="tech-left"
           initial={{ opacity: 0, x: -50 }}
           whileInView={{ opacity: 1, x: 0 }}
@@ -196,9 +196,9 @@ export default function Home() {
           transition={{ duration: 0.6 }}
         >
           <span className="eyebrow" style={{ color: '#4A90E2', fontWeight: 600, letterSpacing: '1px' }}>TECNOLOGIA AVANÇADA</span>
-          <h3 style={{ fontSize: 32, marginTop: 12, marginBottom: 16, color: 'var(--text)' }}>IA treinada na legislação brasileira</h3>
+          <h3 style={{ fontSize: 32, marginTop: 12, marginBottom: 16, color: 'var(--text)' }}>IA com referências da legislação brasileira</h3>
           <p className="muted" style={{ fontSize: 16, lineHeight: 1.7 }}>
-            Utilizamos modelos de linguagem de última geração, ajustados especificamente com as leis brasileiras e jurisprudência atualizada para garantir precisão.
+            Integramos modelos da OpenAI a uma seleção local de textos jurídicos. A busca recupera trechos para apoiar a resposta; o modelo não foi treinado pela equipe e pode cometer erros.
           </p>
 
           <div className="two-col" style={{ gap: 20 }}>
@@ -215,15 +215,15 @@ export default function Home() {
                 <CheckCircle size={18} color="#50E3C2" strokeWidth={3} /> <strong style={{color: 'var(--text)'}}>Histórico Seguro</strong>
               </li>
               <li className="muted" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                <CheckCircle size={18} color="#50E3C2" strokeWidth={3} /> <strong style={{color: 'var(--text)'}}>Jurisprudência Atual</strong>
+                <CheckCircle size={18} color="#50E3C2" strokeWidth={3} /> <strong style={{color: 'var(--text)'}}>Referências Selecionadas</strong>
               </li>
             </ul>
           </div>
 
           <div className="tech-ctas" style={{ marginTop: 36 }}>
-            <motion.button 
-              className="btn primary" 
-              onClick={() => openAuth('login')} 
+            <motion.button
+              className="btn primary"
+              onClick={() => openAuth('login')}
               style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -233,7 +233,7 @@ export default function Home() {
           </div>
         </motion.div>
 
-        <motion.div 
+        <motion.div
           className="tech-right"
           initial={{ opacity: 0, x: 50 }}
           whileInView={{ opacity: 1, x: 0 }}
@@ -249,7 +249,7 @@ export default function Home() {
                 <MessageSquare size={20} color="#4A90E2" />
               </div>
               <div>
-                <strong style={{ fontSize: 14, color: '#fff', display: 'block' }}>Exemplo Real</strong>
+                <strong style={{ fontSize: 14, color: '#fff', display: 'block' }}>Exemplo Ilustrativo</strong>
                 <span style={{ fontSize: 12, color: 'var(--muted)' }}>Consulta Trabalhista</span>
               </div>
             </div>
@@ -266,13 +266,13 @@ export default function Home() {
       </section>
 
       {/* PREVIEW SECTION */}
-      <motion.section 
-        className="preview-section container" 
-        ref={previewRef} 
-        style={{ 
-          padding: '60px 40px', 
-          background: 'linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 100%)', 
-          borderRadius: 24, 
+      <motion.section
+        className="preview-section container"
+        ref={previewRef}
+        style={{
+          padding: '60px 40px',
+          background: 'linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 100%)',
+          borderRadius: 24,
           marginBottom: 60,
           border: '1px solid rgba(255,255,255,0.04)'
         }}
@@ -294,7 +294,7 @@ export default function Home() {
           </p>
 
           <div style={{ marginTop: 32, display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <motion.div 
+            <motion.div
               style={{ display: 'flex', gap: 16 }}
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -307,7 +307,7 @@ export default function Home() {
                 <p className="muted" style={{ margin: '4px 0 0', fontSize: 14 }}>Design focado na sua dúvida, sem complicações desnecessárias.</p>
               </div>
             </motion.div>
-            <motion.div 
+            <motion.div
               style={{ display: 'flex', gap: 16 }}
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -316,25 +316,25 @@ export default function Home() {
             >
               <div style={{ marginTop: 2 }}><Shield size={20} color="#50E3C2" /></div>
               <div>
-                <strong style={{ color: '#fff', fontSize: 15 }}>Privacidade Total</strong>
-                <p className="muted" style={{ margin: '4px 0 0', fontSize: 14 }}>Suas consultas e dados pessoais ficam protegidos (quando logado).</p>
+                <strong style={{ color: '#fff', fontSize: 15 }}>Uso dos Dados</strong>
+                <p className="muted" style={{ margin: '4px 0 0', fontSize: 14 }}>O histórico fica vinculado à conta. O texto necessário é enviado ao provedor de IA.</p>
               </div>
             </motion.div>
           </div>
 
           <div className="preview-ctas" style={{ marginTop: 40 }}>
-            <motion.button 
-              className="btn primary" 
-              onClick={() => navigate('/app')} 
+            <motion.button
+              className="btn primary"
+              onClick={() => navigate('/app')}
               style={{ padding: '12px 24px' }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               Experimentar Agora
             </motion.button>
-            <motion.button 
-              className="btn outline" 
-              onClick={handleDemo} 
+            <motion.button
+              className="btn outline"
+              onClick={handleDemo}
               style={{ padding: '12px 24px' }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -344,8 +344,8 @@ export default function Home() {
           </div>
         </div>
 
-        <motion.div 
-          className="preview-right" 
+        <motion.div
+          className="preview-right"
           style={{ minHeight: 400 }}
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
@@ -359,7 +359,7 @@ export default function Home() {
       </motion.section>
 
       <FooterContent />
-      
+
     </div>
   )
 }

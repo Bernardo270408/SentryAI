@@ -1,21 +1,21 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from 'framer-motion';
 import { Scale, Crown, User, Settings, LogOut, LayoutDashboard, Home } from 'lucide-react'; // Ícone de Dashboard atualizado para LayoutDashboard
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 // import { FiUser, FiSettings, FiLogOut } from "react-icons/fi"; // Ícones FIs não são mais necessários
 
 // Removendo a importação do CSS, já que estamos usando estilos inline
-// import "../stylesHeader.css"; 
+// import "../stylesHeader.css";
 
 // Variantes de Animação (Mantidas)
 const menuVariants = {
   hidden: { opacity: 0, scale: 0.95, y: -10, pointerEvents: "none" },
-  visible: { 
-    opacity: 1, 
-    scale: 1, 
-    y: 0, 
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
     pointerEvents: "auto",
-    transition: { type: "spring", stiffness: 300, damping: 25 } 
+    transition: { type: "spring", stiffness: 300, damping: 25 }
   },
   exit: { opacity: 0, scale: 0.95, y: -10, transition: { duration: 0.2 } }
 };
@@ -39,14 +39,14 @@ const dropdownPanelInlineStyle = {
     width: 200,
     borderRadius: 12,
     padding: 8,
-    background: 'rgba(17, 16, 17, 0.9)', 
+    background: 'rgba(17, 16, 17, 0.9)',
     backdropFilter: 'blur(8px)',
     WebkitBackdropFilter: 'blur(8px)',
     border: '1px solid rgba(255, 255, 255, 0.1)',
     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
     display: 'flex',
     flexDirection: 'column',
-    zIndex: 101, 
+    zIndex: 101,
 };
 
 // Estilos temporários (Inline-Fix) para o item do dropdown
@@ -69,25 +69,25 @@ const dropdownItemInlineStyle = {
 // Estilos temporários (Inline-Fix) para o item de logout
 const dropdownLogoutItemInlineStyle = {
     ...dropdownItemInlineStyle,
-    color: 'rgba(239, 68, 68, 0.9)', 
+    color: 'rgba(239, 68, 68, 0.9)',
 };
 
 
 export default function NavigationBar({
-  user = null, 
+  user = null,
   onLogin,
   onRegister,
-  onLogout, 
+  onLogout,
   sticky = true,
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  
+
   // Refs
-  const wrapRef = useRef(null);      
-  const menuRef = useRef(null);      
-  const firstBtnRef = useRef(null);  
-  const lastBtnRef = useRef(null);   
-  
+  const wrapRef = useRef(null);
+  const menuRef = useRef(null);
+  const firstBtnRef = useRef(null);
+  const lastBtnRef = useRef(null);
+
   const navigate = useNavigate();
 
   // Handlers
@@ -123,7 +123,7 @@ export default function NavigationBar({
 
     const timer = setTimeout(() => {
       // Pequeno atraso para garantir que o menu esteja montado
-      firstBtnRef.current?.focus(); 
+      firstBtnRef.current?.focus();
     }, 50);
 
     function onKey(e) {
@@ -131,11 +131,11 @@ export default function NavigationBar({
         e.stopPropagation();
         closeMenu();
       }
-      
+
       if (e.key === "Tab") {
         const focusable = menuRef.current?.querySelectorAll('button:not([disabled])');
         if (!focusable || focusable.length === 0) return;
-        
+
         const first = focusable[0];
         const last = focusable[focusable.length - 1];
 
@@ -162,8 +162,8 @@ export default function NavigationBar({
   const RightContent = user ? (
     /* Menu do Usuário Logado */
     // wrapRef DEVE estar no contêiner pai do botão e do menu
-    <div 
-        className="header-user-wrap" 
+    <div
+        className="header-user-wrap"
         ref={wrapRef}
         style={{ position: 'relative' }} // ESSENCIAL: Permite posicionar o menu com 'absolute'
     >
@@ -186,17 +186,17 @@ export default function NavigationBar({
             transition: 'background 0.3s ease',
             outline: 'none',
             // Estilo para o hover/focus
-            ':hover': { background: 'rgba(255, 255, 255, 0.1)' } 
+
           }}
         >
-            <div 
-                className="user-avatar" 
-                aria-hidden 
+            <div
+                className="user-avatar"
+                aria-hidden
                 style={{
                     width: 32,
                     height: 32,
                     borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #4A90E2 0%, #111011ff 100%)',
+                    background: 'linear-gradient(135deg, #878787 0%, #111011ff 100%)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -210,7 +210,7 @@ export default function NavigationBar({
         <AnimatePresence>
         {isOpen && (
 
-            <motion.div 
+            <motion.div
               id="user-dropdown-panel"
               className="user-dropdown-panel-inline-fix" // Classe temporária
               ref={menuRef}
@@ -317,11 +317,11 @@ export default function NavigationBar({
       <motion.button
         className="btn ghost"
         onClick={onLogin}
-        style={{ 
-            fontSize: 14, 
-            padding: '8px 16px', 
-            background: 'none', 
-            border: 'none', 
+        style={{
+            fontSize: 14,
+            padding: '8px 16px',
+            background: 'none',
+            border: 'none',
             color: '#fff',
             cursor: 'pointer',
             transition: 'opacity 0.2s'
@@ -342,13 +342,13 @@ export default function NavigationBar({
           borderRadius: '24px',
           padding: '8px 20px',
           fontSize: 14,
-          background: 'linear-gradient(90deg, #4A90E2 0%, #7B68EE 100%)',
+          background: 'linear-gradient(90deg, #878787 0%, #767676 100%)',
           color: '#fff',
           border: 'none',
           cursor: 'pointer',
-          boxShadow: '0 4px 12px rgba(74, 144, 226, 0.3)',
+          boxShadow: '0 4px 12px rgba(255, 255, 255, 0.08)',
         }}
-        whileHover={{ scale: 1.05, boxShadow: '0 6px 16px rgba(74, 144, 226, 0.4)' }}
+        whileHover={{ scale: 1.05, boxShadow: '0 6px 16px rgba(255, 255, 255, 0.12)' }}
         whileTap={{ scale: 0.95 }}
       >
         Registrar
@@ -363,7 +363,7 @@ export default function NavigationBar({
         position: sticky ? 'sticky' : 'relative',
         top: sticky ? 24 : 'auto',
         zIndex: 100,
-        margin: '0 auto 40px auto',
+        margin: '0 auto 24px auto',
         width: '90%',
         maxWidth: '900px',
         height: '64px',
@@ -382,7 +382,9 @@ export default function NavigationBar({
       {/* LOGO (Sem Alterações) */}
       <motion.div
         className="logo"
-        onClick={() => goTo("/")}
+        role="link" tabIndex={0} aria-label="SentryAI — início"
+        onKeyDown={e => { if (e.key === 'Enter') goTo(user ? '/app' : '/'); }}
+        onClick={() => goTo(user ? '/app' : '/')}
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5 }}
@@ -397,9 +399,9 @@ export default function NavigationBar({
             width: 36,
             height: 36,
             borderRadius: '50%',
-            background: 'linear-gradient(135deg, #4A90E2 0%, #111011ff 100%)',
+            background: 'linear-gradient(135deg, #878787 0%, #111011ff 100%)',
             color: '#fff',
-            boxShadow: '0 4px 12px rgba(74, 144, 226, 0.3)',
+            boxShadow: '0 4px 12px rgba(255, 255, 255, 0.08)',
           }}
         >
           <Scale size={18} strokeWidth={2.5} />

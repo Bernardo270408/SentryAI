@@ -47,7 +47,7 @@ const FooterContent = () => (
       >
         <h4 style={{ color: 'var(--text)' }}>Tecnologias</h4>
         <div className="badges">
-          {['React', 'Flask', 'MySQL', 'GPT-5', 'Gemini 3 Pro'].map((tech) => (
+          {['React', 'Flask', 'MySQL', 'GPT-5', 'OpenAI'].map((tech) => (
             <motion.span 
               key={tech} 
               className="badge" 

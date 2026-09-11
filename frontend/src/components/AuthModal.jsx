@@ -71,10 +71,10 @@ function PrivacyInfoModal({ open, onClose }) {
                     </button>
                 </div>
                 <p style={{fontSize:'0.9rem', color:'var(--text-muted)', lineHeight:'1.5', marginBottom:'16px'}}>
-                    Para melhorar continuamente a precisão da nossa IA jurídica, coletamos dados anônimos sobre como você interage com a plataforma (ex: cliques, tempo de leitura).
+                    O protótipo armazena nome, e-mail, conversas e contratos para manter sua conta e seu histórico.
                 </p>
                 <p style={{fontSize:'0.9rem', color:'var(--text-muted)', lineHeight:'1.5', marginBottom:'20px'}}>
-                    Seus dados pessoais e o conteúdo das suas consultas permanecem <strong>privados e criptografados</strong>, em conformidade com a LGPD.
+                    Ao usar a IA, o texto necessário à resposta é enviado ao provedor configurado (Google ou OpenAI). Use dados fictícios na demonstração; o protótipo não implementa criptografia do conteúdo no banco.
                 </p>
                 <button 
                     className="btn primary small full" 
@@ -323,14 +323,14 @@ export default function AuthModal({ open, onClose, initialTab = "login", setUser
                     </div>
 
                     <div style={{ width: '100%', display: 'flex', justifyContent: 'center', margin: '15px 0' }}>
-                       <GoogleLogin
+                       {import.meta.env.VITE_GOOGLE_CLIENT_ID && <GoogleLogin
                            onSuccess={handleGoogleSuccess}
                            onError={() => toast.error("Erro no Google Login")}
                            theme="filled_black"
                            text={tab === 'login' ? "signin_with" : "signup_with"}
                            shape="pill"
                            width="300"
-                       />
+                       />}
                     </div>
 
                     <div className="auth-or">
@@ -454,7 +454,7 @@ export default function AuthModal({ open, onClose, initialTab = "login", setUser
                                 <Shield size={18} className="lgpd-icon" />
                                 <div className="lgpd-text">
                                   <p className="lgpd-title">Seus dados estão seguros</p>
-                                  <p className="lgpd-sub">Seguimos a LGPD. <button type="button" onClick={() => setShowPrivacyInfo(true)} style={{background:'none', border:'none', color:'var(--primary)', textDecoration:'underline', cursor:'pointer', padding:0, fontSize:'inherit'}}>Saiba mais</button></p>
+                                  <p className="lgpd-sub">Entenda o uso dos dados. <button type="button" onClick={() => setShowPrivacyInfo(true)} style={{background:'none', border:'none', color:'var(--primary)', textDecoration:'underline', cursor:'pointer', padding:0, fontSize:'inherit'}}>Saiba mais</button></p>
                                 </div>
                               </div>
                               

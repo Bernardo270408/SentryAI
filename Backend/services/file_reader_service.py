@@ -4,7 +4,7 @@ import yaml
 import defusedxml.ElementTree as ET
 import io
 import csv
-import magic
+import zipfile
 
 from docx import Document
 from pptx import Presentation
@@ -23,50 +23,35 @@ Formatos suportados:
 """
 
 def validate_file_type(file_stream, expected_ext):
-    """
-    Valida o tipo real do arquivo usando Magic Numbers.
-    Retorna True se o arquivo for seguro/correspondente.
-    """
-    # Lê os primeiros 2KB para identificar o cabeçalho
+    """Validate supported containers without depending on libmagic on Windows."""
+    allowed = {"txt", "md", "csv", "pdf", "rtf", "docx", "odt", "pptx", "xlsx", "html", "xml", "json", "yaml", "yml"}
+    if expected_ext not in allowed:
+        raise ValueError("Formato não suportado. Converta documentos .doc para .docx ou PDF.")
     header = file_stream.read(2048)
-    file_stream.seek(0) # Reseta o ponteiro para o início
-    
-    mime = magic.Magic(mime=True)
-    detected_mime = mime.from_buffer(header)
-    
-    # Mapeamento simplificado de extensões permitidas para Mime Types
-    # Adicione mais conforme necessário
-    valid_mimes = {
-        'pdf': ['application/pdf'],
-        'docx': ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
-        'txt': ['text/plain'],
-        'csv': ['text/plain', 'text/csv'],
-        'json': ['application/json', 'text/plain'],
-        'xml': ['text/xml', 'application/xml'],
-        'yaml': ['application/x-yaml', 'text/plain'],
-        'yml': ['application/x-yaml', 'text/plain'],
-        'rtf': ['application/rtf', 'text/rtf'],
-        'odt': ['application/vnd.oasis.opendocument.text'],
-        'pptx': ['application/vnd.openxmlformats-officedocument.presentationml.presentation'],
-        'xlsx': ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
-        'md': ['text/markdown', 'text/plain'],
-        'html': ['text/html'],
-    }
-    
-    if expected_ext in valid_mimes:
-        # Se o mime detectado estiver na lista de permitidos ou for genérico (octet-stream as vezes acontece com arquivos novos)
-        if detected_mime in valid_mimes[expected_ext]:
-            return True
-        # Fallback para text/plain que muitas vezes é detectado incorretamente
-        if 'text' in detected_mime and 'text' in valid_mimes[expected_ext][0]:
-            return True
-            
-    # Se não conseguimos validar estritamente, mas não é um executável perigoso
-    blocked_mimes = ['application/x-dosexec', 'application/x-executable']
-    if detected_mime in blocked_mimes:
-        raise ValueError(f"Arquivo malicioso detectado. Tipo real: {detected_mime}")
-        
+    file_stream.seek(0)
+    if header.startswith((b"MZ", b"\x7fELF")):
+        raise ValueError("Arquivos executáveis não são aceitos.")
+    if expected_ext == "pdf":
+        if not header.startswith(b"%PDF-"):
+            raise ValueError("Conteúdo não corresponde a um PDF.")
+    elif expected_ext in {"docx", "pptx", "xlsx", "odt"}:
+        try:
+            with zipfile.ZipFile(file_stream) as archive:
+                infos = archive.infolist()
+                if len(infos) > 2000 or sum(item.file_size for item in infos) > 32 * 1024 * 1024:
+                    raise ValueError("Documento compactado excede os limites de processamento.")
+                required = {"docx": "word/document.xml", "pptx": "ppt/presentation.xml",
+                            "xlsx": "xl/workbook.xml", "odt": "content.xml"}[expected_ext]
+                if required not in archive.namelist():
+                    raise ValueError("Estrutura do documento não corresponde à extensão.")
+        except zipfile.BadZipFile as exc:
+            raise ValueError("Documento inválido ou corrompido.") from exc
+        finally:
+            file_stream.seek(0)
+    elif b"\x00" in header:
+        raise ValueError("Use um arquivo de texto UTF-8.")
     return True
+
 
 def extract_text_from_file(file_stream, filename: str) -> str:
     """Extrai texto de praticamente qualquer formato relevante para contratos."""
@@ -74,10 +59,7 @@ def extract_text_from_file(file_stream, filename: str) -> str:
     ext = os.path.splitext(filename)[1].lower().replace(".", "")
     
     # Validação de segurança antes de processar
-    try:
-        validate_file_type(file_stream, ext)
-    except Exception as e:
-        return f"Erro de segurança: {str(e)}"
+    validate_file_type(file_stream, ext)
 
     if ext == "txt" or ext == "md":
         # CORREÇÃO B: Limitar leitura para evitar estouro de memória
@@ -139,16 +121,16 @@ def _extract_csv(fs):
 
 def _extract_rtf(fs):
     try:
-        import striprtf
+        from striprtf.striprtf import rtf_to_text
     except ImportError:
-        return "Erro: A biblioteca 'striprtf' é necessária para extrair RTF."
+        raise ValueError("Instale striprtf para ler RTF.")
 
-    return striprtf.rtf_to_text(fs.read().decode("utf-8", errors="ignore"))
+    return rtf_to_text(fs.read().decode("utf-8", errors="ignore"))
 
 
 def _extract_docx(fs):
     doc = Document(fs)
-    return "\n".join([p.text for p in doc.paragraphs])
+    return "\n".join([p.text for p in doc.paragraphs] + [" | ".join(c.text for c in row.cells) for table in doc.tables for row in table.rows])
 
 
 def _extract_odt(fs):

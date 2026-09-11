@@ -1,7 +1,7 @@
 import smtplib
 from email.mime.text import MIMEText
 import os
-import random
+import secrets
 import logging
 
 logger = logging.getLogger(__name__)
@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 def generate_verification_code():
     """Gera um código numérico de 6 dígitos."""
-    return str(random.randint(100000, 999999))
+    return str(100000 + secrets.randbelow(900000))
 
 
 def send_verification_email(to_email, code):
@@ -37,7 +37,7 @@ def send_verification_email(to_email, code):
         else:
             logger.info("Código de verificação gerado, mas não enviado (SMTP ausente e ambiente != development).")
             
-        return True # Retorna True para não quebrar o fluxo no frontend em testes, mas em prod o usuário não receberá
+        return current_env == "development"
 
     msg = MIMEText(
         f"Olá,\n\nSeu código de verificação para o SentryAI é:\n\n{code}\n\nEste código expira em 15 minutos.\n\nAtenciosamente,\nEquipe SentryAI"
@@ -47,7 +47,7 @@ def send_verification_email(to_email, code):
     msg["To"] = to_email
 
     try:
-        server = smtplib.SMTP(server_host, server_port)
+        server = smtplib.SMTP(server_host, server_port, timeout=15)
         server.starttls()
         server.login(sender, password)
         server.sendmail(sender, [to_email], msg.as_string())

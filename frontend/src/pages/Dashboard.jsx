@@ -1,20 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion'; 
-import { 
-    FileText, TrendingUp, AlertCircle, MessageSquare, 
-    ShieldAlert, ArrowRight 
+import { motion } from 'framer-motion';
+import {
+    FileText, TrendingUp, AlertCircle, MessageSquare,
+    ShieldAlert, ArrowRight
 } from 'lucide-react';
-import { 
-    AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-    PieChart, Pie, Cell, Legend 
+import {
+    AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+    PieChart, Pie, Cell, Legend
 } from 'recharts';
 import FooterContent from '../components/FooterComponent.jsx';
 import api from '../services/api';
 import '../styles/dashboard.css';
 
 const COLORS = [
-    '#4A90E2', '#50E3C2', '#F5A623', '#D0021B', '#9B59B6', 
+    '#4A90E2', '#50E3C2', '#F5A623', '#D0021B', '#9B59B6',
     '#FF6B6B', '#1DD1A1', '#54A0FF', '#5F27CD', '#FF9FF3'
 ];
 
@@ -33,13 +33,13 @@ const containerVariants = {
 // Variantes UNIFICADAS (Entrada + Hover)
 const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { 
-        opacity: 1, 
+    visible: {
+        opacity: 1,
         y: 0,
         transition: { type: "spring", stiffness: 100, damping: 12 }
     },
-    hover: { 
-        y: -5, 
+    hover: {
+        y: -5,
         boxShadow: "0 10px 20px rgba(0,0,0,0.2)",
         transition: { duration: 0.2 }
     }
@@ -85,7 +85,7 @@ export default function Dashboard() {
         return (
             <div className="landing-root dashboard-root">
                 <main className="container dashboard-main center-loading">
-                    <motion.p 
+                    <motion.p
                         className="muted"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: [0.5, 1, 0.5] }}
@@ -100,13 +100,13 @@ export default function Dashboard() {
 
     return (
         <div className="landing-root dashboard-root">
-            <motion.main 
+            <motion.main
                 className="container dashboard-main"
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
             >
-                
+
                 {/* 1. KPIs */}
                 <motion.section className="kpi-grid" variants={containerVariants}>
                     <motion.div className="kpi-card" variants={itemVariants} whileHover="hover">
@@ -154,14 +154,14 @@ export default function Dashboard() {
                                 <ShieldAlert size={20} /> Alertas de Contrato & Risco
                             </h4>
                         </div>
-                        <motion.div 
+                        <motion.div
                             style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16 }}
                             variants={containerVariants}
                         >
                             {stats.risk_alerts.map((alert) => (
-                                <motion.div 
-                                    key={alert.id} 
-                                    className="risk-alert-card" 
+                                <motion.div
+                                    key={alert.id}
+                                    className="risk-alert-card"
                                     variants={itemVariants}
                                     whileHover={{ scale: 1.02 }}
                                     style={{
@@ -172,8 +172,8 @@ export default function Dashboard() {
                                     }}
                                 >
                                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <span style={{ 
-                                            background: 'rgba(231, 76, 60, 0.2)', color: '#ff8a80', 
+                                        <span style={{
+                                            background: 'rgba(231, 76, 60, 0.2)', color: '#ff8a80',
                                             fontSize: '11px', padding: '2px 8px', borderRadius: '4px',
                                             fontWeight: '600', textTransform: 'uppercase'
                                         }}>{alert.risk_type}</span>
@@ -185,7 +185,7 @@ export default function Dashboard() {
                                     </div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                                         <span style={{ fontSize: '12px', color: '#fff' }}>Em: <strong>{alert.chat}</strong></span>
-                                        <button onClick={() => navigate('/app/chat')} style={{ background: 'transparent', border: 'none', color: '#ff8a80', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: '12px', fontWeight: '500' }}>
+                                        <button onClick={() => navigate('/chat')} style={{ background: 'transparent', border: 'none', color: '#ff8a80', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: '12px', fontWeight: '500' }}>
                                             Ver <ArrowRight size={14} />
                                         </button>
                                     </div>
@@ -207,15 +207,15 @@ export default function Dashboard() {
                                     <XAxis dataKey="name" stroke="#a0a0a0" tick={{fontSize: 12}} />
                                     <YAxis stroke="#a0a0a0" tick={{fontSize: 12}} />
                                     <Tooltip content={<CustomTooltip />} />
-                                    
+
                                     {stats.categories.map((cat, index) => (
-                                        <Area 
+                                        <Area
                                             key={cat.name}
-                                            type="monotone" 
-                                            dataKey={cat.name} 
-                                            stackId="1" 
-                                            stroke={COLORS[index % COLORS.length]} 
-                                            fill={COLORS[index % COLORS.length]} 
+                                            type="monotone"
+                                            dataKey={cat.name}
+                                            stackId="1"
+                                            stroke={COLORS[index % COLORS.length]}
+                                            fill={COLORS[index % COLORS.length]}
                                             fillOpacity={0.6}
                                         />
                                     ))}
@@ -223,20 +223,20 @@ export default function Dashboard() {
                             </ResponsiveContainer>
                         </div>
                     </motion.div>
-                    
+
                     {/* Gráfico de Pizza */}
                     <motion.div className="chart-container pie-chart" variants={itemVariants}>
                         <div className="chart-header"><h4>Áreas de Interesse</h4></div>
-                        <div style={{ width: '100%', height: 380, minHeight: 380 }}> 
+                        <div style={{ width: '100%', height: 380, minHeight: 380 }}>
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
-                                    <Pie 
-                                        data={stats.categories} 
-                                        cx="50%" 
-                                        cy="45%" 
-                                        innerRadius={70} 
-                                        outerRadius={100} 
-                                        paddingAngle={4} 
+                                    <Pie
+                                        data={stats.categories}
+                                        cx="50%"
+                                        cy="45%"
+                                        innerRadius={70}
+                                        outerRadius={100}
+                                        paddingAngle={4}
                                         dataKey="value"
                                     >
                                         {stats.categories.map((entry, index) => (
@@ -244,15 +244,15 @@ export default function Dashboard() {
                                         ))}
                                     </Pie>
                                     <Tooltip />
-                                    <Legend 
-                                        layout="horizontal" 
-                                        verticalAlign="bottom" 
+                                    <Legend
+                                        layout="horizontal"
+                                        verticalAlign="bottom"
                                         align="center"
-                                        wrapperStyle={{ 
-                                            fontSize: '11px', 
+                                        wrapperStyle={{
+                                            fontSize: '11px',
                                             color: '#ccc',
                                             paddingTop: '20px'
-                                        }} 
+                                        }}
                                     />
                                 </PieChart>
                             </ResponsiveContainer>
@@ -265,15 +265,15 @@ export default function Dashboard() {
                     <motion.div className="history-list" variants={itemVariants}>
                         <div className="section-header">
                             <h4>Atividade Recente</h4>
-                            <button onClick={() => navigate('/app/chat')} className="btn tiny outline">Ver todos</button>
+                            <button onClick={() => navigate('/chat')} className="btn tiny outline">Ver todos</button>
                         </div>
                         <motion.ul variants={containerVariants}>
-                            {stats.history.length === 0 ? <li className="muted">Nenhuma atividade.</li> : 
+                            {stats.history.length === 0 ? <li className="muted">Nenhuma atividade.</li> :
                                 stats.history.map((item) => (
-                                    <motion.li 
-                                        key={item.id} 
-                                        className="history-item" 
-                                        onClick={() => navigate('/app/chat')} 
+                                    <motion.li
+                                        key={item.id}
+                                        className="history-item"
+                                        onClick={() => navigate('/chat')}
                                         style={{ cursor: 'pointer' }}
                                         variants={itemVariants}
                                         whileHover={{ x: 5, backgroundColor: 'rgba(255,255,255,0.03)' }}
@@ -294,8 +294,8 @@ export default function Dashboard() {
 
                     <motion.div className="insights-panel" variants={itemVariants}>
                         <h4>Sentry AI Insights</h4>
-                        <motion.div 
-                            className={`insight-card ${stats.insight?.type === 'warning' ? 'warning' : ''}`} 
+                        <motion.div
+                            className={`insight-card ${stats.insight?.type === 'warning' ? 'warning' : ''}`}
                             style={{marginBottom: 10}}
                             whileHover={{ scale: 1.02 }}
                         >
@@ -305,8 +305,8 @@ export default function Dashboard() {
                                 <p className="muted">{stats.insight?.text}</p>
                             </div>
                         </motion.div>
-                        <motion.div 
-                            className="insight-card" 
+                        <motion.div
+                            className="insight-card"
                             style={{ flexDirection: 'column', gap: '10px', borderLeft: '4px solid #50E3C2' }}
                             whileHover={{ scale: 1.02 }}
                         >

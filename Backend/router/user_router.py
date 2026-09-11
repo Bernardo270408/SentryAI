@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from DAO.user_dao import UserDAO
 from models.user import User
 from extensions import db
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 from email_validator import validate_email, EmailNotValidError
 from services.email_service import generate_verification_code, send_verification_email
 from datetime import datetime, timedelta
@@ -17,7 +17,7 @@ def create_user():
     # 1. Validação Automática com Pydantic
     try:
         # Valida o JSON de entrada contra o Schema
-        payload = UserCreateSchema(**request.json)
+        payload = UserCreateSchema(**(request.get_json(silent=True) or {}))
     except ValidationError as e:
         # Retorna erro detalhado automaticamente se falhar
         return jsonify({"error": "Dados inválidos", "details": e.errors()}), 400
@@ -41,9 +41,11 @@ def create_user():
     )
 
     db.session.add(user)
+    db.session.flush()
+    if not send_verification_email(payload.email, code):
+        db.session.rollback()
+        return jsonify({"error": "Não foi possível enviar o código. Tente novamente mais tarde."}), 503
     db.session.commit()
-
-    send_verification_email(payload.email, code)
 
     return jsonify({
         "message": "Usuário criado. Verifique seu e-mail.",
@@ -56,13 +58,11 @@ def create_user():
 @token_required
 def get_user_by_email(email):
     current_user = request.user
-
-    user : User = UserDAO.get_user_by_email(email)
-    if current_user.id != user.id and not current_user.is_admin:
-        return jsonify({"error": "Permission denied"}), 403
-
+    user = UserDAO.get_user_by_email(email)
     if not user:
         return jsonify({"error": "Usuário não encontrado."}), 404
+    if current_user.id != user.id and not current_user.is_admin:
+        return jsonify({"error": "Permission denied"}), 403
 
     return jsonify(user.to_dict())
 
@@ -102,7 +102,16 @@ def update_user(user_id):
     if current_user.id != user_id and not current_user.is_admin:
         return jsonify({"error": "Permission denied"}), 403
 
-    allowed_fields = {"name", "email", "password", "extra_data"}
+    if "email" in data and data["email"] != current_user.email:
+        return jsonify({"error": "Troca de e-mail ainda exige um fluxo de verificação não disponível neste protótipo."}), 400
+    if "password" in data:
+        if not current_user.password or not check_password_hash(current_user.password, str(data.get("current_password", ""))):
+            return jsonify({"error": "Senha atual incorreta."}), 400
+        if not isinstance(data["password"], str) or len(data["password"]) < 6:
+            return jsonify({"error": "A nova senha deve ter pelo menos 6 caracteres."}), 400
+    if "name" in data and (not isinstance(data["name"], str) or not 2 <= len(data["name"].strip()) <= 100):
+        return jsonify({"error": "Nome deve ter entre 2 e 100 caracteres."}), 400
+    allowed_fields = {"name", "password", "extra_data"}
     data = {k: v for k, v in data.items() if k in allowed_fields}
 
     if "password" in data:

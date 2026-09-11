@@ -26,13 +26,7 @@ logger = logging.getLogger(__name__)
 message_ai_bp = Blueprint("ai_message", __name__, url_prefix="/ai-messages")
 
 
-def get_api_key_for_model(model_name):
-    """Helper para selecionar a chave correta baseada no modelo."""
-    if "gemini" in model_name.lower():
-        if not GEMINI_API_KEY:
-            raise ValueError("GEMINI_API_KEY não configurada no servidor")
-        return GEMINI_API_KEY
-    return OPENAI_TOKEN
+from services.llm_provider import api_key_for_model as get_api_key_for_model, default_model
 
 
 def check_and_update_title(chat_id, user_content, history):
@@ -66,9 +60,9 @@ def send_message():
     chat_id = data.get("chat_id")
     content = data.get("content")
 
-    model = data.get("model", "gemini-2.5-flash")
+    model = data.get("model") or default_model()
 
-    if not content or not chat_id:
+    if not isinstance(content, str) or not content.strip() or not chat_id:
         return jsonify({"error": "content e chat_id são obrigatórios"}), 400
 
     chat = ChatDAO.get_chat_by_id(chat_id)
@@ -134,9 +128,9 @@ def send_stream():
     chat_id = data.get("chat_id")
     content = data.get("content")
 
-    model = data.get("model", "gemini-2.5-flash-preview-09-2025")
+    model = data.get("model") or default_model()
 
-    if not content or not chat_id:
+    if not isinstance(content, str) or not content.strip() or not chat_id:
         return jsonify({"error": "content e chat_id são obrigatórios"}), 400
 
     chat = ChatDAO.get_chat_by_id(chat_id)
@@ -182,14 +176,15 @@ def send_stream():
 
             except Exception as e:
                 logger.exception("Error while streaming to client")
-                err_msg = str(e)
+                err_msg = "Falha ao consultar a IA. Verifique a configuração e tente novamente."
                 if "429" in err_msg:
                     err_msg = (
                         "Limite de requisições excedido. Tente novamente em instantes."
                     )
 
                 err_payload = json.dumps({"error": err_msg})
-                yield f"event: chunk\ndata: {err_payload}\n\n"
+                yield f"event: error\ndata: {err_payload}\n\n"
+                return
 
             if full_response.strip():
                 try:
@@ -201,6 +196,8 @@ def send_stream():
                     )
                 except Exception as db_err:
                     logger.error(f"Failed to save AI message: {db_err}")
+                    yield 'event: error\ndata: {"error":"Resposta recebida, mas não foi possível salvar o histórico."}\n\n'
+                    return
 
             yield f"event: end\ndata: [DONE]\n\n"
 
@@ -217,7 +214,7 @@ def create_ai_message():
     target_user_id = data.get("user_id")
     chat_id = data.get("chat_id")
 
-    model = data.get("model", "gemini-2.5-flash-preview-09-2025")
+    model = data.get("model") or default_model()
 
     prompt = data.get("prompt")
 
@@ -236,6 +233,10 @@ def create_ai_message():
     target_user = UserDAO.get_user_by_id(target_user_id)
     target_user_name = target_user.name if target_user else "Usuário"
 
+    if chat.user_id != current_user.id and not current_user.is_admin:
+        return jsonify({"error": "Permission denied"}), 403
+    if not isinstance(prompt, str) or not prompt.strip():
+        return jsonify({"error": "prompt é obrigatório"}), 400
     history = ChatDAO.get_messages_formated(chat_id) or []
 
     check_and_update_title(chat_id, prompt, history)

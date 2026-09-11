@@ -56,7 +56,10 @@ def trigger_analysis(user_id):
     messages = UserMessageDAO.get_messages_by_user(user_id)
     texts = [m.content for m in messages]
 
-    analysis = analyze_user_risk_profile(texts)
+    try:
+        analysis = analyze_user_risk_profile(texts)
+    except Exception:
+        return jsonify({"error": "Análise de IA indisponível. Nenhuma pontuação foi alterada."}), 503
 
     user.risk_profile_score = analysis.get("score", 0)
     user.risk_profile_summary = analysis.get("summary", "N/A")

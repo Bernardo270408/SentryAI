@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
 import NavigationBar from "./components/NavigationBar";
 import AuthModal from './components/AuthModal'
 
@@ -16,6 +16,8 @@ export default function App() {
       return null;
     }
   });
+
+  useEffect(() => { window.scrollTo(0, 0); }, [location.pathname]);
 
   // Atualizar o user quando localStorage mudar — ou quando login/logout acontecer
   useEffect(() => {
@@ -60,6 +62,10 @@ export default function App() {
         />
       )}
 
+      {user && !isChatPage && <nav className="workspace-nav" aria-label="Navegação principal">
+        {[['/app', 'Início'], ['/chat', 'Chat'], ['/contract-analysis', 'Contratos'], ['/dashboard', 'Painel'], ['/rights', 'Explorar']].map(([path, label]) =>
+          <NavLink key={path} to={path} end>{label}</NavLink>)}
+      </nav>}
       <main className="main-wrapper">
         <Outlet />
       </main>

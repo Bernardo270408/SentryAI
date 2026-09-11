@@ -1,4 +1,5 @@
 import jwt
+from datetime import datetime, timedelta, timezone
 from functools import wraps
 from flask import request, jsonify, current_app
 from DAO.user_dao import UserDAO
@@ -13,7 +14,8 @@ def generate_token(user):
     payload = {
         "id": user.id,
         "is_admin": user.is_admin,
-        # Poderia incluir 'exp' para expiração do token se desejar
+        "exp": datetime.now(timezone.utc) + timedelta(hours=current_app.config.get("JWT_EXPIRATION_HOURS", 8)),
+        "iat": datetime.now(timezone.utc),
     }
     token = jwt.encode(payload, current_app.config["SECRET_KEY"], algorithm="HS256")
     return token
@@ -24,7 +26,7 @@ def decode_token(token):
     """
     try:
         payload = jwt.decode(
-            token, current_app.config["SECRET_KEY"], algorithms=["HS256"]
+            token, current_app.config["SECRET_KEY"], algorithms=["HS256"], options={"require": ["exp", "id"]}
         )
         return payload
     except jwt.ExpiredSignatureError:
@@ -45,7 +47,7 @@ def token_required(f):
 
         token = auth_header.split(" ")[1]
         payload = decode_token(token)
-        if not payload:
+        if not payload or type(payload.get("id")) is not int:
             return jsonify({"error": "Token is invalid or expired"}), 401
 
         # Busca o usuário no banco para garantir que ele ainda existe e verificar status
@@ -65,6 +67,9 @@ def token_required(f):
                 }
             }), 403
         # --------------------------------------
+
+        if not user.is_verified:
+            return jsonify({"error": "E-mail não verificado."}), 403
 
         request.user = user
         request.user_payload = payload

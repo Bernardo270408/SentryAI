@@ -24,8 +24,8 @@ class Contract(db.Model):
             "user_id": self.user_id,
             "json": self.json,
             "text": self.text,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
 
     def __repr__(self):

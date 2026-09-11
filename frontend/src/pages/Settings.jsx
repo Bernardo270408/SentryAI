@@ -4,6 +4,7 @@ import FooterContent from "../components/FooterComponent";
 import { FiMoon, FiSun, FiMail, FiUser, FiShield, FiTrash2, FiGlobe, FiMessageCircle, FiChevronRight, FiCamera } from "react-icons/fi";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
+import api from "../services/api";
 
 const settingsSections = [
   { id: 'profile', label: 'Perfil', icon: FiUser, desc: 'Gerencie seus dados pessoais' },
@@ -44,12 +45,21 @@ export default function Settings() {
 
   useEffect(() => { localStorage.setItem("lang", language); }, [language]);
 
-  const handleUpdateName = () => {
+  const handleUpdateName = async () => {
     if (!newName.trim()) return toast.error("Nome inválido");
-    const updated = { ...user, name: newName };
-    setUser(updated);
-    localStorage.setItem("user", JSON.stringify(updated));
-    toast.success("Perfil atualizado!");
+    try {
+      const updated = await api.updateUser(user.id, { name: newName.trim() });
+      setUser(updated);
+      localStorage.setItem("user", JSON.stringify(updated));
+      window.dispatchEvent(new Event("storage"));
+      toast.success("Perfil atualizado!");
+    } catch (error) { toast.error(error.body?.error || "Não foi possível salvar."); }
+  };
+  const handleUpdatePassword = async () => {
+    try {
+      await api.updateUser(user.id, { current_password: currentPassword, password: newPassword });
+      setCurrentPassword(""); setNewPassword(""); toast.success("Senha atualizada!");
+    } catch (error) { toast.error(error.body?.error || "Não foi possível alterar a senha."); }
   };
 
   // --- Renderização das Seções ---
@@ -77,7 +87,7 @@ export default function Settings() {
             <div className="input-group">
               <label>Endereço de E-mail</label>
               <input value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="exemplo@email.com" />
-              <button className="link-btn" onClick={() => toast.success("Email de verificação enviado")}>
+              <button className="link-btn" onClick={() => toast.error("Troca de e-mail ainda não disponível no protótipo.")}>
                 Validar novo e-mail
               </button>
             </div>
@@ -100,7 +110,7 @@ export default function Settings() {
               <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="••••••••" />
             </div>
             <div className="form-actions">
-                <button className="btn-primary" onClick={() => toast.success("Senha atualizada!")}>Atualizar Senha</button>
+                <button className="btn-primary" onClick={handleUpdatePassword}>Atualizar Senha</button>
             </div>
           </div>
         );
@@ -135,7 +145,7 @@ export default function Settings() {
                 <h3>Excluir Conta</h3>
             </div>
             <p>Uma vez que você excluir sua conta, não há como voltar atrás. Por favor, tenha certeza.</p>
-            <button className="btn-danger" onClick={() => toast.error("Ação crítica iniciada")}>
+            <button className="btn-danger" onClick={() => toast.error("Exclusão de conta por esta tela ainda não disponível.")}>
                 Sim, quero excluir minha conta
             </button>
           </div>

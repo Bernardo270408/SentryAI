@@ -111,7 +111,7 @@ function Contratos({ contracts }) {
     <motion.div className="chat-groups" variants={tabContentVariants} initial="hidden" animate="visible" exit="exit">
       <div className="stats-list">
         {contracts.map(contract => (
-          <motion.div key={contract.id} className="stat-item clickable" onClick={() => navigate(`/app/contract/${contract.id}`)} whileHover={{ x: 5 }}>
+          <motion.div key={contract.id} className="stat-item clickable" onClick={() => navigate(`/contract-analysis?contract=${contract.id}`)} whileHover={{ x: 5 }}>
             <div className="stat-icon green"><FiFileText /></div>
             <div className="stat-data">
               <strong>{contract.name || "Análise de Contrato"}</strong>
@@ -313,7 +313,7 @@ export default function Profile() {
             <motion.div className="profile-card info-card" variants={itemVariants}>
               <h4><FiCpu /> Sentry AI Insight</h4>
               <p className="muted small">Dados processados sob protocolos de segurança.</p>
-              <motion.button className="btn tiny outline full-width" onClick={() => navigate('/app/settings')} whileTap={{ scale: 0.95 }}>
+              <motion.button className="btn tiny outline full-width" onClick={() => navigate('/settings')} whileTap={{ scale: 0.95 }}>
                 Configurações
               </motion.button>
             </motion.div>

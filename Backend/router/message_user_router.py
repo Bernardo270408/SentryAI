@@ -12,7 +12,7 @@ def create_message():
     data = request.json
     current_user = request.user
 
-    user_id = data.get("user_id")
+    user_id = data.get("user_id", current_user.id)
     chat_id = data.get("chat_id")
     content = data.get("content")
 

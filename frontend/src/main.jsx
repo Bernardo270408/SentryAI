@@ -1,27 +1,29 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { Toaster } from 'react-hot-toast';
 
 import App from "./App";
-import Home from "./pages/Home";
-import AdminPanel from "./pages/AdminPanel";
-import Aplication from "./pages/Aplication";
-import Dashboard from "./pages/Dashboard";
-import ChatPage from "./pages/ChatPage";
-import Profile from "./pages/Profile";
-import RightsExplorer from "./pages/RightsExplorer";
-import ContractAnalysis from "./pages/ContractAnalysis";
-import BannedPage from "./pages/BannedPage";
-import AppealPage from "./pages/AppealPage";
-import Settings from "./pages/Settings";
-import KnowledgeBase from "./pages/KnowledgeBase";
-import Documentation from "./pages/Documentation";
-import Terms from "./pages/Terms";
-import Privacy from "./pages/Privacy";
-import Disclaimer from "./pages/Disclaimer";
+import { MotionConfig } from "framer-motion";
+const Home = lazy(() => import("./pages/Home"));
+const AdminPanel = lazy(() => import("./pages/AdminPanel"));
+const Aplication = lazy(() => import("./pages/Aplication"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const ChatPage = lazy(() => import("./pages/ChatPage"));
+const Profile = lazy(() => import("./pages/Profile"));
+const RightsExplorer = lazy(() => import("./pages/RightsExplorer"));
+const ContractAnalysis = lazy(() => import("./pages/ContractAnalysis"));
+const BannedPage = lazy(() => import("./pages/BannedPage"));
+const AppealPage = lazy(() => import("./pages/AppealPage"));
+const Settings = lazy(() => import("./pages/Settings"));
+const KnowledgeBase = lazy(() => import("./pages/KnowledgeBase"));
+const Documentation = lazy(() => import("./pages/Documentation"));
+const Terms = lazy(() => import("./pages/Terms"));
+const Privacy = lazy(() => import("./pages/Privacy"));
+const Disclaimer = lazy(() => import("./pages/Disclaimer"));
 import "./styles/global.css";
+import "./styles/refinements.css";
 
 
 
@@ -45,6 +47,7 @@ function AdminRoute({ children }) {
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
+    <MotionConfig reducedMotion="user">
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <Toaster
         position="bottom-right"
@@ -63,6 +66,7 @@ createRoot(document.getElementById("root")).render(
           v7_relativeSplatPath: true
         }}
       >
+        <Suspense fallback={<p role="status" style={{ padding: 32 }}>Carregando...</p>}>
         <Routes>
 
           <Route element={<App />}>
@@ -105,7 +109,9 @@ createRoot(document.getElementById("root")).render(
           <Route path="*" element={<Navigate to="/" replace />} />
 
         </Routes>
+        </Suspense>
       </BrowserRouter>
     </GoogleOAuthProvider>
+    </MotionConfig>
   </React.StrictMode>
 );

@@ -317,6 +317,11 @@ class JusbrasilService:
             }
         ]
         
+        for doc in all_docs:
+            doc["source"] = "Exemplo local SentryAI"
+            doc["date"] = "Demonstração"
+            doc["is_demo"] = True
+
         # Lógica de Filtro
         if not query:
             # Retorna uma amostra aleatória na home para não ficar sempre igual

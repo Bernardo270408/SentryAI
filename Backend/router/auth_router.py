@@ -1,4 +1,5 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
+import hmac
 from DAO.user_dao import UserDAO
 from models.user import User
 from extensions import db
@@ -15,8 +16,10 @@ GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
-    data = request.json
-    password_input = str(data.get("password", ""))
+    data = request.get_json(silent=True) or {}
+    password_input = data.get("password", "")
+    if not isinstance(password_input, str):
+        return jsonify({"error": "Senha deve ser texto."}), 400
 
     if not data or not data.get("email") or not password_input:
         return jsonify({"error": "Email e senha são obrigatórios"}), 400
@@ -58,7 +61,7 @@ def login():
 
 @auth_bp.route("/verify-email", methods=["POST"])
 def verify_email():
-    data = request.json
+    data = request.get_json(silent=True) or {}
     email = data.get("email")
     code = data.get("code")
 
@@ -69,27 +72,15 @@ def verify_email():
     if not user:
         return jsonify({"error": "Usuário não encontrado"}), 404
 
+    if user.is_banned:
+        return jsonify({"error": "Conta suspensa."}), 403
     if user.is_verified:
-        token = generate_token(user)
-        return (
-            jsonify(
-                {
-                    "message": "Usuário já verificado",
-                    "token": token,
-                    "user": user.to_dict(),
-                }
-            ),
-            200,
-        )
-
-    if str(user.verification_code) != str(code):
+        return jsonify({"error": "Conta já verificada. Entre com sua senha ou Google."}), 400
+    if (not user.verification_code or not user.verification_code_expires_at
+            or user.verification_code_expires_at < datetime.utcnow()):
+        return jsonify({"error": "Código ausente ou expirado. Solicite um novo."}), 400
+    if not hmac.compare_digest(str(user.verification_code), str(code)):
         return jsonify({"error": "Código incorreto"}), 400
-
-    if (
-        user.verification_code_expires_at
-        and user.verification_code_expires_at < datetime.utcnow()
-    ):
-        return jsonify({"error": "Código expirado. Solicite um novo."}), 400
 
     user.is_verified = True
     user.verification_code = None
@@ -112,17 +103,23 @@ def verify_email():
 
 @auth_bp.route("/google-login", methods=["POST"])
 def google_login():
-    data = request.json
+    data = request.get_json(silent=True) or {}
     token_google = data.get("credential")
 
     if not token_google:
         return jsonify({"error": "Token do Google não fornecido"}), 400
 
+    client_id = current_app.config.get("GOOGLE_CLIENT_ID") or os.getenv("GOOGLE_CLIENT_ID")
+    if not client_id:
+        return jsonify({"error": "Login Google não configurado."}), 503
+
     try:
         idinfo = id_token.verify_oauth2_token(
-            token_google, google_requests.Request(), GOOGLE_CLIENT_ID
+            token_google, google_requests.Request(), client_id
         )
 
+        if not idinfo.get("email_verified"):
+            return jsonify({"error": "E-mail Google não verificado."}), 400
         email = idinfo["email"]
         google_id = idinfo["sub"]
         name = idinfo.get("name", "Google User")

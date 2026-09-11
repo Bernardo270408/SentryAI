@@ -1,0 +1,140 @@
+/* Ajustes compartilhados de leitura, navegação e demonstração. */
+:root { color-scheme: dark; }
+body { --muted: #b5b5b5; }
+button, input, textarea, select { font: inherit; }
+button:disabled { cursor: not-allowed; }
+body :is(button, a, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid #adadad !important; outline-offset: 4px;
+}
+.app-root .landing-header { margin-top: 20px !important; }
+.workspace-nav { display: flex; justify-content: center; gap: 6px; margin: 0 auto; padding: 8px 16px; width: fit-content; max-width: calc(100% - 24px); border: 1px solid #ffffff12; background: #151515; border-radius: 14px; }
+.workspace-nav a { color: #b7b7b7; text-decoration: none; padding: 10px 18px; border-radius: 9px; font-size: 14px; font-weight: 550; white-space: nowrap; transition: background .15s; }
+.workspace-nav a:hover { color: #fff; background: #ffffff09; }
+.workspace-nav a.active { color: #e6e6e6; background: #8d8d8d25; }
+.app-root .application-main { max-width: 1200px; padding-top: 36px; }
+.application-main .main-title { font-size: clamp(26px, 3vw, 38px); letter-spacing: -1px; font-weight: 650; }
+.application-main .lead-app { line-height: 1.7; max-width: 650px; color: #b7b7b7; }
+.application-main .app-grid-container { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 18px; }
+.application-main .grid-item { background: #141414; border: 1px solid #ffffff13; border-radius: 20px; padding: 26px; gap: 14px; min-height: 230px; }
+.application-main .grid-item:hover { border-color: #adadad55; }
+.application-main .grid-item.item-chat { grid-column: span 2; background: radial-gradient(ellipse at top right,#8d8d8d22,transparent 70%), #141414; }
+.application-main .grid-item.item-dashboard { grid-row: auto; min-height: 230px; }
+.application-main .grid-item.item-analysis { grid-column: auto; }
+.application-main .grid-item h4 { font-size: 20px; letter-spacing: -.4px; }
+.application-main .grid-item p { line-height: 1.7; font-size: 14px; color: #bdbdbd; margin: 0 0 8px; }
+.application-main .chat-content { gap: 18px; }
+.application-main .chat-icon-main { width: 48px; height: 48px; border-radius: 14px; background: #9999991a; color: #bdbdbd; }
+.application-main .chat-icon-main svg { width: 30px; height: 30px; }
+.application-main .btn { min-height: 42px; border-radius: 10px; padding: 10px 16px; width: fit-content; font-weight: 600; }
+.application-main .btn.primary { background: #9b9b9b; color: #121212; box-shadow: none; }
+.application-main .item-header { color: #bdbdbd; background: #99999916; }
+.application-main .alert-carousel-wrap { margin: 0; padding-bottom: 12px; }
+.application-main .carousel-tile { background: #111111; border-color: #ffffff12; border-radius: 16px; flex-basis: 480px; }
+.application-main .carousel-tile .muted { font-size: 13px; line-height: 1.6; }
+/* Documento e resultado mantêm alinhamento e não se movem sob o cursor. */
+.contract-page-root .ca-wrapper { max-width: 1240px; padding: 32px 24px 60px; gap: 24px; }
+.contract-page-root .ca-header { padding: 10px 0 18px; background: none; border: none; border-radius: 0; box-shadow: none; backdrop-filter: none; }
+.contract-page-root .ca-header:hover { box-shadow: none; }
+.contract-page-root .ca-header-left { gap: 16px; }
+.contract-page-root .ca-header-left > svg { width: 46px; height: 46px; padding: 11px; color: #bcbcbc; background: #98989817; border-radius: 14px; flex-shrink: 0; }
+.contract-page-root .ca-header h1 { font-size: clamp(24px,3vw,32px); letter-spacing: -.8px; margin: 0 0 6px; }
+.contract-page-root .ca-header p { font-size: 14px; color: #b7b7b7; font-weight: 400; letter-spacing: 0; margin: 0; line-height: 1.5; }
+.contract-page-root .ca-main { grid-template-columns: minmax(300px, .85fr) minmax(0,1.65fr); gap: 24px; align-items: start; }
+.contract-page-root .ca-col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.contract-page-root .ca-card { background: #161616; border: 1px solid #ffffff16; border-radius: 18px; padding: 24px; gap: 16px; box-shadow: none; }
+.contract-page-root .ca-col .ca-card, .contract-page-root .ca-card:hover { transform: none; box-shadow: none; }
+.contract-page-root .ca-card h3 { font-size: 17px; font-weight: 600; margin: 0; letter-spacing: -.2px; }
+.ca-card-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.ca-step { font-size: 12px; color: #a5a5a5; border: 1px solid #ffffff15; border-radius: 8px; padding: 5px 7px; }
+.ca-example-btn { display: flex; justify-content: space-between; width: 100%; border: 1px solid #9e9e9e40; background: #94949412; color: #d0d0d0; border-radius: 10px; padding: 11px 13px; cursor: pointer; font-size: 13px; }
+.ca-example-btn:hover { background: #94949422; }
+.contract-page-root .ca-upload { padding: 20px 12px; border: 1px dashed #92929250; background: #ffffff02; border-radius: 12px; }
+.contract-page-root .ca-upload p { margin: 4px 0 8px; font-size: 14px; color: #e8e8e8; overflow-wrap: anywhere; }
+.ca-upload-hint { display: block; color: #aaaaaa; font-size: 11px; line-height: 1.6; }
+.ca-input-label { font-size: 13px; color: #d4d4d4; margin-top: 4px; }
+.contract-page-root .ca-textarea { height: 190px; min-height: 130px; padding: 14px; background: #0d0d0d; border-color: #ffffff18; border-radius: 10px; font-size: 13px; line-height: 1.7; }
+.contract-page-root .ca-btn.primary { width: 100%; color: #111111; background: #a5a5a5 !important; box-shadow: none; }
+.contract-page-root .ca-card.risk-bg-danger { background: #161616; border-left: 3px solid #ed827b; animation: none; }
+.contract-page-root .ca-card.risk-bg-warning { background: #171717; border-left: 3px solid #e3bb69; }
+.contract-page-root .ca-card.risk-bg-safe { background: #181818; border-left: 3px solid #75c9a4; }
+.contract-page-root .risk-meter-container { margin: 12px 0 22px; }
+.contract-page-root .risk-bar { height: 7px; }
+.contract-page-root .risk-segment.active { box-shadow: none; }
+.contract-page-root .risk-header { font-size: 12px; color: #cdcdcd; }
+.contract-page-root .ca-highlight-list { margin: 0; padding: 0; gap: 12px; }
+.contract-page-root .ca-highlight-item { padding: 16px !important; background: #ffffff04; border-color: #ffffff12; border-radius: 12px; }
+.contract-page-root .ca-highlight-item .tag { font-size: 11px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: #bfbfbf; margin-bottom: 9px; }
+.contract-page-root .ca-highlight-item .snippet { font-size: 14px; line-height: 1.6; color: #f2f2f2; }
+.contract-page-root .ca-highlight-item .line { font-size: 13px; line-height: 1.7; color: #bfbfbf; margin-top: 10px; }
+.contract-page-root .ca-history-item.selected { border-color: #adadad66; background: #98989812; }
+.ca-empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 370px; text-align: center; padding: 28px; color: #bfbfbf; }
+.ca-empty-state h4 { font-size: 20px; color: #e9e9e9; margin: 22px 0 10px; letter-spacing: -.5px; }
+.ca-empty-state p { max-width: 330px; color: #bababa; font-size: 14px; line-height: 1.8; margin: 0 0 22px; }
+.ca-empty-state > span { color: #959595; font-size: 12px; }
+.contract-page-root .ca-chat-box { height: 210px; }
+.contract-page-root .ca-chat-input { gap: 8px; padding: 8px 10px 8px 14px; border-radius: 12px; background: #0d0d0d; }
+.contract-page-root .ca-chat-field { min-width: 0; font-size: 13px; }
+.contract-page-root .ca-chat-send { width: 36px; height: 36px; flex: 0 0 36px; display: grid; place-items: center; border: 0; border-radius: 9px; background: #a5a5a5; color: #121212; cursor: pointer; }
+.contract-page-root .ca-chat-send:disabled { opacity: .35; cursor: not-allowed; }
+.contract-page-root .ca-msg { font-size: 14px; max-width: 92%; overflow-wrap: anywhere; }
+/* Conversas: início guiado e leitura de respostas. */
+.chat-root { height: 100dvh; width: 100%; }
+.chat-root .chat-main { min-width: 0; }
+.chat-root .empty-state { padding: 34px 0; }
+.chat-root .empty-state h2 { font-size: clamp(26px, 3.5vw, 38px); letter-spacing: -1px; }
+.chat-root .empty-state p { color: #b4b4b4; line-height: 1.7; }
+.starter-prompts { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; width: 100%; margin-top: 26px; }
+.starter-prompts button { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; text-align: left; padding: 16px; min-height: 115px; border: 1px solid #ffffff16; border-radius: 14px; background: #171717; color: #d0d0d0; cursor: pointer; font-size: 13px; line-height: 1.6; }
+.starter-prompts button:hover { background: #212121; border-color: #a9a9a955; }
+.starter-prompts svg { flex-shrink: 0; color: #b9b9b9; }
+.sidebar-empty { font-size: 12px; color: #a4a4a4; line-height: 1.7; padding: 8px; }
+.chat-root .markdown-body { line-height: 1.8; overflow-wrap: anywhere; }
+.chat-root .markdown-body pre { overflow-x: auto; max-width: 100%; }
+.chat-root .markdown-body table { display: block; overflow-x: auto; }
+.chat-root .input-container { border-color: #ffffff20; box-shadow: 0 10px 40px #0003; }
+.chat-root .ci-del { opacity: .65; }
+@media (max-width: 900px) {
+  .contract-page-root .ca-main { grid-template-columns: 1fr; }
+  .application-main .app-grid-container { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .application-main .grid-item.item-chat { grid-column: span 2; }
+  .ca-empty-state { min-height: 230px; }
+}
+@media (max-width: 600px) {
+  .workspace-nav { gap: 2px; padding: 5px; width: calc(100% - 24px); }
+  .workspace-nav a { flex: 1; text-align: center; padding: 10px 5px; font-size: 12px; }
+  .app-root .landing-header { top: 10px !important; margin-top: 10px !important; width: calc(100% - 24px) !important; }
+  .application-main .app-grid-container { grid-template-columns: minmax(0,1fr); }
+  .application-main .grid-item.item-chat { grid-column: auto; }
+  .application-main .grid-item { padding: 22px; min-height: 210px; }
+  .application-main .carousel-tile { flex-basis: calc(100vw - 56px); flex-wrap: wrap; }
+  .contract-page-root .ca-wrapper { padding: 24px 12px 40px; }
+  .contract-page-root .ca-card { padding: 18px; }
+  .contract-page-root .ca-header p { font-size: 12px; }
+  .starter-prompts { grid-template-columns: 1fr; gap: 8px; margin-top: 18px; }
+  .starter-prompts button { min-height: auto; padding: 12px 14px; }
+  .chat-root .empty-state { padding-top: 18px; }
+  .chat-root .empty-logo-wrap { margin-bottom: 12px; }
+  .chat-root .messages-container { padding-left: 14px; padding-right: 14px; }
+  .hero-inner .hero-left { min-width: 0; }
+  .hero-inner .hero-right { max-width: 100%; min-width: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
+
+/* Paleta preta e grafite. Cores de risco continuam semânticas. */
+body, .app-root, .app-root .chat-root, .app-root .contract-page-root {
+  --bg: #080808; --bg-900: #060606; --bg-800: #0d0d0d; --bg-root: #090909;
+  --bg-sidebar: #0c0c0c; --bg-chat: #090909; --bg-input: #181818;
+  --accent: #ededed; --accent-soft: rgba(255,255,255,.08);
+  --muted: #a8a8a8; --text: #f0f0f0; --text-muted: #a8a8a8;
+  --glow-hover: 0 0 0 1px rgba(255,255,255,.16);
+}
+.app-root .landing-header .brand-logo, .app-root .landing-header .user-avatar {
+  background: linear-gradient(135deg,#363636,#141414) !important;
+  box-shadow: 0 3px 12px #0005 !important;
+}
+.app-root .workspace-nav a.active { background: #282828; color: #fafafa; }
+.app-root .application-main .btn.primary, .app-root .contract-page-root .ca-btn.primary { background: #e7e7e7 !important; color: #111 !important; }
+.app-root .contract-page-root .ca-btn.primary svg, .app-root .contract-page-root .ca-btn.primary * { color: #111 !important; stroke: #111 !important; }
+.app-root .application-main .grid-item.item-chat { background: radial-gradient(ellipse at top right,#ffffff08,transparent 70%),#121212; }

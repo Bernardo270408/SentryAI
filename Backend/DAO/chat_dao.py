@@ -62,8 +62,10 @@ class ChatDAO:
         # buscando apenas os últimos N registros de cada tabela para evitar load total
         
         # Pega as últimas X mensagens de cada tipo (segurança para garantir ordem)
-        user_msgs = chat.user_messages[-limit:] 
-        ai_msgs = chat.ai_messages[-limit:]
+        user_msgs = UserMessage.query.filter_by(chat_id=chat_id).order_by(
+            UserMessage.created_at.desc(), UserMessage.id.desc()).limit(limit).all()
+        ai_msgs = AIMessage.query.filter_by(chat_id=chat_id).order_by(
+            AIMessage.created_at.desc(), AIMessage.id.desc()).limit(limit).all()
         
         all_msgs = user_msgs + ai_msgs
         # Ordena pela data
@@ -82,4 +84,4 @@ class ChatDAO:
     @staticmethod
     def get_rating_by_chat(chat_id):
         chat = ChatDAO.get_chat_by_id(chat_id)
-        return chat.rating
+        return chat.rating if chat else None
